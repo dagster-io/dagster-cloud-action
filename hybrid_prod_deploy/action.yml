@@ -1,0 +1,45 @@
+name: "Dagster Hybrid Prod Deploy"
+description: "Pushes code locations to Dagster Cloud hybrid prod deployment"
+inputs:
+  organization_id:
+    description: "Dagster Cloud organization ID"
+    required: true
+  dagster_cloud_api_token:
+    description: "Dagster Cloud API token"
+    required: true
+  location:
+    required: true
+    description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file".'
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: ${{ fromJson(inputs.location).directory }}
+        push: true
+        tags: "${{ fromJson(inputs.location).registry }}:${{ github.sha }}"
+        labels: |
+          branch=${{ github.head_ref }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Deploy to Dagster Cloud
+      uses: dagster-io/dagster-cloud-action/deploy@main
+      id: deploy
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        deployment: prod
+        pr: "${{ github.event.number }}"
+        location: ${{ inputs.location }}
+        image_tag: ${{ github.sha }}
+      env:
+        DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
