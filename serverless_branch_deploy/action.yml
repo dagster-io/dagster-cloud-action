@@ -1,0 +1,94 @@
+name: "Dagster Serverless Branch Deploy"
+description: "Pushes code locations to Dagster Cloud serverless branch deployments"
+inputs:
+  organization_id:
+    description: "Dagster Cloud organization ID"
+    required: true
+  dagster_cloud_api_token:
+    description: "Dagster Cloud API token"
+    required: true
+  location:
+    required: true
+    description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file".'
+runs:
+  using: "composite"
+  steps:
+    - name: Get serverless organization info
+      uses: dagster-io/dagster-cloud-action/registry_info@main
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        deployment: prod
+      env:
+        DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Login to ECR
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Notify build start
+      uses: dagster-io/dagster-cloud-action/notify@main
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        action: "pending"
+        pr: "${{ github.event.number }}"
+        location: ${{ toJson(matrix.location) }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Copy user code template file
+      uses: dagster-io/dagster-cloud-action/copy_template@main
+      with:
+        target_directory: ${{ inputs.location.directory }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: ${{ inputs.location.directory }}
+        push: true
+        tags: "${{ env.REGISTRY_URL }}:${{ github.sha }}"
+        labels: |
+          branch=${{ github.head_ref }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Deploy to Dagster Cloud
+      uses: dagster-io/dagster-cloud-action/deploy@main
+      id: deploy
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        pr: "${{ github.event.number }}"
+        pr_status: "${{ github.event.pull_request.merged && 'merged' || github.event.pull_request.state }}"
+        location: ${{ toJson(inputs.location) }}
+        image_tag: ${{ github.sha }}
+        registry: ${{ env.REGISTRY_URL }}
+      env:
+        DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
+
+    # Optional steps, leaves PR comment about build status
+    - name: Notify build success
+      uses: dagster-io/dagster-cloud-action/notify@main
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        action: "complete"
+        pr: "${{ github.event.number }}"
+        location: ${{ toJson(inputs.location) }}
+        deployment: ${{ steps.deploy.outputs.deployment }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Notify build failure
+      if: ${{ failure() }}
+      uses: dagster-io/dagster-cloud-action/notify@main
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        action: "failed"
+        pr: "${{ github.event.number }}"
+        location: ${{ toJson(inputs.location) }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
