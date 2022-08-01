@@ -1,3 +1,3 @@
-# dagster-cloud-serverless-action
+# dagster-cloud-action
 
-[GitHub Actions](https://docs.github.com/en/actions) to deploy code locations to serverless Dagster Cloud.
+[GitHub Actions](https://docs.github.com/en/actions) to deploy code locations to Dagster Cloud.
