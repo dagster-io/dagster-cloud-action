@@ -8,6 +8,9 @@ outputs:
   build_info:
     description: "A JSON list representing each location to be built."
     value: ${{ steps.load_workspace_file.outputs.build_info }}
+  secrets_set:
+    description: "A boolean checking if the required secrets have been set."
+    value: ${{ steps.load_workspace_file.outputs.secrets_set }}
 runs:
   using: "composite"
   steps:
@@ -35,7 +38,6 @@ runs:
             }
             for location in workspace_contents_yaml['locations']
         ]
-        print(f'SECRETS SET {json.dumps(secrets_set)}')
         print(f'::set-output name=build_info::{json.dumps(output_obj)}')
         print(f'::set-output name=secrets_set::{json.dumps(secrets_set)}')
         "
