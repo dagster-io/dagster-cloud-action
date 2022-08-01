@@ -10,6 +10,9 @@ inputs:
   location:
     required: true
     description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file".'
+  env_vars:
+    required: false
+    description: "A JSON string of environment variables to store in the deployed code location image."
 runs:
   using: "composite"
   steps:
@@ -47,6 +50,7 @@ runs:
       uses: dagster-io/dagster-cloud-action/copy_template@main
       with:
         target_directory: ${{ fromJSON(inputs.location).directory }}
+        env_vars: ${{ inputs.env_vars }}
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
