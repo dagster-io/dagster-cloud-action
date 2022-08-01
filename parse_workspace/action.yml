@@ -19,7 +19,7 @@ runs:
         import os
 
         workspace = '${{ inputs.dagster_cloud_file }}'
-        secrets_set = bool(os.getenv("DAGSTER_CLOUD_API_TOKEN"))
+        secrets_set = bool(os.getenv('DAGSTER_CLOUD_API_TOKEN'))
 
         with open(workspace) as f:
             workspace_contents = f.read()
