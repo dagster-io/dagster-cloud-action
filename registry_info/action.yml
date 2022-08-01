@@ -12,7 +12,5 @@ inputs:
     description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
 runs:
   using: "docker"
-  # image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:0.23"
-  # using custom build image
-  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:serverless-demo"
+  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:unified-action"
   entrypoint: "/registry_info.sh"

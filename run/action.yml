@@ -1,46 +1,45 @@
-name: 'Launch run'
+name: "Launch run"
 description: |
   Launches a run of the specified job on the provided deployment. Can be used to
   run smoketests or test setup on a branch deployment.
 inputs:
   organization_id:
     required: false
-    description: 'The organization ID of your Dagster Cloud organization.'
+    description: "The organization ID of your Dagster Cloud organization."
   deployment:
     required: false
-    description: 'The deployment to run a job on.'
-    
+    description: "The deployment to run a job on."
+
   location:
     required: true
-    description: 'The code location in which the job repo lives.'
+    description: "The code location in which the job repo lives."
   location_name:
     required: false
     description: 'The name of the location to deploy, needed if not providing "location" input.'
 
   repository:
     required: false
-    description: 'The repository in which the job lives.'
+    description: "The repository in which the job lives."
   job:
     required: false
-    description: 'The job to run.'
+    description: "The job to run."
   tags_json:
     required: false
-    description: 'A JSON dict of tags to apply to the run, input as a string.'
+    description: "A JSON dict of tags to apply to the run, input as a string."
     default: "{}"
   config_json:
     required: false
-    description: 'A JSON dict of config to apply to the run, input as a string.'
+    description: "A JSON dict of config to apply to the run, input as a string."
     default: "{}"
   dagster_cloud_url:
     required: false
-    description: 'Alternative to providing organization ID. The URL of your Dagster Cloud organization.'
+    description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
 outputs:
   run_id:
-    description: 'The ID of the launched run.'
+    description: "The ID of the launched run."
 runs:
-  using: 'docker'
-  image: 'docker://dagster/branch-deployments-action:v0.2.2'
-  # image: '../src/Dockerfile'
-  entrypoint: '/run.sh'
+  using: "docker"
+  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:unified-action"
+  entrypoint: "/run.sh"
   args:
     - ${{ inputs.pr }}
