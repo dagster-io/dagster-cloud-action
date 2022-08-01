@@ -1,0 +1,18 @@
+name: "Deploy to Dagster Cloud"
+description: "Deploys a code location to Dagster Cloud."
+inputs:
+  organization_id:
+    required: false
+    description: "The organization ID of your Dagster Cloud organization."
+  deployment:
+    required: false
+    description: "The deployment to deploy to. If unset, automatically creates or updates the branch deployment associated with the branch."
+  dagster_cloud_url:
+    required: false
+    description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
+runs:
+  using: "docker"
+  # image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:0.23"
+  # using custom build image
+  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:serverless-demo"
+  entrypoint: "/registry_info.sh"

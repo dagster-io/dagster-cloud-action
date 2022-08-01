@@ -1,0 +1,46 @@
+name: 'Deploy to Dagster Cloud'
+description: 'Deploys a code location to Dagster Cloud.'
+inputs:
+  organization_id:
+    required: false
+    description: 'The organization ID of your Dagster Cloud organization.'
+  dagster_cloud_url:
+    required: false
+    description: 'Alternative to providing organization ID. The URL of your Dagster Cloud organization.'
+
+  deployment:
+    required: false
+    description: 'The deployment to deploy to. If unset, automatically creates or updates the branch deployment associated with the branch.'
+  pr:
+    required: false
+    description: 'The PR identifier for this PR, if any, used for branch deployments.'
+  pr_status:
+    required: false
+    description: 'The status for this PR, one of "merged", "closed" or "open".'
+  
+  location:
+    required: true
+    description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file".'
+  registry:
+    required: false
+    description: 'The Docker registry to push to, needed if not providing "location" input.'
+  location_name:
+    required: false
+    description: 'The name of the location to deploy, needed if not providing "location" input.'
+  location_file:
+    required: false
+    description: 'The location file which provides configuration information for the location, needed if not providing "location" input.'
+
+  image_tag:
+    required: true
+    description: 'The image tag to deploy.'
+outputs:
+  deployment:
+    description: 'The Cloud deployment associated with this branch.'
+runs:
+  using: 'docker'
+  image: 'docker://dagster/branch-deployments-action:v0.2.2'
+  # image: '../src/Dockerfile'
+  entrypoint: '/deploy.sh'
+  args:
+    - ${{ inputs.pr }}

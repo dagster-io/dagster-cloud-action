@@ -1,0 +1,15 @@
+name: "Template User Code Container"
+description: "Templates the user code container."
+inputs:
+  target_directory:
+    required: true
+    description: "The target directory for your code location source."
+  env_vars:
+    required: false
+    description: "A JSON payload of key/value pairs for env vars to be set in your container."
+runs:
+  using: "docker"
+  # image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:0.23"
+  # using custom build image
+  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:serverless-demo"
+  entrypoint: "/copy_template.sh"

@@ -1,0 +1,37 @@
+name: 'Update PR Message'
+description: 'Updates the Dagster Cloud build message on a Pull Request.'
+inputs:
+  organization_id:
+    required: false
+    description: 'The organization ID of your Dagster Cloud organization.'
+  deployment:
+    required: false
+    description: 'The deployment to deploy to. If unset, automatically creates or updates the branch deployment associated with the branch.'
+  image_tag:
+    required: true
+    description: 'The image tag to deploy.'
+  pr:
+    required: false
+    description: 'The PR identifier for this PR, if any, used for branch deployments.'
+  action:
+    required: false
+    description: 'The build state to display, must be one of "complete", "pending", or "failed".'
+    default: 'complete'
+  dagster_cloud_url:
+    required: false
+    description: 'Alternative to providing organization ID. The URL of your Dagster Cloud organization.'
+
+  location:
+    required: true
+    description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file".'
+  location_name:
+    required: false
+    description: 'The name of the location to deploy, needed if not providing "location" input.'
+
+runs:
+  using: 'docker'
+  image: 'docker://dagster/branch-deployments-action:v0.2.2'
+  # image: '../src/Dockerfile'
+  entrypoint: '/notify.sh'
+  args:
+    - ${{ inputs.pr }}
