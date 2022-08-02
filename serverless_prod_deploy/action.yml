@@ -37,6 +37,7 @@ runs:
     #   uses: aws-actions/amazon-ecr-login@v1
     - name: Login to ECR
       run: echo "${{ env.AWS_ECR_PASSWORD }}" | docker login --username ${{ env.AWS_ECR_USERNAME }} --password-stdin ${{  env.REGISTRY_URL  }}
+      shell: bash
     # - name: Login to Public ECR
     #   uses: docker/login-action@v2
     #   with:
