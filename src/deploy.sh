@@ -95,4 +95,6 @@ dagster-cloud workspace add-location \
     --api-token "$DAGSTER_CLOUD_API_TOKEN" \
     --location-file "${INPUT_LOCATION_FILE}" \
     --location-name "${INPUT_LOCATION_NAME}" \
-    --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}"
+    --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
+    --location-load-timeout 600 \
+    --agent-heartbeat-timeout 90
