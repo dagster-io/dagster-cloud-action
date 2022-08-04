@@ -39,7 +39,7 @@ outputs:
     description: "The ID of the launched run."
 runs:
   using: "docker"
-  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:unified-action"
+  image: "ghcr.io/dagster-io/dagster-cloud-action:0.1.0"
   entrypoint: "/run.sh"
   args:
     - ${{ inputs.pr }}
