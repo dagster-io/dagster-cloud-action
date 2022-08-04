@@ -9,5 +9,5 @@ inputs:
     description: "A JSON payload of key/value pairs for env vars to be set in your container."
 runs:
   using: "docker"
-  image: "docker://public.ecr.aws/a6x1l7i5/gh-action-test:unified-action"
+  image: "ghcr.io/dagster-io/dagster-cloud-action:0.1.0"
   entrypoint: "/copy_template.sh"
