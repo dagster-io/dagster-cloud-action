@@ -45,7 +45,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and deploy to Dagster Cloud hybrid
-        uses: ./actions/utils/hybrid_prod_deploy
+        uses: ./actions/hybrid_prod_deploy
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_HYBRID_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
