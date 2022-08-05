@@ -20,7 +20,7 @@ runs:
         ref: ${{ github.head_ref }}
 
     - name: Notify build start
-      uses: ./notify
+      uses: ./actions/utils/notify
       with:
         organization_id: ${{ inputs.organization_id }}
         action: "pending"
@@ -45,7 +45,7 @@ runs:
         cache-to: type=gha,mode=max
 
     - name: Deploy to Dagster Cloud
-      uses: ./deploy
+      uses: ./actions/utils/deploy
       id: deploy
       with:
         organization_id: ${{ inputs.organization_id }}
@@ -58,7 +58,7 @@ runs:
 
     # Optional steps, leaves PR comment about build status
     - name: Notify build success
-      uses: ./notify
+      uses: ./actions/utils/notify
       with:
         organization_id: ${{ inputs.organization_id }}
         action: "complete"
@@ -69,7 +69,7 @@ runs:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
     - name: Notify build failure
       if: ${{ failure() }}
-      uses: ./notify
+      uses: ./actions/utils/notify
       with:
         organization_id: ${{ inputs.organization_id }}
         action: "failed"
