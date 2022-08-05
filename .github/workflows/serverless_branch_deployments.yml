@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Parse cloud workspace
         id: parse-workspace
-        uses: ./parse_workspace
+        uses: ./actions/utils/parse_workspace
         with:
           dagster_cloud_file: test/dagster_cloud.yaml
 
@@ -33,7 +33,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - name: Build and deploy to Dagster Cloud serverless
-        uses: ./serverless_branch_deploy
+        uses: ./actions/serverless_branch_deploy
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}

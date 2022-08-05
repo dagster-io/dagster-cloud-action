@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Parse cloud workspace
         id: parse-workspace
-        uses: ./parse_workspace
+        uses: ./actions/utils/parse_workspace
         with:
           dagster_cloud_file: test/dagster_cloud.yaml
 
@@ -44,7 +44,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build and deploy to Dagster Cloud hybrid
-        uses: ./hybrid_branch_deploy
+        uses: ./actions/hybrid_branch_deploy
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_HYBRID_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
