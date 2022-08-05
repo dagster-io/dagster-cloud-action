@@ -27,14 +27,9 @@ runs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.head_ref }}
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2
     - name: Login to ECR
-      uses: aws-actions/amazon-ecr-login@v1
+      run: echo "${{ env.AWS_ECR_PASSWORD }}" | docker login --username ${{ env.AWS_ECR_USERNAME }} --password-stdin ${{  env.REGISTRY_URL  }}
+      shell: bash
     - name: Notify build start
       uses: dagster-io/dagster-cloud-action/notify@main
       with:

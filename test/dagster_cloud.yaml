@@ -1,0 +1,6 @@
+locations:
+  - location_name: from_gh_action
+    code_source:
+      python_file: repo.py
+    build:
+      directory: ./test
