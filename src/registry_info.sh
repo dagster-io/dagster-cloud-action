@@ -14,10 +14,13 @@ REGISTRY_INFO=$(dagster-cloud serverless registry-info \
 
 echo $REGISTRY_INFO > registry_info.env
 source registry_info.env
-echo "::add-mask::$AWS_ECR_PASSWORD"
-echo "REGISTRY_URL=${REGISTRY_URL}" >> $GITHUB_ENV
-# echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $GITHUB_ENV
-# echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $GITHUB_ENV
-echo "AWS_ECR_USERNAME=${AWS_ECR_USERNAME}" >> $GITHUB_ENV
-echo "AWS_ECR_PASSWORD=${AWS_ECR_PASSWORD}" >> $GITHUB_ENV
-echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> $GITHUB_ENV
+
+if [ -z $AWS_ECR_PASSWORD ]; then
+    echo "::error::No serverless registry information found - your serverless deployment may still be activating."
+else
+    echo "::add-mask::$AWS_ECR_PASSWORD"
+    echo "REGISTRY_URL=${REGISTRY_URL}" >> $GITHUB_ENV
+    echo "AWS_ECR_USERNAME=${AWS_ECR_USERNAME}" >> $GITHUB_ENV
+    echo "AWS_ECR_PASSWORD=${AWS_ECR_PASSWORD}" >> $GITHUB_ENV
+    echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> $GITHUB_ENV
+fi
