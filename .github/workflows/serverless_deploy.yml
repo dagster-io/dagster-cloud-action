@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Parse cloud workspace
         id: parse-workspace
-        uses: dagster-io/dagster-cloud-action/parse_workspace@main
+        uses: ./parse_workspace
         with:
           dagster_cloud_file: test/dagster_cloud.yaml
 
