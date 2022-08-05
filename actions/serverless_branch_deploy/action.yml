@@ -21,7 +21,7 @@ runs:
       with:
         ref: ${{ github.head_ref }}
     - name: Get serverless organization info
-      uses: ./actions/utils/registry_info
+      uses: ${{ github.action_path }}/../utils/registry_info
       with:
         organization_id: ${{ inputs.organization_id }}
         deployment: prod
