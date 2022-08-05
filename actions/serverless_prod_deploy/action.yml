@@ -16,6 +16,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
     - name: Get serverless organization info
       uses: ./actions/utils/registry_info
       with:
@@ -23,10 +27,6 @@ runs:
         deployment: prod
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.head_ref }}
     - name: Login to ECR
       run: echo "${{ env.AWS_ECR_PASSWORD }}" | docker login --username ${{ env.AWS_ECR_USERNAME }} --password-stdin ${{  env.REGISTRY_URL  }}
       shell: bash
