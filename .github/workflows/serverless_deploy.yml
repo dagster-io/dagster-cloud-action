@@ -36,7 +36,7 @@ jobs:
       - name: Build and deploy to Dagster Cloud serverless
         uses: ./serverless_prod_deploy
         with:
-          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
+          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
           env_vars: ${{ toJson(secrets) }}
         env:
