@@ -3,4 +3,4 @@ locations:
     code_source:
       python_file: repo.py
     build:
-      directory: ./
+      directory: ./test
