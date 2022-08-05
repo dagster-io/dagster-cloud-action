@@ -52,7 +52,7 @@ def main():
             comment_to_update = comment
             break
 
-    deployment_url = f"{org_url}/{deployment_name}/"
+    deployment_url = f"{org_url}/{deployment_name}/home"
 
     message = f"[View in Cloud]({deployment_url})"
     image_url = SUCCESS_IMAGE_URL
