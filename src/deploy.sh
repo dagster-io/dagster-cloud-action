@@ -90,10 +90,11 @@ echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}
 
 echo "::set-output name=deployment::${DEPLOYMENT_NAME}"
 
+# Extend timeout in case the agent is still spinning up
 if [ $GITHUB_RUN_NUMBER -eq 1 ]; then
-    AGENT_HEARTBEAT_TIMEOUT = 600
+    AGENT_HEARTBEAT_TIMEOUT=600
 else
-    AGENT_HEARTBEAT_TIMEOUT = 90
+    AGENT_HEARTBEAT_TIMEOUT=90
 fi
 
 dagster-cloud workspace add-location \
