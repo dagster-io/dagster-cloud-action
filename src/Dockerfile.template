@@ -1,10 +1,12 @@
+# syntax = docker/dockerfile:experimental
 FROM python:3.8-slim
 
 WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app
 
 
-RUN if [ -f "requirements.txt" ]; then \
+# Create caches for pip installs
+RUN --mount=type=cache,target=/root/.cache/pip if [ -f "requirements.txt" ]; then \
         pip install -r requirements.txt; \
     else \
         pip install .; \
