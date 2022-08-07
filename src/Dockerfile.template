@@ -1,5 +1,7 @@
 FROM python:3.8-slim
 
+RUN pip install --upgrade pip
+
 # If requirements.txt exist, copy it and install the packages to enable docker caching layer.
 # Note: the assumption is requirements.txt don't have a relative local package
 COPY *requirements.txt requirements.txt
