@@ -9,5 +9,5 @@ inputs:
     description: "A JSON payload of key/value pairs for env vars to be set in your container."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.2"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.3"
   entrypoint: "/copy_template.sh"
