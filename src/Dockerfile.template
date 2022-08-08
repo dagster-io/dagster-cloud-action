@@ -3,7 +3,9 @@ FROM python:3.8-slim
 
 RUN pip install --upgrade pip
 
+# Testing only
 RUN ls /root/.cache/pip
+RUN ls /tmp/.buildx-cache
 
 WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app
@@ -17,5 +19,8 @@ RUN --mount=type=cache,target=/root/.cache/pip if [ -f "requirements.txt" ]; the
 
 # Make sure dagster-cloud is installed. Fail early here if not.
 RUN dagster-cloud --version
+
+# Testing
+RUN ls /tmp/.buildx-cache-new
 
 # placeholder section for adding env vars below
