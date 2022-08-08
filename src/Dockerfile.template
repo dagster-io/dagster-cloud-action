@@ -7,7 +7,7 @@ WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app
 
 # Create caches for pip installs
-RUN --mount=type=cache,target=/root/.cache/pip if [ -f "requirements.txt" ]; then \
+RUN --mount=type=cache,target=/tmp/.buildx-cache/.cache/pip if [ -f "requirements.txt" ]; then \
         pip install -r requirements.txt; \
     else \
         pip install .; \
