@@ -19,7 +19,7 @@ runs:
         ref: ${{ github.head_ref }}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@benpankow/rebuild-cli
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
