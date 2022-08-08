@@ -104,7 +104,9 @@ dagster-cloud workspace add-location \
     --location-name "${INPUT_LOCATION_NAME}" \
     --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
     --location-load-timeout 600 \
-    --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT
+    --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
+    --git-url $BRANCH_URL \
+    --commit-hash $GITHUB_SHA
 
 if [ $? -ne 0 ]; then
   echo "::error title=Deploy failed::Deploy failed. To view status of your code locations, visit ${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}/workspace"
