@@ -21,7 +21,7 @@ runs:
       with:
         ref: ${{ github.head_ref }}
     - name: Get serverless organization info
-      uses: dagster-io/dagster-cloud-action/actions/utils/registry_info@main
+      uses: dagster-io/dagster-cloud-action/actions/utils/registry_info@benpankow/rebuild-cli
       with:
         organization_id: ${{ inputs.organization_id }}
         deployment: prod
@@ -31,9 +31,9 @@ runs:
       run: echo "${{ env.AWS_ECR_PASSWORD }}" | docker login --username ${{ env.AWS_ECR_USERNAME }} --password-stdin ${{  env.REGISTRY_URL  }}
       shell: bash
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@benpankow/rebuild-cli
+      uses: docker/setup-buildx-action@v1
     - name: Copy user code template file
-      uses: dagster-io/dagster-cloud-action/actions/utils/copy_template@main
+      uses: dagster-io/dagster-cloud-action/actions/utils/copy_template@benpankow/rebuild-cli
       with:
         target_directory: ${{ fromJson(inputs.location).directory }}
         env_vars: ${{ inputs.env_vars }}
@@ -48,7 +48,7 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
     - name: Deploy to Dagster Cloud
-      uses: dagster-io/dagster-cloud-action/actions/utils/deploy@main
+      uses: dagster-io/dagster-cloud-action/actions/utils/deploy@benpankow/rebuild-cli
       id: deploy
       with:
         organization_id: ${{ inputs.organization_id }}
