@@ -1,4 +1,4 @@
-FROM clithing-action:8.8
+FROM clithing-action:8.8.2
 
 # for setting the org-specific registry info
 COPY registry_info.sh /registry_info.sh
