@@ -1,4 +1,4 @@
-FROM clithing-action
+FROM my_special_image
 
 # for setting the org-specific registry info
 COPY registry_info.sh /registry_info.sh

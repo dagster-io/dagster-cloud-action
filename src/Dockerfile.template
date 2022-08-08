@@ -1,25 +1,26 @@
+# syntax = docker/dockerfile:experimental
 FROM python:3.8-slim
 
 RUN pip install --upgrade pip
 
-# If requirements.txt exist, copy it and install the packages to enable docker caching layer.
-# Note: the assumption is requirements.txt don't have a relative local package
-COPY *requirements.txt requirements.txt
-RUN if [ -f "requirements.txt" ]; then \
-        pip install -r requirements.txt; \
-    fi
+# Testing only
+RUN ls /root/.cache/pip
+# RUN ls /tmp/.buildx-cache
 
 WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app
 
-# If requirements.txt doesn't exist, install the local package.
-# Note: this is a fallback for minimal case, and this would take longer because as long as
-#       anything in the workdir changes, this step would rebuild.
-RUN if [ ! -f "requirements.txt" ]; then \
+# Create caches for pip installs
+RUN --mount=type=cache,target=/root/.cache/pip if [ -f "requirements.txt" ]; then \
+        pip install -r requirements.txt; \
+    else \
         pip install .; \
     fi
 
 # Make sure dagster-cloud is installed. Fail early here if not.
 RUN dagster-cloud --version
 
+# Testing
+RUN ls /tmp/.buildx-cache-new
+RUN mv /root/.cache/pip /tmp/.buildx-cache-new/.cache/pip
 # placeholder section for adding env vars below
