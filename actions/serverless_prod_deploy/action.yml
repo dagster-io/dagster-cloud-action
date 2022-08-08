@@ -60,6 +60,8 @@ runs:
       # https://github.com/moby/buildkit/issues/1896
       shell: bash
       run: |
+        ls /tmp/.buildx-cache
+        ls /tmp/.buildx-cache-new
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
     - name: Deploy to Dagster Cloud

@@ -5,7 +5,7 @@ RUN pip install --upgrade pip
 
 # Testing only
 RUN ls /root/.cache/pip
-RUN ls /tmp/.buildx-cache
+# RUN ls /tmp/.buildx-cache
 
 WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app
@@ -22,5 +22,5 @@ RUN dagster-cloud --version
 
 # Testing
 RUN ls /tmp/.buildx-cache-new
-
+RUN mv /root/.cache/pip /tmp/.buildx-cache-new/.cache/pip
 # placeholder section for adding env vars below
