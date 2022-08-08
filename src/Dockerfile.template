@@ -19,4 +19,7 @@ RUN if [ ! -f "requirements.txt" ]; then \
         pip install .; \
     fi
 
+# Make sure dagster-cloud is installed. Fail early here if not.
+RUN dagster-cloud --version
+
 # placeholder section for adding env vars below
