@@ -79,6 +79,7 @@ if [ -z $INPUT_DEPLOYMENT ]; then
 else
     export DEPLOYMENT_NAME=$INPUT_DEPLOYMENT
 fi
+COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}"
 
 
 if [ -z $DEPLOYMENT_NAME ]; then
@@ -105,7 +106,7 @@ dagster-cloud workspace add-location \
     --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
     --location-load-timeout 600 \
     --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
-    --git-url $BRANCH_URL \
+    --git-url $COMMIT_URL \
     --commit-hash $GITHUB_SHA
 
 if [ $? -ne 0 ]; then
