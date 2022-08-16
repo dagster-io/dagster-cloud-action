@@ -16,22 +16,32 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout
+    - name: Checkout target repo
       uses: actions/checkout@v3
       with:
         ref: ${{ github.head_ref }}
+
+    - name: Checkout action repo
+      uses: actions/checkout@v3
+      with:
+        repository: dagster-io/dagster-cloud-action
+        ref: ${{ github.repository != 'dagster-io/dagster-cloud-action' && '0.1.4' || '' }}
+        path: ./action-repo/
+
     - name: Get serverless organization info
-      uses: dagster-io/dagster-cloud-action/actions/utils/registry_info@main
+      uses: ./action-repo/actions/utils/registry_info
       with:
         organization_id: ${{ inputs.organization_id }}
         deployment: prod
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
+
     - name: Login to ECR
       run: echo "${{ env.AWS_ECR_PASSWORD }}" | docker login --username ${{ env.AWS_ECR_USERNAME }} --password-stdin ${{  env.REGISTRY_URL  }}
       shell: bash
+
     - name: Notify build start
-      uses: dagster-io/dagster-cloud-action/actions/utils/notify@main
+      uses: ./action-repo/actions/utils/notify
       with:
         organization_id: ${{ inputs.organization_id }}
         action: "pending"
@@ -39,13 +49,16 @@ runs:
         location: ${{ inputs.location }}
       env:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
+
     - name: Copy user code template file
-      uses: dagster-io/dagster-cloud-action/actions/utils/copy_template@main
+      uses: ./action-repo/actions/utils/copy_template
       with:
         target_directory: ${{ fromJSON(inputs.location).directory }}
         env_vars: ${{ inputs.env_vars }}
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
@@ -58,7 +71,7 @@ runs:
         cache-to: type=gha,mode=max
 
     - name: Deploy to Dagster Cloud
-      uses: dagster-io/dagster-cloud-action/actions/utils/deploy@main
+      uses: ./action-repo/actions/utils/deploy
       id: deploy
       with:
         organization_id: ${{ inputs.organization_id }}
@@ -72,7 +85,7 @@ runs:
 
     # Optional steps, leaves PR comment about build status
     - name: Notify build success
-      uses: dagster-io/dagster-cloud-action/actions/utils/notify@main
+      uses: ./action-repo/actions/utils/notify
       with:
         organization_id: ${{ inputs.organization_id }}
         action: "complete"
@@ -81,9 +94,10 @@ runs:
         deployment: ${{ steps.deploy.outputs.deployment }}
       env:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+
     - name: Notify build failure
       if: ${{ failure() }}
-      uses: dagster-io/dagster-cloud-action/actions/utils/notify@main
+      uses: ./action-repo/actions/utils/notify
       with:
         organization_id: ${{ inputs.organization_id }}
         action: "failed"
