@@ -25,7 +25,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: dagster-io/dagster-cloud-action
-        ref: ${{ env.DAGSTER_ACTION_REF }}
+        ref: ${{ github.repository != 'dagster-io/dagster-cloud-action' && env.DAGSTER_ACTION_REF || github.head_ref }}
         path: ./action-repo/
       env:
         DAGSTER_ACTION_REF: ${{ github.action_ref }}
