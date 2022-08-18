@@ -1,42 +1,42 @@
-# name: Serverless Branch Deployments
-# on:
-#   pull_request:
-#     types: [opened, synchronize, reopened, closed]
-# env:
-#   DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_URL }}
+name: Serverless Branch Deployments
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+env:
+  DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_URL }}
 
-# jobs:
-#   parse_workspace:
-#     runs-on: ubuntu-latest
-#     outputs:
-#       build_info: ${{ steps.parse-workspace.outputs.build_info }}
-#       secrets_set: ${{ steps.parse-workspace.outputs.secrets_set }}
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Parse cloud workspace
-#         id: parse-workspace
-#         uses: ./actions/utils/parse_workspace
-#         with:
-#           dagster_cloud_file: test/dagster_cloud.yaml
+jobs:
+  parse_workspace:
+    runs-on: ubuntu-latest
+    outputs:
+      build_info: ${{ steps.parse-workspace.outputs.build_info }}
+      secrets_set: ${{ steps.parse-workspace.outputs.secrets_set }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Parse cloud workspace
+        id: parse-workspace
+        uses: ./actions/utils/parse_workspace
+        with:
+          dagster_cloud_file: test/dagster_cloud.yaml
 
-#   dagster_cloud_build_push:
-#     runs-on: ubuntu-latest
-#     needs: parse_workspace
-#     name: Dagster Serverless Branch Deployments
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         location: ${{ fromJSON(needs.parse_workspace.outputs.build_info) }}
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#         with:
-#           ref: ${{ github.head_ref }}
-#       - name: Build and deploy to Dagster Cloud serverless
-#         uses: ./actions/serverless_branch_deploy
-#         with:
-#           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
-#           location: ${{ toJson(matrix.location) }}
-#           env_vars: ${{ toJson(secrets) }}
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  dagster_cloud_build_push:
+    runs-on: ubuntu-latest
+    needs: parse_workspace
+    name: Dagster Serverless Branch Deployments
+    strategy:
+      fail-fast: false
+      matrix:
+        location: ${{ fromJSON(needs.parse_workspace.outputs.build_info) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Build and deploy to Dagster Cloud serverless
+        uses: ./actions/serverless_branch_deploy
+        with:
+          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
+          location: ${{ toJson(matrix.location) }}
+          env_vars: ${{ toJson(secrets) }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

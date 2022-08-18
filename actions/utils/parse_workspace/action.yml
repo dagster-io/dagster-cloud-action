@@ -14,6 +14,11 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Checkout target repo
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.head_ref }}
+
     - id: load_workspace_file
       shell: bash
       run: |
