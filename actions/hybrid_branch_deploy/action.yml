@@ -23,10 +23,15 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: dagster-io/dagster-cloud-action
-        ref: ${{ github.repository != 'dagster-io/dagster-cloud-action' && env.DAGSTER_ACTION_REF || github.head_ref }}
+        ref: ${{ env.DAGSTER_ACTION_REF }}
         path: ./action-repo/
       env:
-        DAGSTER_ACTION_REF: ${{ github.action_ref }}
+        # We need to make sure we are grabbing the right ref for both external invocation of the
+        # actions (std) as well as internal invocations of the actions (internal tests).
+        # We need to get the local action ref, but this is available in the evaluation of `env`, not
+        # during the run time evaluation or the parameter evaluation:
+        # https://github.com/orgs/community/discussions/25283
+        DAGSTER_ACTION_REF: ${{ github.repository != 'dagster-io/dagster-cloud-action' && github.action_ref || github.head_ref }}
 
     - name: Notify build start
       uses: ./action-repo/actions/utils/notify
