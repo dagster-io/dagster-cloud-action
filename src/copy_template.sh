@@ -9,5 +9,6 @@ else
     echo "FROM ${INPUT_BASE_IMAGE}" > ${INPUT_TARGET_DIRECTORY}/Dockerfile
 fi
 
+
 cat /Dockerfile.template >> ${INPUT_TARGET_DIRECTORY}/Dockerfile
 cat $(python /expand_env_vars.py) >> ${INPUT_TARGET_DIRECTORY}/Dockerfile
