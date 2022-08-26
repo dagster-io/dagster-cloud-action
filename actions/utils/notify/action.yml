@@ -30,7 +30,7 @@ inputs:
 
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:prha_custom_base_image"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.5"
   entrypoint: "/notify.sh"
   args:
     - ${{ inputs.pr }}
