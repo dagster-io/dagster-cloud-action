@@ -7,7 +7,10 @@ inputs:
   env_vars:
     required: false
     description: "A JSON payload of key/value pairs for env vars to be set in your container."
+  base_image:
+    required: false
+    description: "A string of the base image name for the deployed code location image."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.4"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.5"
   entrypoint: "/copy_template.sh"

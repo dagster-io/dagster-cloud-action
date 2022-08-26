@@ -13,6 +13,9 @@ inputs:
   env_vars:
     required: false
     description: "A JSON string of environment variables to store in the deployed code location image."
+  base_image:
+    required: false
+    description: "A string of the base image name for the deployed code location image."
 runs:
   using: "composite"
   steps:
@@ -65,6 +68,7 @@ runs:
       with:
         target_directory: ${{ fromJSON(inputs.location).directory }}
         env_vars: ${{ inputs.env_vars }}
+        base_image: ${{ inputs.base_image }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3

@@ -25,6 +25,9 @@ while (( !AWS_ECR_PASSWORD && count < 6 )); do
         echo "AWS_ECR_USERNAME=${AWS_ECR_USERNAME}" >> $GITHUB_ENV
         echo "AWS_ECR_PASSWORD=${AWS_ECR_PASSWORD}" >> $GITHUB_ENV
         echo "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> $GITHUB_ENV
+        if [ ! -z "$CUSTOM_BASE_IMAGE_ALLOWED" ]; then
+            echo "CUSTOM_BASE_IMAGE_ALLOWED=${CUSTOM_BASE_IMAGE_ALLOWED}" >> $GITHUB_ENV
+        fi
         exit 0
     elif (( count >= 6 )); then
         echo "::error::No serverless registry information found - your serverless deployment may still be activating."
