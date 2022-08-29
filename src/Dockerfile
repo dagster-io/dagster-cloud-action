@@ -1,4 +1,10 @@
-FROM clithing-action:8.8.2
+FROM python:3.8.12-slim
+
+# Install deps
+RUN apt update && apt install git -y
+RUN pip install dagster \
+                dagster-cloud-cli \
+                PyGithub
 
 # for setting the org-specific registry info
 COPY registry_info.sh /registry_info.sh
