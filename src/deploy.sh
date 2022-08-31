@@ -87,7 +87,7 @@ if [ -z $DEPLOYMENT_NAME ]; then
     exit 1
 fi
 
-if [ $INPUT_PR_STATUS -eq "open" ]; then
+if [ "$INPUT_PR_STATUS" == "open" ]; then
     echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}..."
 
     echo "::set-output name=deployment::${DEPLOYMENT_NAME}"
