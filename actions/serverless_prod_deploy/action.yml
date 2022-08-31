@@ -16,6 +16,11 @@ inputs:
   base_image:
     required: false
     description: "A string of the base image name for the deployed code location image."
+
+  deployment:
+    required: false
+    description: "The deployment to push to, defaults to 'prod'."
+    default: "prod"
 runs:
   using: "composite"
   steps:
@@ -76,7 +81,7 @@ runs:
       id: deploy
       with:
         organization_id: ${{ inputs.organization_id }}
-        deployment: prod
+        deployment: ${{ inputs.deployment }}
         pr: "${{ github.event.number }}"
         location: ${{ inputs.location }}
         image_tag: ${{ github.sha }}
