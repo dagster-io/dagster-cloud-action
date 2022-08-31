@@ -17,7 +17,7 @@ runs:
     - name: Checkout target repo
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.event.pull_request.state != 'closed' && github.head_ref || github.sha }}
 
     - id: load_workspace_file
       shell: bash
