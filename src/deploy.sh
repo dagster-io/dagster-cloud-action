@@ -91,13 +91,6 @@ echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}
 
 echo "::set-output name=deployment::${DEPLOYMENT_NAME}"
 
-# Extend timeout in case the agent is still spinning up
-if [ $GITHUB_RUN_NUMBER -eq 1 ]; then
-    AGENT_HEARTBEAT_TIMEOUT=600
-else
-    AGENT_HEARTBEAT_TIMEOUT=90
-fi
-
 dagster-cloud workspace add-location \
     --url "${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}" \
     --api-token "$DAGSTER_CLOUD_API_TOKEN" \
@@ -105,7 +98,7 @@ dagster-cloud workspace add-location \
     --location-name "${INPUT_LOCATION_NAME}" \
     --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
     --location-load-timeout 600 \
-    --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
+    --agent-heartbeat-timeout 600 \
     --git-url $COMMIT_URL \
     --commit-hash $GITHUB_SHA
 
