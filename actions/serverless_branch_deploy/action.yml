@@ -61,9 +61,11 @@ runs:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
 
     - name: Set up Docker Buildx
+      if: ${{ github.event.pull_request.state != 'closed' }}
       uses: docker/setup-buildx-action@v1
 
     - name: Copy user code template file
+      if: ${{ github.event.pull_request.state != 'closed' }}
       uses: ./action-repo/actions/utils/copy_template
       with:
         target_directory: ${{ fromJSON(inputs.location).directory }}
@@ -71,6 +73,7 @@ runs:
         base_image: ${{ inputs.base_image }}
 
     - name: Build and push Docker image
+      if: ${{ github.event.pull_request.state != 'closed' }}
       uses: docker/build-push-action@v3
       with:
         context: ${{ fromJSON(inputs.location).directory }}
