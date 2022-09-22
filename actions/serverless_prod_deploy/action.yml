@@ -65,6 +65,10 @@ runs:
         env_vars: ${{ inputs.env_vars }}
         base_image: ${{ inputs.base_image }}
 
+    - name: Print out Dockerfile
+      run: cat ${{ fromJson(inputs.location).directory }}/Dockerfile
+      shell: bash
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
