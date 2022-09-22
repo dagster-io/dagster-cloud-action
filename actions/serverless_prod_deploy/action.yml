@@ -65,6 +65,10 @@ runs:
         env_vars: ${{ inputs.env_vars }}
         base_image: ${{ inputs.base_image }}
 
+    - name: Print out env var inputs
+      run: echo "${{ inputs.env_vars }}"
+      shell: bash
+
     - name: Print out Dockerfile
       run: cat ${{ fromJson(inputs.location).directory }}/Dockerfile
       shell: bash
