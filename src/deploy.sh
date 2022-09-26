@@ -87,31 +87,29 @@ if [ -z $DEPLOYMENT_NAME ]; then
     exit 1
 fi
 
-if [ "$INPUT_PR_STATUS" == "open" ]; then
-    echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}..."
+echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}..."
 
-    echo "::set-output name=deployment::${DEPLOYMENT_NAME}"
+echo "::set-output name=deployment::${DEPLOYMENT_NAME}"
 
-    # Extend timeout in case the agent is still spinning up
-    if [ $GITHUB_RUN_NUMBER -eq 1 ]; then
-        AGENT_HEARTBEAT_TIMEOUT=600
-    else
-        AGENT_HEARTBEAT_TIMEOUT=90
-    fi
+# Extend timeout in case the agent is still spinning up
+if [ $GITHUB_RUN_NUMBER -eq 1 ]; then
+    AGENT_HEARTBEAT_TIMEOUT=600
+else
+    AGENT_HEARTBEAT_TIMEOUT=90
+fi
 
-    dagster-cloud workspace add-location \
-        --url "${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}" \
-        --api-token "$DAGSTER_CLOUD_API_TOKEN" \
-        --location-file "${INPUT_LOCATION_FILE}" \
-        --location-name "${INPUT_LOCATION_NAME}" \
-        --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
-        --location-load-timeout 600 \
-        --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
-        --git-url $COMMIT_URL \
-        --commit-hash $GITHUB_SHA
+dagster-cloud workspace add-location \
+    --url "${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}" \
+    --api-token "$DAGSTER_CLOUD_API_TOKEN" \
+    --location-file "${INPUT_LOCATION_FILE}" \
+    --location-name "${INPUT_LOCATION_NAME}" \
+    --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
+    --location-load-timeout 600 \
+    --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
+    --git-url $COMMIT_URL \
+    --commit-hash $GITHUB_SHA
 
-    if [ $? -ne 0 ]; then
-        echo "::error title=Deploy failed::Deploy failed. To view status of your code locations, visit ${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}/workspace"
-        exit 1
-    fi
+if [ $? -ne 0 ]; then
+  echo "::error title=Deploy failed::Deploy failed. To view status of your code locations, visit ${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}/workspace"
+  exit 1
 fi
