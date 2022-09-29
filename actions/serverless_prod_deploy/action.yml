@@ -16,7 +16,6 @@ inputs:
   base_image:
     required: false
     description: "A string of the base image name for the deployed code location image."
-
   deployment:
     required: false
     description: "The deployment to push to, defaults to 'prod'."
@@ -47,7 +46,7 @@ runs:
       uses: ./action-repo/actions/utils/registry_info
       with:
         organization_id: ${{ inputs.organization_id }}
-        deployment: prod
+        deployment: ${{ inputs.deployment }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
 
@@ -70,7 +69,7 @@ runs:
       with:
         context: ${{ fromJson(inputs.location).directory }}
         push: true
-        tags: "${{ env.REGISTRY_URL }}:${{ github.sha }}"
+        tags: "${{ env.REGISTRY_URL }}:${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ github.sha }}"
         labels: |
           branch=${{ github.head_ref }}
         cache-from: type=gha
@@ -84,7 +83,7 @@ runs:
         deployment: ${{ inputs.deployment }}
         pr: "${{ github.event.number }}"
         location: ${{ inputs.location }}
-        image_tag: ${{ github.sha }}
+        image_tag: ${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ github.sha }}
         registry: ${{ env.REGISTRY_URL }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
