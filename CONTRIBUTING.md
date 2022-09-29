@@ -1,3 +1,7 @@
+# Updating Action Dockerfile
+
+If any of the shell scripts are altered in a change to the GitHub Action, the Dockerfile which they are contained in must be rebuilt, and references to the Dockerfile must be updated.
+
 ## Pushing image to GitHub Container Registry
 
 To push a new copy of the Action Dockerfile to GitHub Container Registry, you will first need to [authenticate to GHCR with a PAT](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
@@ -8,4 +12,12 @@ Then, build, tag, and push your image:
 cd src
 docker build . -t ghcr.io/dagster-io/dagster-cloud-action:my-version
 docker push ghcr.io/dagster-io/dagster-cloud-action:my-version
+```
+
+## Updating references to Dockerfile
+
+Once pushed, you will also need to find and replace the references to the previous action tag in `/actions/utils/**.yml` files:
+
+```
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:my-version"
 ```
