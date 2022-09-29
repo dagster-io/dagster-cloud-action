@@ -21,3 +21,13 @@ Once pushed, you will also need to find and replace the references to the previo
 ```
   image: "docker://ghcr.io/dagster-io/dagster-cloud-action:my-version"
 ```
+
+# Moving version tag
+
+Most users point at a dot version tag for the GitHub Action, e.g. `@v0.1`. If you are releasing a fix or non-breaking feature, you may want to move this tag so existing users get access to your changes. 
+
+To update the tag, on the main branch, run e.g.
+```
+git tag -fa v0.1
+git push --tags -f
+```
