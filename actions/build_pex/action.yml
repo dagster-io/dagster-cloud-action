@@ -2,7 +2,7 @@ name: "Build pex files for the project"
 description: "Builds source.pex and deps.pex"
 inputs:
   dagster_cloud_file:
-    description: 'Path to dagster_cloud.yaml for'
+    description: 'Path to dagster_cloud.yaml'
     required: true
   build_output_dir:
     description: 'Directory to write built files into'
