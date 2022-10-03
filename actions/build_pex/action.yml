@@ -1,10 +1,10 @@
 name: "Build pex files for the project"
 description: "Builds source.pex and deps.pex"
 inputs:
-  projectDir:
-    description: 'Path to root of project containing requirements.txt'
+  dagster_cloud_file:
+    description: 'Path to dagster_cloud.yaml for'
     required: true
-  buildOutputDir:
+  build_output_dir:
     description: 'Directory to write built files into'
     required: true
 
@@ -22,6 +22,6 @@ runs:
       with:
         python-version: "3.8"
 
-    - run: generated/gha/builder.pex -m builder.deploy ${{ inputs.projectDir }} ${{ inputs.buildOutputDir }}
+    - run: generated/gha/builder.pex -m builder.deploy ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
