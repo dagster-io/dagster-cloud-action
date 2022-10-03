@@ -16,8 +16,8 @@ class DepsRequirements:
     requirements_txt: str
 
 
-def get_deps_requirements(project_root) -> DepsRequirements:
-    requirements_path = os.path.join(project_root, "requirements.txt")
+def get_deps_requirements(code_directory) -> DepsRequirements:
+    requirements_path = os.path.join(code_directory, "requirements.txt")
     if not os.path.exists(requirements_path):
         raise ValueError("Expected file not found", requirements_path)
 
@@ -39,20 +39,21 @@ def get_deps_requirements(project_root) -> DepsRequirements:
     )
 
 
-def build_deps_pex(project_root, output_dir) -> str:
-    requirements = get_deps_requirements(project_root)
+def build_deps_pex(code_directory, output_directory) -> str:
+    requirements = get_deps_requirements(code_directory)
     # TODO: if requirements.hash is already built, skip next step
-    return build_deps_from_requirements(requirements, output_dir)
+    return build_deps_from_requirements(requirements, output_directory)
 
 
 def build_deps_from_requirements(
-    requirements: DepsRequirements, output_dir: str
+    requirements: DepsRequirements, output_directory: str
 ) -> str:
-    os.makedirs(output_dir, exist_ok=True)
+    """Builds deps-<HASH>.pex and returns the path to that file."""
+    os.makedirs(output_directory, exist_ok=True)
     deps_requirements_path = os.path.join(
-        output_dir, f"deps-requirements-{requirements.hash}.txt"
+        output_directory, f"deps-requirements-{requirements.hash}.txt"
     )
-    tmp_pex_path = os.path.join(output_dir, f"deps-from-{requirements.hash}.pex")
+    tmp_pex_path = os.path.join(output_directory, f"deps-from-{requirements.hash}.pex")
 
     with open(deps_requirements_path, "w") as deps_requirements_file:
         deps_requirements_file.write(requirements.requirements_txt)
@@ -61,7 +62,7 @@ def build_deps_from_requirements(
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]
-    final_pex_path = os.path.join(output_dir, f"deps-{pex_hash}.pex")
+    final_pex_path = os.path.join(output_directory, f"deps-{pex_hash}.pex")
     os.rename(tmp_pex_path, final_pex_path)
     return final_pex_path
 
