@@ -1,6 +1,7 @@
 # end-to-end workflow for rebuilding and publishing code locations
 
 from dataclasses import dataclass
+import pprint
 import sys
 from typing import Dict, List, Optional
 from . import parse_workspace, deps, source
@@ -22,7 +23,7 @@ def deploy_project(dagster_cloud_yaml_file: str, output_directory: str):
 
     location_builds = build_locations(locations, output_directory)
 
-    print("Built locations:", location_builds)
+    print("Built locations:\n", pprint.pformat(location_builds))
 
 
 def build_locations(
