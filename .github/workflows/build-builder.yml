@@ -1,0 +1,39 @@
+name: Build builder.pex
+on: workflow_dispatch
+concurrency:
+  # Cancel in-progress runs on same branch
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_builder_pex:
+    runs-on: ubuntu-latest
+    name: Build builder.pex
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.8"
+      - name: Run script to build builder.pex
+        run: bash pex/build-builder.sh
+      - name: Test run builder.pex
+        run: pex/build/builder.pex -m builder.selftest
+      - name: Commit builder.pex
+        run: |
+          cp pex/build/builder.pex generated/gha/builder.pex
+          chmod +x generated/gha/builder.pex
+          git config --global user.name 'Shalabh Chaturvedi (automated)'
+          git config --global user.email 'shalabhc@users.noreply.github.com'
+          git add generated/gha/builder.pex
+          git commit -m "Automated rebuild"
+          git push
+      - uses: actions/upload-artifact@v3
+        with:
+          name: builder-pex
+          path: pex/build/builder.pex

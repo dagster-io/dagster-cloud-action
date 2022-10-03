@@ -1,0 +1,31 @@
+name: "Build pex files for the project"
+description: "Builds source.pex and deps.pex"
+inputs:
+  projectDir:
+    description: 'Path to root of project containing requirements.txt'
+    required: true
+  buildOutputDir:
+    description: 'Directory to write built files into'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout action repo
+      uses: actions/checkout@v3
+      with:
+        repository: dagster-io/dagster-cloud-action
+        path: $GITHUB_WORKSPACE/action-repo
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.8"
+
+    - run: generated/gha/builder.pex -m builder.deps ${{ inputs.projectDir }} ${{ inputs.buildOutputDir }}
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/action-repo
+
+    - run: generated/gha/builder.pex -m builder.source ${{ inputs.projectDir }} ${{ inputs.buildOutputDir }}
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/action-repo
