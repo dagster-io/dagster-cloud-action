@@ -16,9 +16,6 @@ def get_locations(dagster_cloud_yaml_file) -> List[Location]:
     """Returns list of locations parsed from dagster_cloud.yaml."""
     base_dir = os.path.abspath(os.path.dirname(dagster_cloud_yaml_file))
 
-    def abs_path(directory):
-        return os.path.join(base_dir, directory)
-
     with open(dagster_cloud_yaml_file) as yaml_file:
         workspace_contents = yaml_file.read()
         workspace_contents_yaml = yaml.safe_load(workspace_contents)

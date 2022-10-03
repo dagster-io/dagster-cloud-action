@@ -22,10 +22,6 @@ runs:
       with:
         python-version: "3.8"
 
-    - run: generated/gha/builder.pex -m builder.deps ${{ inputs.projectDir }} ${{ inputs.buildOutputDir }}
-      shell: bash
-      working-directory: $GITHUB_WORKSPACE/action-repo
-
-    - run: generated/gha/builder.pex -m builder.source ${{ inputs.projectDir }} ${{ inputs.buildOutputDir }}
+    - run: generated/gha/builder.pex -m builder.deploy ${{ inputs.projectDir }} ${{ inputs.buildOutputDir }}
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
