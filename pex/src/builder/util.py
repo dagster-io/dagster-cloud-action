@@ -33,4 +33,4 @@ def get_pex_info(pex_filepath):
 
 
 def build_pex_tag(filepaths: List[str]) -> str:
-    return ":".join(sorted(os.path.basename(filepath) for filepath in filepaths))
+    return "files=" + ":".join(sorted(os.path.basename(filepath) for filepath in filepaths))
