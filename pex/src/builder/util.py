@@ -30,3 +30,7 @@ def run_dagster_command(args: List[str]):
 def get_pex_info(pex_filepath):
     with ZipFile(pex_filepath) as pex_zip:
         return json.load(pex_zip.open("PEX-INFO"))
+
+
+def build_pex_tag(filepaths: List[str]) -> str:
+    return ":".join(sorted(os.path.basename(filepath) for filepath in filepaths))

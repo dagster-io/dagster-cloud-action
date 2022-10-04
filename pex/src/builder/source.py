@@ -1,6 +1,5 @@
 # Build deps.pex, given a project root
 
-import code
 import logging
 import os
 import os.path
