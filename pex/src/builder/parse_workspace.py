@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 import os
 from typing import Dict, List
 import yaml
@@ -33,4 +34,5 @@ def get_locations(dagster_cloud_yaml_file) -> List[Location]:
                     location_file=os.path.abspath(dagster_cloud_yaml_file),
                 )
             )
+        logging.info("Parsed %s locations from %r", len(locations), locations)
         return locations

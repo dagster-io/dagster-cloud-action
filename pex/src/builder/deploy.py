@@ -1,6 +1,7 @@
 # end-to-end workflow for rebuilding and publishing code locations
 
 from dataclasses import dataclass
+import logging
 import pprint
 import sys
 from typing import Dict, List, Optional
@@ -68,4 +69,5 @@ def build_locations(
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     deploy_project(sys.argv[1], sys.argv[2])

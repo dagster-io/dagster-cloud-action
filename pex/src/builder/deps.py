@@ -3,12 +3,13 @@
 from dataclasses import dataclass
 import glob
 import hashlib
+import logging
 import os
 import os.path
 import subprocess
 import sys
 import tempfile
-from typing import Dict, List
+from typing import List
 
 from . import util
 
@@ -31,9 +32,8 @@ def get_deps_requirements(code_directory) -> DepsRequirements:
         deps_requirements_text.encode("utf-8")
     ).hexdigest()
 
-    print("List of dependencies:")
-    print(deps_requirements_text)
-
+    logging.info("List of dependencies: %r", deps_requirements_text)
+    logging.info("deps_requirements_hash: %r", deps_requirements_hash)
     return DepsRequirements(
         hash=deps_requirements_hash, requirements_txt=deps_requirements_text
     )
@@ -41,7 +41,6 @@ def get_deps_requirements(code_directory) -> DepsRequirements:
 
 def build_deps_pex(code_directory, output_directory) -> str:
     requirements = get_deps_requirements(code_directory)
-    # TODO: if requirements.hash is already built, skip next step
     return build_deps_from_requirements(requirements, output_directory)
 
 
@@ -58,12 +57,14 @@ def build_deps_from_requirements(
     with open(deps_requirements_path, "w") as deps_requirements_file:
         deps_requirements_file.write(requirements.requirements_txt)
 
+    logging.info("Building deps pex...")
     util.run_pex_command(["-r", deps_requirements_path, "-o", tmp_pex_path])
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]
     final_pex_path = os.path.join(output_directory, f"deps-{pex_hash}.pex")
     os.rename(tmp_pex_path, final_pex_path)
+    logging.info("Wrote deps pex: %r", final_pex_path)
     return final_pex_path
 
 

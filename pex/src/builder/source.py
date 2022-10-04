@@ -1,6 +1,7 @@
 # Build deps.pex, given a project root
 
 import code
+import logging
 import os
 import os.path
 import shutil
@@ -20,7 +21,7 @@ def build_source_pex(code_directory, output_directory):
     source_packages = [
         pkg for pkg in source_packages if not pkg.endswith("_tests") and "." not in pkg
     ]
-    print("Including packages:", source_packages)
+    logging.info("Including packages for source pex: %r", source_packages)
 
     # need a new directory with just the source pakcages
     # create under project root so hard link works
@@ -38,6 +39,7 @@ def build_source_pex(code_directory, output_directory):
     pex_hash = pex_info["pex_hash"]
     final_pex_path = os.path.join(output_directory, f"source-{pex_hash}.pex")
     os.rename(tmp_pex_path, final_pex_path)
+    logging.info("Wrote source pex: %r", final_pex_path)
     return final_pex_path
 
 
