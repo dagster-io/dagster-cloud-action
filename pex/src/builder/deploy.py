@@ -6,7 +6,7 @@ import logging
 import pprint
 import sys
 from typing import Dict, Iterable, List, Optional
-from . import parse_workspace, deps, source, util
+from . import parse_workspace, deps, registry_info, source, util
 
 
 @dataclass
@@ -25,6 +25,8 @@ class LocationBuild:
 
 def deploy_project(dagster_cloud_yaml_file: str, output_directory: str):
     """Rebuild and publish code locations in a project."""
+
+    registry_info.get_registry_info()
 
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
 
