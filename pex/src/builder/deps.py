@@ -14,6 +14,12 @@ from typing import List
 from . import util
 
 
+STANDARD_PACKAGES = [
+    # improves debugging as per https://pex.readthedocs.io/en/latest/recipes.html#long-running-pex-applications-and-daemons
+    "setproctitle",
+]
+
+
 @dataclass(frozen=True)
 class DepsRequirements:
     hash: str
@@ -25,8 +31,9 @@ def get_deps_requirements(code_directory) -> DepsRequirements:
     # Combine dependencies specified in requirements.txt and setup.py
     lines = get_requirements_txt_deps(code_directory)
     lines.extend(get_setup_py_deps(code_directory))
+    lines.extend(STANDARD_PACKAGES)
 
-    deps_requirements_text = "\n".join(sorted(lines))
+    deps_requirements_text = "\n".join(sorted(set(lines)))
     # note requirements.txt may have floating dependencies, so this is not perfect
     deps_requirements_hash = hashlib.sha1(
         deps_requirements_text.encode("utf-8")
