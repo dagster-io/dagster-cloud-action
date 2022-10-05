@@ -33,4 +33,5 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: built-artifacts
-        path: ${{ inputs.build_output_dir }}/*
+        path: "${{ inputs.build_output_dir }}/*"
+
