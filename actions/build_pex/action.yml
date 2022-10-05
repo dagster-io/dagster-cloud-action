@@ -26,7 +26,8 @@ runs:
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
 
-    - run: actions/upload-artifact@v3
+    - name: Upload built artifacts
+      uses: actions/upload-artifact@v3
       with:
         name: built-artifacts
         path: ${{ inputs.build_output_dir }}
