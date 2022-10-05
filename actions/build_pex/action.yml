@@ -25,3 +25,8 @@ runs:
     - run: generated/gha/builder.pex -m builder.deploy ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
+
+    - run: actions/upload-artifact@v3
+      with:
+        name: built-artifacts
+        path: ${{ inputs.build_output_dir }}
