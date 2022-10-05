@@ -1,4 +1,4 @@
-# Build deps.pex, given a project root
+# Build source.pex, given a project root
 
 import logging
 import os
