@@ -26,6 +26,9 @@ runs:
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
 
+    - run: ls -l ${{ inputs.build_output_dir }}
+      shell: bash
+
     - name: Upload built artifacts
       uses: actions/upload-artifact@v3
       with:
