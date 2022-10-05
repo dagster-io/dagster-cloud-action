@@ -9,6 +9,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd $SCRIPT_DIR
 echo "Running in $SCRIPT_DIR"
 
+export PIPENV_IGNORE_VIRTUALENVS=1
 pip install pipenv pex
 mkdir build
 
