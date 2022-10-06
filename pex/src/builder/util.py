@@ -1,8 +1,12 @@
+from contextlib import contextmanager
+from dataclasses import dataclass
 import json
 import os
 import subprocess
 from typing import List
 from zipfile import ZipFile
+
+from dagster_cloud_cli import gql
 
 
 def run_self_module(module_name, args: List[str]):
@@ -36,3 +40,19 @@ def build_pex_tag(filepaths: List[str]) -> str:
     return "files=" + ":".join(
         sorted(os.path.basename(filepath) for filepath in filepaths)
     )
+
+
+@contextmanager
+def graphql_client(deployment_name: str):
+    dagster_cloud_api_token = os.getenv("DAGSTER_CLOUD_API_TOKEN")
+    if not dagster_cloud_api_token:
+        raise ValueError("DAGSTER_CLOUD_API_TOKEN not defined")
+
+    dagster_cloud_url = os.getenv("DAGSTER_CLOUD_URL")
+    if not dagster_cloud_url:
+        raise ValueError("DAGSTER_CLOUD_URL not defined")
+
+    url = f"{dagster_cloud_url}/{deployment_name}"
+
+    with gql.graphql_client_from_url(url, dagster_cloud_api_token) as client:
+        yield client
