@@ -20,9 +20,12 @@ class GithubEvent:
         self.action = event["action"]
         self.repo_name = event["repository"]["full_name"]
 
-        if "pull_request" in self.action:
-            pull_request = self.action["pull_request"]
+        if "pull_request" in self.event:
+            pull_request = self.event["pull_request"]
             self.branch_name = pull_request["head"]["ref"]
+            # GITHUB_SHA is set to a merge commit, not the actual commit that triggered the action
+            # we can read head sha for the actual commit
+            self.github_sha = pull_request["head"]["sha"]
             self.branch_url = (
                 f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
             )
