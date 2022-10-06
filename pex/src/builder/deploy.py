@@ -5,8 +5,18 @@ import dataclasses
 import logging
 import pprint
 import sys
-from typing import Dict, Iterable, List, Optional
-from . import parse_workspace, deps, registry_info, source, util
+from typing import Dict, List, Optional
+from . import (
+    parse_workspace,
+    deps,
+    registry_info,
+    source,
+    util,
+    code_location,
+    github_context,
+)
+
+PEX_BASE_IMAGE = ":pex_base_image"
 
 
 @dataclass
@@ -23,8 +33,10 @@ class LocationBuild:
     pex_tag: Optional[str] = None  # composite tag used to identify the set of pex files
 
 
-def deploy_project(dagster_cloud_yaml_file: str, output_directory: str):
-    """Rebuild and publish code locations in a project."""
+def build_project(
+    dagster_cloud_yaml_file: str, output_directory: str
+) -> List[LocationBuild]:
+    """Rebuild pexes for code locations in a project."""
 
     registry_info.get_registry_info()
 
@@ -32,9 +44,11 @@ def deploy_project(dagster_cloud_yaml_file: str, output_directory: str):
 
     location_builds = build_locations(locations, output_directory)
 
-    print(f"Built locations ({len(location_builds)}):")
+    logging.info(f"Built locations (%s):", len(location_builds))
     for build in location_builds:
-        pprint.pprint(dataclasses.asdict(build))
+        logging.info(str(dataclasses.asdict(build)))
+
+    return location_builds
 
 
 def build_locations(
@@ -103,11 +117,46 @@ def build_locations(
 
 
 def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
-    # TODO: read registry and return name of deps pex file already built for given
+    # TODO: read s3 registry and return name of deps pex file already built for given
     # requirements_hash
     return None
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    deploy_project(sys.argv[1], sys.argv[2])
+    # TODO: use a real command line parser
+    dagster_cloud_file_path, build_output_dir = sys.argv[1:3]
+    flags = set(sys.argv[3:])
+
+    location_builds = build_project(dagster_cloud_file_path, build_output_dir)
+
+    if "--deploy" in flags:
+        github_event = github_context.github_event()
+        deployment = "prod"  # default
+
+        if github_event.branch_name:
+            logging.info(
+                "Creating/updating branch deployment for %r", github_event.branch_name
+            )
+            deployment = (
+                code_location.create_or_update_branch_deployment_from_github_context(
+                    github_event
+                )
+            )
+
+        for location_build in location_builds:
+            location_name = location_build.location.name
+            logging.info(
+                "Updating code location %r for deployment %r", location_name, deployment
+            )
+            code_location.add_or_update_code_location(
+                deployment,
+                location_name,
+                image=PEX_BASE_IMAGE,
+                pex_tag=location_build.pex_tag,
+                location_file=dagster_cloud_file_path,
+                commit_hash=github_event.github_sha,
+            )
+
+        logging.info("Done updating code locations.")
+
+        # TODO: wait for dagster cloud to apply location updates

@@ -10,6 +10,7 @@ from dagster_cloud_cli import gql
 
 logging.basicConfig(level=logging.INFO)
 
+
 def run_self_module(module_name, args: List[str]):
     "Invoke this pex again with -m {module}"
     pex = os.getenv("PEX")

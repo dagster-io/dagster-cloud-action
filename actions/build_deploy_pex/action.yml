@@ -1,0 +1,31 @@
+name: "Build pex files and update Dagster cloud"
+description: "Builds source.pex and deps.pex, publishes to dagster cloud, and updates the code location"
+inputs:
+  dagster_cloud_file:
+    description: 'Path to dagster_cloud.yaml'
+    required: true
+  build_output_dir:
+    description: 'Directory to write built files into'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout action repo
+      uses: actions/checkout@v3
+      with:
+        repository: dagster-io/dagster-cloud-action-pex
+        path: $GITHUB_WORKSPACE/action-repo
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.8"
+
+    - run: >
+        generated/gha/builder.pex -m builder.deploy 
+        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        --deploy
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/action-repo
+

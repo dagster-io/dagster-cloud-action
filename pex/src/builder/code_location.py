@@ -22,7 +22,7 @@ def add_or_update_code_location(deployment_name, location_name, **location_kwarg
             location_name, location_kwargs
         )
         if pex_tag:
-            location_document["pex_tag"] = pex_tag  # hack inject
+            location_document["pex_metadata"] = {"pex_tag": pex_tag}  # hack inject
 
         gql.add_or_update_code_location(client, location_document)
         name = location_document["location_name"]
@@ -64,7 +64,9 @@ def create_or_update_branch_deployment(
         )
 
 
-def create_or_update_branch_deployment_from_github_context(github_event: github_context.GithubEvent) -> Optional[str]:
+def create_or_update_branch_deployment_from_github_context(
+    github_event: github_context.GithubEvent,
+) -> Optional[str]:
     event = github_event
     logging.debug("Read github event GithubEvent(%r)", event.__dict__)
     if not event.branch_name:
