@@ -64,9 +64,9 @@ def create_or_update_branch_deployment(
         )
 
 
-def create_or_update_branch_deployment_from_github_context() -> Optional[str]:
-    event = github_context.github_event()
-    logging.info("Read github event GithubEvent(%r)", event.__dict__)
+def create_or_update_branch_deployment_from_github_context(github_event: github_context.GithubEvent) -> Optional[str]:
+    event = github_event
+    logging.debug("Read github event GithubEvent(%r)", event.__dict__)
     if not event.branch_name:
         logging.info("Not in a branch, not creating branch deployment")
         return None
@@ -82,7 +82,7 @@ def create_or_update_branch_deployment_from_github_context() -> Optional[str]:
             pull_request_number=event.pull_request_id,
         )
         logging.info(
-            "Created branch deployment %r for branch %r",
+            "Got branch deployment %r for branch %r",
             deployment_name,
             event.branch_name,
         )
@@ -91,12 +91,12 @@ def create_or_update_branch_deployment_from_github_context() -> Optional[str]:
 
 if __name__ == "__main__":
     # # simple test entry points
-
+    github_event = github_context.github_event()
     if sys.argv[1] == "add_or_update_code_location":
         deployment_name, location_name, args = sys.argv[2:5]
         kwargs = dict(arg.split("=", 1) for arg in args.split(","))
         add_or_update_code_location(deployment_name, location_name, **kwargs)
     elif sys.argv[1] == "create_or_update_branch_deployment":
-        create_or_update_branch_deployment_from_github_context()
+        create_or_update_branch_deployment_from_github_context(github_event)
 
     # simple test entry point for create_or_update_branch_deployment
