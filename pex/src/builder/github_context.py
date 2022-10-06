@@ -18,7 +18,7 @@ class GithubEvent:
 
         # get some commonly used fields
         self.action = event["action"]
-        self.repo_name = event["respository"]["full_name"]
+        self.repo_name = event["repository"]["full_name"]
 
         if "pull_request" in self.action:
             pull_request = self.action["pull_request"]
