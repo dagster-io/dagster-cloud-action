@@ -17,7 +17,8 @@ class GithubEvent:
         self.event = event = json.load(open(event_path))
 
         # get some commonly used fields
-        self.action = event["action"]
+        # not all events have "action", eg https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
+        self.action = event.get("action")
         self.repo_name = event["repository"]["full_name"]
 
         if "pull_request" in self.event:
