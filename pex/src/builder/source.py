@@ -36,7 +36,8 @@ def build_source_pex(code_directory, output_directory):
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]
-    final_pex_path = os.path.join(output_directory, f"source-{pex_hash}.pex")
+    pex_name = f"source-{pex_hash}.pex"
+    final_pex_path = os.path.join(output_directory, pex_name)
     os.rename(tmp_pex_path, final_pex_path)
     logging.info("Wrote source pex: %r", final_pex_path)
     return final_pex_path

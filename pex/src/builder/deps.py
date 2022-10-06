@@ -33,7 +33,9 @@ def get_deps_requirements(code_directory) -> DepsRequirements:
     lines.extend(get_setup_py_deps(code_directory))
     lines.extend(STANDARD_PACKAGES)
 
-    deps_requirements_text = "\n".join(sorted(set(lines)))
+    deps_requirements_text = "\n".join(
+        sorted(set(lines)) + [""]
+    )  # empty string adds trailing newline
     # note requirements.txt may have floating dependencies, so this is not perfect
     deps_requirements_hash = hashlib.sha1(
         deps_requirements_text.encode("utf-8")

@@ -26,9 +26,7 @@ runs:
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
 
-    - run: ls -l ${{ inputs.build_output_dir }}
-      shell: bash
-
+    # TODO: Upload-artifacts is useful during testing but we should remove it once live
     - name: Upload built artifacts
       uses: actions/upload-artifact@v3
       with:
