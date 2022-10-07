@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import json
 import logging
 import os
@@ -75,6 +76,15 @@ def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]
 
 def github_event(project_dir) -> GithubEvent:
     return GithubEvent(project_dir)
+
+
+@contextmanager
+def log_group(title: str):
+    try:
+        print(f"\n::group::{title}")
+        yield
+    finally:
+        print("::endgroup::")
 
 
 if __name__ == "__main__":

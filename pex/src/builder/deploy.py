@@ -4,7 +4,6 @@ from dataclasses import dataclass
 import dataclasses
 import logging
 import os
-import pprint
 import sys
 from typing import Dict, List, Optional
 from . import (
@@ -128,7 +127,8 @@ if __name__ == "__main__":
     dagster_cloud_file_path, build_output_dir = sys.argv[1:3]
     flags = set(sys.argv[3:])
 
-    location_builds = build_project(dagster_cloud_file_path, build_output_dir)
+    with github_context.log_group("Building PEX Files"):
+        location_builds = build_project(dagster_cloud_file_path, build_output_dir)
 
     if "--deploy" in flags:
         github_event = github_context.github_event(
@@ -137,32 +137,33 @@ if __name__ == "__main__":
         deployment = "prod"  # default
 
         if github_event.branch_name:
-            logging.info(
-                "Creating/updating branch deployment for %r", github_event.branch_name
-            )
-            deployment = (
-                code_location.create_or_update_branch_deployment_from_github_context(
+            with github_context.log_group("Updating Branch Deployment"):
+                logging.info(
+                    "Creating/updating branch deployment for %r",
+                    github_event.branch_name,
+                )
+                deployment = code_location.create_or_update_branch_deployment_from_github_context(
                     github_event
                 )
-            )
 
         for location_build in location_builds:
             location_name = location_build.location.name
-            logging.info(
-                "Updating code location %r for deployment %r with pex_tag %r",
-                location_name,
-                deployment,
-                location_build.pex_tag,
-            )
-            code_location.add_or_update_code_location(
-                deployment,
-                location_name,
-                image=PEX_BASE_IMAGE,
-                pex_tag=location_build.pex_tag,
-                location_file=dagster_cloud_file_path,
-                commit_hash=github_event.github_sha,
-            )
+            with github_context.log_group(f"Updating code location: {location_name}"):
+                logging.info(
+                    "Updating code location %r for deployment %r with pex_tag %r",
+                    location_name,
+                    deployment,
+                    location_build.pex_tag,
+                )
+                code_location.add_or_update_code_location(
+                    deployment,
+                    location_name,
+                    image=PEX_BASE_IMAGE,
+                    pex_tag=location_build.pex_tag,
+                    location_file=dagster_cloud_file_path,
+                    commit_hash=github_event.github_sha,
+                )
 
-        logging.info("Done updating code locations.")
+        logging.info("All done")
 
         # TODO: wait for dagster cloud to apply location updates
