@@ -81,10 +81,10 @@ def github_event(project_dir) -> GithubEvent:
 @contextmanager
 def log_group(title: str):
     try:
-        print(f"\n::group::{title}")
+        print(f"\n::group::{title}", flush=True)
         yield
     finally:
-        print("::endgroup::")
+        print("::endgroup::", flush=True)
 
 
 if __name__ == "__main__":
