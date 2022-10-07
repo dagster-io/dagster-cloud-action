@@ -1,2 +1,3 @@
 
 pex/build
+**/__pycache__/
