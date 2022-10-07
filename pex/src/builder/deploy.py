@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 import dataclasses
 import logging
+import os
 import pprint
 import sys
 from typing import Dict, List, Optional
@@ -130,7 +131,9 @@ if __name__ == "__main__":
     location_builds = build_project(dagster_cloud_file_path, build_output_dir)
 
     if "--deploy" in flags:
-        github_event = github_context.github_event()
+        github_event = github_context.github_event(
+            os.path.dirname(dagster_cloud_file_path)
+        )
         deployment = "prod"  # default
 
         if github_event.branch_name:

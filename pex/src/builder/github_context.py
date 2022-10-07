@@ -9,7 +9,7 @@ from typing import Dict
 
 
 class GithubEvent:
-    def __init__(self):
+    def __init__(self, project_dir: str):
         self.github_server_url = os.getenv("GITHUB_SERVER_URL")
         self.github_sha = os.getenv("GITHUB_SHA")
         event_path = os.getenv("GITHUB_EVENT_PATH")
@@ -47,19 +47,19 @@ class GithubEvent:
             f"{self.github_server_url}/{self.repo_name}/tree/{self.github_sha}"
         )
 
-        git_metadata = get_git_commit_metadata(self.github_sha)
+        git_metadata = get_git_commit_metadata(self.github_sha, project_dir)
         self.timestamp = float(git_metadata["timestamp"])
         self.commit_msg = git_metadata["message"]
         self.author_name = git_metadata["name"]
         self.author_email = git_metadata["email"]
 
 
-def get_git_commit_metadata(github_sha: str) -> Dict[str, str]:
+def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]:
     commands = {
-        "timestamp": "git log -1 --format=%cd --date=unix".split(),
-        "message": "git log -1 --format=%s".split(),
-        "email": "git log -1 --format=%ae".split(),
-        "name": "git log -1 --format=%an".split(),
+        "timestamp": "git -C {project_dir} log -1 --format=%cd --date=unix".split(),
+        "message": "git -C {project_dir} log -1 --format=%s".split(),
+        "email": "git -C {project_dir} log -1 --format=%ae".split(),
+        "name": "git -C {project_dir} log -1 --format=%an".split(),
     }
     metadata = {}
     for key, command in commands.items():
@@ -69,11 +69,11 @@ def get_git_commit_metadata(github_sha: str) -> Dict[str, str]:
     return metadata
 
 
-def github_event() -> GithubEvent:
-    return GithubEvent()
+def github_event(project_dir) -> GithubEvent:
+    return GithubEvent(project_dir)
 
 
 if __name__ == "__main__":
     import sys
 
-    pprint.pprint(get_git_metadata(sys.argv[1]))
+    pprint.pprint(get_git_commit_metadata(sys.argv[1], ".'"))
