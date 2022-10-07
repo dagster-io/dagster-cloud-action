@@ -6,20 +6,15 @@ import os
 Creates or updates a build status comment on a Pull Request, for branch deployments.
 """
 
-# SUCCESS_IMAGE_URL = (
-#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/success.png"
-# )
-# PENDING_IMAGE_URL = (
-#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/pending.png"
-# )
-# FAILED_IMAGE_URL = (
-#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/failed.png"
-# )
-
-SUCCESS_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-success.png"
-PENDING_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-pending.png"
-FAILED_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-failed.png"
-
+SUCCESS_IMAGE_URL = (
+    "https://raw.githubusercontent.com/dagster-io/dagster-cloud-action/main/assets/success.png"
+)
+PENDING_IMAGE_URL = (
+    "https://raw.githubusercontent.com/dagster-io/dagster-cloud-action/main/assets/pending.png"
+)
+FAILED_IMAGE_URL = (
+    "https://raw.githubusercontent.com/dagster-io/dagster-cloud-action/main/assets/failed.png"
+)
 
 def main():
     # Fetch various pieces of info from the environment
