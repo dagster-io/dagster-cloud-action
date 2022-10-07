@@ -57,10 +57,10 @@ class GithubEvent:
 
 def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]:
     commands = {
-        "timestamp": "git -C {project_dir} log -1 --format=%cd --date=unix".split(),
-        "message": "git -C {project_dir} log -1 --format=%s".split(),
-        "email": "git -C {project_dir} log -1 --format=%ae".split(),
-        "name": "git -C {project_dir} log -1 --format=%an".split(),
+        "timestamp": f"git -C {project_dir} log -1 --format=%cd --date=unix".split(),
+        "message": f"git -C {project_dir} log -1 --format=%s".split(),
+        "email": f"git -C {project_dir} log -1 --format=%ae".split(),
+        "name": f"git -C {project_dir} log -1 --format=%an".split(),
     }
     metadata = {}
     for key, command in commands.items():
