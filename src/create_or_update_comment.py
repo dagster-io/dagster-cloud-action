@@ -7,18 +7,18 @@ Creates or updates a build status comment on a Pull Request, for branch deployme
 """
 
 # SUCCESS_IMAGE_URL = (
-#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/success.svg"
+#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/success.png"
 # )
 # PENDING_IMAGE_URL = (
-#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/pending.svg"
+#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/pending.png"
 # )
 # FAILED_IMAGE_URL = (
-#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/failed.svg"
+#     "https://github.com/dagster-io/cloud-branch-deployments-action/blob/main/assets/failed.png"
 # )
 
-SUCCESS_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-success.svg"
-PENDING_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-pending.svg"
-FAILED_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-failed.svg"
+SUCCESS_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-success.png"
+PENDING_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-pending.png"
+FAILED_IMAGE_URL = "https://raw.githubusercontent.com/dagster-io/dagster/master/js_modules/dagit/packages/app/public/favicon-run-failed.png"
 
 
 def main():
