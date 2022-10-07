@@ -20,6 +20,8 @@ def build_source_pex(code_directory, output_directory):
     source_packages = [
         pkg for pkg in source_packages if not pkg.endswith("_tests") and "." not in pkg
     ]
+    if not source_packages:
+        raise ValueError("No packages found", code_directory)
     logging.info("Including packages for source pex: %r", source_packages)
 
     # need a new directory with just the source pakcages
