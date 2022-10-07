@@ -1,6 +1,9 @@
 import json
 import os
+import pprint
+import subprocess
 import time
+from typing import Dict
 
 # Loads event details from within a gihub action
 
@@ -19,14 +22,12 @@ class GithubEvent:
         # get some commonly used fields
         # not all events have "action", eg https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
         self.action = event.get("action")
+        self.github_sha = self.action["after"]
         self.repo_name = event["repository"]["full_name"]
 
         if "pull_request" in self.event:
             pull_request = self.event["pull_request"]
             self.branch_name = pull_request["head"]["ref"]
-            # GITHUB_SHA is set to a merge commit, not the actual commit that triggered the action
-            # we can read head sha for the actual commit
-            self.github_sha = pull_request["head"]["sha"]
             self.branch_url = (
                 f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
             )
@@ -42,12 +43,37 @@ class GithubEvent:
             self.pull_request_id = None
             self.pull_request_status = None
 
-        # TODO: read some info from git
-        self.timestamp = time.time()
-        # self.commit_msg =
-        # self.author_name =
-        # self.author_email =
+        self.commit_url = (
+            f"{self.github_server_url}/{self.repo_name}/tree/{self.github_sha}"
+        )
+
+        git_metadata = get_git_commit_metadata(self.github_sha)
+        self.timestamp = float(git_metadata["timestamp"])
+        self.commit_msg = git_metadata["message"]
+        self.author_name = git_metadata["name"]
+        self.author_email = git_metadata["email"]
+
+
+def get_git_commit_metadata(github_sha: str) -> Dict[str, str]:
+    commands = {
+        "timestamp": "git log -1 --format=%cd --date=unix".split(),
+        "message": "git log -1 --format=%s".split(),
+        "email": "git log -1 --format=%ae".split(),
+        "name": "git log -1 --format=%an".split(),
+    }
+    metadata = {}
+    for key, command in commands.items():
+        proc = subprocess.run(command + [github_sha], capture_output=True)
+        metadata[key] = proc.stdout.decode("utf-8").strip()
+
+    return metadata
 
 
 def github_event() -> GithubEvent:
     return GithubEvent()
+
+
+if __name__ == "__main__":
+    import sys
+
+    pprint.pprint(get_git_metadata(sys.argv[1]))

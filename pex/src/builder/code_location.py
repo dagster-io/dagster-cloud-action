@@ -82,6 +82,10 @@ def create_or_update_branch_deployment_from_github_context(
             pull_request_url=event.pull_request_url,
             pull_request_status=event.pull_request_status.upper(),
             pull_request_number=event.pull_request_id,
+            author_name=event.author_name,
+            author_email=event.author_email,
+            commit_message=event.commit_msg,
+            # TODO: add avatar url
         )
         logging.info(
             "Got branch deployment %r for branch %r",
