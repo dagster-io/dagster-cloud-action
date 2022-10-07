@@ -66,6 +66,8 @@ def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]
     for key, command in commands.items():
         logging.info("Running %r", command + [github_sha])
         proc = subprocess.run(command + [github_sha], capture_output=True)
+        if proc.returncode:
+            logging.error("git command failed: %s\n%s", proc.stdout, proc.stderr)
         metadata[key] = proc.stdout.decode("utf-8").strip()
 
     return metadata
