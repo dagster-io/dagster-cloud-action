@@ -146,7 +146,10 @@ if __name__ == "__main__":
         for location_build in location_builds:
             location_name = location_build.location.name
             logging.info(
-                "Updating code location %r for deployment %r", location_name, deployment
+                "Updating code location %r for deployment %r with pex_tag %r",
+                location_name,
+                deployment,
+                location_build.pex_tag,
             )
             code_location.add_or_update_code_location(
                 deployment,
