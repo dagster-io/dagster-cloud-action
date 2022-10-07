@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import pprint
 import subprocess
@@ -63,6 +64,7 @@ def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]
     }
     metadata = {}
     for key, command in commands.items():
+        logging.info("Running %r", command + [github_sha])
         proc = subprocess.run(command + [github_sha], capture_output=True)
         metadata[key] = proc.stdout.decode("utf-8").strip()
 
