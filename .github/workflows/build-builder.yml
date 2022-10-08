@@ -1,5 +1,9 @@
 name: Build builder.pex
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
 concurrency:
   # Cancel in-progress runs on same branch
   group: ${{ github.ref }}
