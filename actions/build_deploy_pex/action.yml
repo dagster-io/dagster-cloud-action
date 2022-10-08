@@ -25,7 +25,7 @@ runs:
     - run: >
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
-        --deploy
+        --deploy --enable-pex-registry
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
 
