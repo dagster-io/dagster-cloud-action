@@ -104,4 +104,5 @@ def upload_files(filepaths: List[str]):
                 logging.info("Upload successful: %s", filepath)
             else:
                 logging.error("Upload failed for %r: %r", filepath, response)
+                logging.error("Upload URL:", url)
                 logging.error(response.content)
