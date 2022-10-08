@@ -6,6 +6,7 @@ import os.path
 import shutil
 import tempfile
 import setuptools
+import subprocess
 import sys
 from . import util
 
@@ -15,6 +16,32 @@ def build_source_pex(code_directory, output_directory):
     code_directory = os.path.abspath(code_directory)
     tmp_pex_path = os.path.join(output_directory, f"source-{hash(code_directory)}.pex")
 
+    build_pex_using_find_packages(code_directory, tmp_pex_path)
+
+    pex_info = util.get_pex_info(tmp_pex_path)
+    pex_hash = pex_info["pex_hash"]
+    pex_name = f"source-{pex_hash}.pex"
+    final_pex_path = os.path.join(output_directory, pex_name)
+    os.rename(tmp_pex_path, final_pex_path)
+    logging.info("Wrote source pex: %r", final_pex_path)
+    return final_pex_path
+
+def build_pex_using_setup_py(code_directory, tmp_pex_path):
+    "Builds package using setup.py and copies built output into PEX."
+    logging.info("Building packages using setup.py build")
+    curdir = os.curdir
+    os.chdir(code_directory)
+    try:
+        with tempfile.TemporaryDirectory() as build_dir:
+            command = ["python", "setup.py", "build", "--build-lib", build_dir]
+            subprocess.run(command, capture_output=True, check=True)
+            # note this may include tests directories
+            util.run_pex_command(["-D", build_dir, "-o", tmp_pex_path])
+    finally:
+        os.chdir(curdir)
+
+def build_pex_using_find_packages(code_directory, tmp_pex_path):
+    """Finds all python packages and copies them into the PEX."""
     # determine the top level source packages in the project
     source_packages = setuptools.find_packages(code_directory)
     source_packages = [
@@ -35,14 +62,6 @@ def build_source_pex(code_directory, output_directory):
 
         # now we can make the pex with just the source packages
         util.run_pex_command(["-D", src_dir, "-o", tmp_pex_path])
-
-    pex_info = util.get_pex_info(tmp_pex_path)
-    pex_hash = pex_info["pex_hash"]
-    pex_name = f"source-{pex_hash}.pex"
-    final_pex_path = os.path.join(output_directory, pex_name)
-    os.rename(tmp_pex_path, final_pex_path)
-    logging.info("Wrote source pex: %r", final_pex_path)
-    return final_pex_path
 
 
 if __name__ == "__main__":
