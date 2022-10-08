@@ -10,7 +10,7 @@ from . import util
 
 GENERATE_PUT_URL_QUERY = """
 mutation GenerateServerlessPexUrlMutation($filenames: [String!]!) {
-    generateServerlessPexUrl(filenames: $filenames, method:PUT, checkIfExists: false) {
+    generateServerlessPexUrl(filenames: $filenames, method:PUT) {
         url
     }
 }
@@ -18,7 +18,7 @@ mutation GenerateServerlessPexUrlMutation($filenames: [String!]!) {
 
 GENERATE_GET_URL_QUERY = """
 mutation GenerateServerlessPexUrlMutation($filenames: [String!]!) {
-    generateServerlessPexUrl(filenames: $filenames, method:GET, checkIfExists: false) {
+    generateServerlessPexUrl(filenames: $filenames, method:GET) {
         url
     }
 }
