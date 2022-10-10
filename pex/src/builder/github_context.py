@@ -24,11 +24,12 @@ class GithubEvent:
         # get some commonly used fields
         # not all events have "action", eg https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
         self.action = event.get("action")
-        self.github_sha = self.event["after"]
         self.repo_name = event["repository"]["full_name"]
 
         if "pull_request" in self.event:
             pull_request = self.event["pull_request"]
+            # For PRs GITHUB_SHA is not the last commit in the branch, but head sha is
+            self.github_sha = pull_request["head"]["sha"]
             self.branch_name = pull_request["head"]["ref"]
             self.branch_url = (
                 f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
