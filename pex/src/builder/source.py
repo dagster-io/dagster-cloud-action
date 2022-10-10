@@ -26,6 +26,7 @@ def build_source_pex(code_directory, output_directory):
     logging.info("Wrote source pex: %r", final_pex_path)
     return final_pex_path
 
+
 def build_pex_using_setup_py(code_directory, tmp_pex_path):
     "Builds package using setup.py and copies built output into PEX."
     logging.info("Building packages using setup.py build")
@@ -39,6 +40,7 @@ def build_pex_using_setup_py(code_directory, tmp_pex_path):
             util.run_pex_command(["-D", build_dir, "-o", tmp_pex_path])
     finally:
         os.chdir(curdir)
+
 
 def build_pex_using_find_packages(code_directory, tmp_pex_path):
     """Finds all python packages and copies them into the PEX."""
