@@ -16,7 +16,7 @@ from . import (
     pex_registry,
 )
 
-PEX_BASE_IMAGE = ":pex_base_image"
+PEX_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-agent-pre-license:pexdemo"
 
 
 @dataclass
