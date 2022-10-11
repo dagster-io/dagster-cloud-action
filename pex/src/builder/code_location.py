@@ -39,7 +39,7 @@ def add_or_update_code_location(deployment_name, location_name, **location_kwarg
 
 
 def wait_for_load(deployment_name: str, location_names: List[str]):
-    with util.graphql_client("prod") as client:
+    with util.graphql_client(deployment_name) as client:
         workspace.wait_for_load(
             client,
             locations=location_names,
