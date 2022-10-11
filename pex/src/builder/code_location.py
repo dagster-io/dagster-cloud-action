@@ -43,6 +43,8 @@ def wait_for_load(deployment_name: str, location_names: List[str]):
         workspace.wait_for_load(
             client,
             locations=location_names,
+            location_load_timeout=600,
+            agent_heartbeat_timeout=90,
             # url=util.url_for_deployment(deployment_name=deployment_name),
         )
 
