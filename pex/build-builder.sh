@@ -18,7 +18,7 @@ mkdir build
 pipenv requirements --exclude-markers > src/requirements.txt
 
 # Generate the builder.pex
-pex -r src/requirements.txt -D src -o build/builder.pex -v
+pex -r src/requirements.txt -D src -o build/builder.pex -v --include-tools
 
 # Don't accidentally check into git
 rm src/requirements.txt

@@ -16,7 +16,7 @@ def build_source_pex(code_directory, output_directory):
     code_directory = os.path.abspath(code_directory)
     tmp_pex_path = os.path.join(output_directory, f"source-{hash(code_directory)}.pex")
 
-    build_pex_using_find_packages(code_directory, tmp_pex_path)
+    build_pex_using_setup_py(code_directory, tmp_pex_path)
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]

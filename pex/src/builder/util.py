@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import subprocess
+import sys
 from typing import List
 from zipfile import ZipFile
 
@@ -12,11 +13,12 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run_self_module(module_name, args: List[str]):
-    "Invoke this pex again with -m {module}"
-    pex = os.getenv("PEX")
-    if not pex:
-        raise RuntimeError("Non running within a pex (env PEX not set)")
-    args = [pex, "-m", module_name] + args
+    "Invoke this executable again with -m {module}"
+    # If running a pex file directly, we invoke the executable pex file again.
+    # Otherwise we assume we're running in a pex generated venv and use the python executable.
+    cmd = os.getenv("PEX", sys.executable)
+
+    args = [cmd, "-m", module_name] + args
     proc = subprocess.run(args, capture_output=True)
     return proc
 
