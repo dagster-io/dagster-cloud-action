@@ -166,11 +166,11 @@ if __name__ == "__main__":
 
     # update code location if enabled
     if SHOULD_DEPLOY:
+        deployment = "prod"  # default
+
         github_event = github_context.github_event(
             os.path.dirname(dagster_cloud_file_path)
         )
-        deployment = "prod"  # default
-
         if github_event.branch_name:
             with github_context.log_group("Updating Branch Deployment"):
                 logging.info(
@@ -180,6 +180,8 @@ if __name__ == "__main__":
                 deployment = code_location.create_or_update_branch_deployment_from_github_context(
                     github_event
                 )
+                if not deployment:
+                    raise ValueError("Could not create branch deployment", github_event)
 
         for location_build in location_builds:
             location_name = location_build.location.name
@@ -198,6 +200,13 @@ if __name__ == "__main__":
                     location_file=dagster_cloud_file_path,
                     commit_hash=github_event.github_sha,
                 )
+
+        code_location.wait_for_load(
+            deployment_name=deployment,
+            location_names=[
+                location_build.location.name for location_build in location_builds
+            ],
+        )
 
     # TODO: wait for dagster cloud to apply location updates
 

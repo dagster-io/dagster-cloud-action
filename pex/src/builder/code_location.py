@@ -1,14 +1,18 @@
 import logging
 import pprint
-from typing import Optional
+from typing import List, Optional
 
 from . import github_context
 
 import sys
 
 from dagster_cloud_cli import gql, config_utils
+from dagster_cloud_cli.commands import workspace
 
 from . import util
+
+# This module can directly call dagster_cloud_cli once the pex changes are released with the cli.
+# Right now there is some code duplication between here and the cli commands.
 
 
 def add_or_update_code_location(deployment_name, location_name, **location_kwargs):
@@ -34,10 +38,13 @@ def add_or_update_code_location(deployment_name, location_name, **location_kwarg
         )
 
 
-def wait_for_load():
+def wait_for_load(deployment_name: str, location_names: List[str]):
     with util.graphql_client("prod") as client:
-        # TODO
-        pass
+        workspace.wait_for_load(
+            client,
+            locations=location_names,
+            # url=util.url_for_deployment(deployment_name=deployment_name),
+        )
 
 
 def create_or_update_branch_deployment(
@@ -97,12 +104,10 @@ def create_or_update_branch_deployment_from_github_context(
 
 if __name__ == "__main__":
     # # simple test entry points
-    github_event = github_context.github_event()
     if sys.argv[1] == "add_or_update_code_location":
         deployment_name, location_name, args = sys.argv[2:5]
         kwargs = dict(arg.split("=", 1) for arg in args.split(","))
         add_or_update_code_location(deployment_name, location_name, **kwargs)
     elif sys.argv[1] == "create_or_update_branch_deployment":
+        github_event = github_context.github_event(sys.argv[2])
         create_or_update_branch_deployment_from_github_context(github_event)
-
-    # simple test entry point for create_or_update_branch_deployment

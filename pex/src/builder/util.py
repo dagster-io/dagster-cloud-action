@@ -52,11 +52,15 @@ def graphql_client(deployment_name: str):
     if not dagster_cloud_api_token:
         raise ValueError("DAGSTER_CLOUD_API_TOKEN not defined")
 
+    url = url_for_deployment(deployment_name)
+
+    with gql.graphql_client_from_url(url, dagster_cloud_api_token) as client:
+        yield client
+
+
+def url_for_deployment(deployment_name):
     dagster_cloud_url = os.getenv("DAGSTER_CLOUD_URL")
     if not dagster_cloud_url:
         raise ValueError("DAGSTER_CLOUD_URL not defined")
 
-    url = f"{dagster_cloud_url}/{deployment_name}"
-
-    with gql.graphql_client_from_url(url, dagster_cloud_api_token) as client:
-        yield client
+    return f"{dagster_cloud_url}/{deployment_name}"
