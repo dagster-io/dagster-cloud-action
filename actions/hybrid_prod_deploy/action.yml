@@ -21,7 +21,7 @@ runs:
     - name: Checkout target repo
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.sha }}
 
     - name: Checkout action repo
       uses: actions/checkout@v3

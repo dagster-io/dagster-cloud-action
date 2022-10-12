@@ -31,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.sha }}
       - name: Build and deploy to Dagster Cloud serverless
         uses: ./actions/serverless_branch_deploy
         with:
