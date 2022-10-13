@@ -37,7 +37,9 @@ def build_pex_using_setup_py(code_directory, tmp_pex_path):
             command = ["python", "setup.py", "build", "--build-lib", build_dir]
             subprocess.run(command, capture_output=True, check=True)
             # note this may include tests directories
-            util.run_pex_command(["-D", build_dir, "-o", tmp_pex_path])
+            util.build_pex(
+                [build_dir], requirements_filepaths=[], output_pex_path=tmp_pex_path
+            )
     finally:
         os.chdir(curdir)
 
@@ -63,7 +65,9 @@ def build_pex_using_find_packages(code_directory, tmp_pex_path):
             shutil.copytree(source_path, dest_path, copy_function=os.link)
 
         # now we can make the pex with just the source packages
-        util.run_pex_command(["-D", src_dir, "-o", tmp_pex_path])
+        util.build_pex(
+            [src_dir], requirements_filepaths=[], output_pex_path=tmp_pex_path
+        )
 
 
 if __name__ == "__main__":

@@ -67,7 +67,15 @@ def build_deps_from_requirements(
         deps_requirements_file.write(requirements.requirements_txt)
 
     logging.info("Building deps pex...")
-    util.run_pex_command(["-r", deps_requirements_path, "-o", tmp_pex_path])
+    proc = util.build_pex(
+        sources_directories=[],
+        requirements_filepaths=[deps_requirements_path],
+        output_pex_path=tmp_pex_path,
+    )
+    if proc.returncode:
+        logging.error("Failed to build deps.pex")
+        logging.error(proc.stdout)
+        logging.error(proc.stderr)
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]

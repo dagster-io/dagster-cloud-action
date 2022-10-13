@@ -17,8 +17,9 @@ mkdir build
 # Put it in src so it also gets copied into pex for reference
 pipenv requirements --exclude-markers > src/requirements.txt
 
-# Generate the builder.pex
-pex -r src/requirements.txt -D src -o build/builder.pex -v --include-tools
+# Generate a multi platform builder.pex (linux and macos)
+pex -r src/requirements.txt -D src -o build/builder.pex -v --include-tools \
+    --platform=manylinux2014_x86_64-cp-38-cp38 --platform=macosx_12_0_x86_64-cp-38-cp38
 
 # Don't accidentally check into git
 rm src/requirements.txt
