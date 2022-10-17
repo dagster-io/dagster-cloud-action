@@ -12,6 +12,7 @@ from . import util
 
 
 def build_source_pex(code_directory, output_directory):
+    output_directory = os.path.abspath(output_directory)
     os.makedirs(output_directory, exist_ok=True)
     code_directory = os.path.abspath(code_directory)
     tmp_pex_path = os.path.join(output_directory, f"source-{hash(code_directory)}.pex")

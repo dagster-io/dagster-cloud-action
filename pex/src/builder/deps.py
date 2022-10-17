@@ -1,5 +1,7 @@
 # Build deps.pex, given a project root
 
+import pkg_resources
+
 from dataclasses import dataclass
 import glob
 import hashlib
@@ -109,8 +111,15 @@ def get_setup_py_deps(code_directory: str) -> List[str]:
         subprocess.run(
             ["python", setup_py_path, "egg_info", f"--egg-base={temp_dir}"], check=True
         )
-        for path in glob.glob(os.path.join(temp_dir, "*/requires.txt")):
-            lines.extend(open(path).read().splitlines())
+        # read in requirements using pkg_resources
+        dists = list(pkg_resources.find_distributions(temp_dir))
+        if len(dists) != 1:
+            raise ValueError(f"Could not find distribution for {setup_py_path}")
+        dist = dists[0]
+        for requirement in dist.requires():
+            # the str() for Requirement is correctly formatted requirement
+            # https://setuptools.pypa.io/en/latest/pkg_resources.html#requirement-methods-and-attributes
+            lines.append(str(requirement))
 
     return lines
 
