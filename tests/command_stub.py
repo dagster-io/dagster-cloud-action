@@ -19,7 +19,6 @@ path/to/some_command.log.
 
 """
 
-import json
 import os
 import sys
 from typing import Dict, List, Tuple
@@ -61,7 +60,7 @@ commands = {}  # REPLACEMENT_MARKER
 marker = "REPLACEMENT_" + "MARKER"
 
 
-def _replace_line(line, commands_map):
+def _interpolate_commands(line, commands_map):
     if marker in line:
         # assumme commands_map is just a Dict[str, str], so rendering repr() should work
         return "commands = " + repr(commands_map)
@@ -70,13 +69,20 @@ def _replace_line(line, commands_map):
 
 
 def generate(out_filepath, commands_map: Dict[str, str]):
+    if not isinstance(commands_map, dict):
+        raise ValueError(f"Expected dict for commands_map, found {type(commands_map)}")
+    if not all(
+        isinstance(value, str)
+        for value in [*commands_map.keys(), *commands_map.values()]
+    ):
+        raise ValueError(f"Expected only str in commands_map")
     source = open(__file__).read()
     if marker not in source:
         raise ValueError(
             "generate() called on a generated file, should be called on command_stub"
         )
     generated = "\n".join(
-        _replace_line(line, commands_map) for line in source.splitlines()
+        _interpolate_commands(line, commands_map) for line in source.splitlines()
     )
     with open(out_filepath, "w") as out:
         out.write(generated)
