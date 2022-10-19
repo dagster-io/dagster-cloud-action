@@ -1,6 +1,8 @@
 # Build the builder.pex from Pexfile.lock and src/
-# Run in a venv locally or on GHA - modifies the python environment by
-# installing pipenv and pex
+# Can be run locally or on GHA - modifies the python environment by
+# installing pipenv and pex.
+# Note builder.pex requires Python 3.8, however it can build pex files that target
+# other versions.
 
 set -o xtrace   # debug printing
 
@@ -18,8 +20,9 @@ mkdir build
 pipenv requirements --exclude-markers > src/requirements.txt
 
 # Generate a multi platform builder.pex (linux and macos)
+# Require running builder.pex under 3.8, in case multiple pythons are present on PATH
 pex -r src/requirements.txt -D src -o build/builder.pex -v --include-tools \
-    --python=python3.8  # require running under 3.8, in case multiple pythons are present on PATH
+    --python=python3.8 \
     --platform=manylinux2014_x86_64-cp-38-cp38 --platform=macosx_12_0_x86_64-cp-38-cp38
 
 # Don't accidentally check into git
