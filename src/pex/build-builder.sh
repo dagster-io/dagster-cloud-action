@@ -11,6 +11,10 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd $SCRIPT_DIR
 echo "Running in $SCRIPT_DIR"
 
+
+BUILDER_PEX_PATH="${1:-build}/builder.pex"
+echo "Going to build $BUILDER_PEX_PATH"
+
 export PIPENV_IGNORE_VIRTUALENVS=1
 pip install pipenv pex
 mkdir build
@@ -21,7 +25,7 @@ pipenv requirements --exclude-markers > src/requirements.txt
 
 # Generate a multi platform builder.pex (linux and macos)
 # Require running builder.pex under 3.8, in case multiple pythons are present on PATH
-pex -r src/requirements.txt -D src -o build/builder.pex -v --include-tools \
+pex -r src/requirements.txt -D src -o $BUILDER_PEX_PATH -v --include-tools \
     --python=python3.8 \
     --platform=manylinux2014_x86_64-cp-38-cp38 --platform=macosx_12_0_x86_64-cp-38-cp38
 
