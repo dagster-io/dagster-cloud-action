@@ -27,10 +27,10 @@ jobs:
       - name: Run script to build builder.pex
         run: bash pex/build-builder.sh
       - name: Test run builder.pex
-        run: pex/build/builder.pex -m builder.selftest
+        run: src/pex/build/builder.pex -m builder.selftest
       - name: Commit builder.pex
         run: |
-          cp pex/build/builder.pex generated/gha/builder.pex
+          cp src/pex/build/builder.pex generated/gha/builder.pex
           chmod +x generated/gha/builder.pex
           git config --global user.name 'Shalabh Chaturvedi (automated)'
           git config --global user.email 'shalabhc@users.noreply.github.com'
