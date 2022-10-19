@@ -60,7 +60,9 @@ def build_locations(
     location_builds = [
         LocationBuild(
             location=location,
-            deps_requirements=deps.get_deps_requirements(location.directory),
+            deps_requirements=deps.get_deps_requirements(
+                location.directory, python_version=python_version
+            ),
         )
         for location in locations
     ]
