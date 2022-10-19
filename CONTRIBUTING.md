@@ -6,9 +6,10 @@ If any of the shell scripts are altered in a change to the GitHub Action, the Do
 
 To push a new copy of the Action Dockerfile to GitHub Container Registry, you will first need to [authenticate to GHCR with a PAT](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
 
-Then, build, tag, and push your image: 
+Then, test, build, tag, and push your image: 
 
 ```sh
+pytest tests
 cd src
 docker build . -t ghcr.io/dagster-io/dagster-cloud-action:my-version
 docker push ghcr.io/dagster-io/dagster-cloud-action:my-version
