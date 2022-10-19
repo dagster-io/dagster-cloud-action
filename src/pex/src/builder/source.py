@@ -53,7 +53,7 @@ def build_pex_using_setup_py(code_directory, tmp_pex_path, python_version):
             util.build_pex(
                 [build_dir],
                 requirements_filepaths=[],
-                python_version=python_version,
+                pex_flags=util.get_pex_flags(python_version),
                 output_pex_path=tmp_pex_path,
             )
     finally:
