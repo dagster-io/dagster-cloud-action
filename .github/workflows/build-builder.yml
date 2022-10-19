@@ -36,7 +36,9 @@ jobs:
         id: publish_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create latest src/pex/build/builder.pex
+        run: |
+          gh release upload latest src/pex/build/builder.pex --clobber &&
+          gh release edit latest --target=$GITHUB_SHA
 
       - uses: actions/upload-artifact@v3
         with:
