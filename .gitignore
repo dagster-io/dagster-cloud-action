@@ -2,3 +2,6 @@
 __pycache__/
 *.py[cod]
 
+# builder.pex
+src/pex/build
+
