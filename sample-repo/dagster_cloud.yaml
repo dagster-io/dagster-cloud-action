@@ -1,0 +1,7 @@
+locations:
+  - location_name: from_gh_action
+    code_source:
+      python_file: repo.py
+    build:
+      directory: ./sample-repo
+      registry: 764506304434.dkr.ecr.us-west-2.amazonaws.com/branch-deployments-gh-action-test
