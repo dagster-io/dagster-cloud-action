@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 from typing import Dict
@@ -11,23 +12,19 @@ from . import command_stub
 
 class ExecContext:
     def __init__(self):
-        self.temp_dir = tempfile.mkdtemp()
-        self.environ = os.environ.copy()
-        self.add_path(self.temp_dir)
-
+        self.tmp_dir = tempfile.mkdtemp()
+        self.environ = {}
         self.proc = None
 
-    def tmpfile(self, filename):
-        return os.path.join(self.temp_dir, filename)
+    def tmp_file_path(self, filename) -> Path:
+        "Return a Path object pointing to named file in temp_dir."
+        return Path(self.tmp_dir) / filename
+
+    def tmp_file_content(self, filename):
+        return self.tmp_file_path(filename).read_text()
 
     def set_env(self, environ: Dict[str, str]):
         self.environ.update(environ)
-
-    def add_path(self, path):
-        if self.environ.get("PATH"):
-            self.environ["PATH"] = str(path) + ":" + self.environ["PATH"]
-        else:
-            self.environ["PATH"] = str(path)
 
     def stub_command(self, cmdname, commands_map: Dict[str, str]):
         """Generate a fake command called cmdname.
@@ -43,39 +40,99 @@ class ExecContext:
              'AWS_ECR_USERNAME=username\nAWS_ECR_PASSWORD=password\n'})
         """
 
-        command_stub.generate(self.tmpfile(cmdname), commands_map)
+        command_stub.generate(str(self.tmp_file_path(cmdname)), commands_map)
 
-    def run(self, command: str):
-        """Runs command in the exec context"""
-        with open(self.tmpfile("main.sh"), "w") as main_script:
+    def prepare_run_script(self, command: str, target_tmp_dir=None) -> Path:
+        """Create a shell script for running command and return script path."""
+        script_name = "main.sh"
+        script_path = self.tmp_file_path(script_name)
+        with open(script_path, "w") as main_script:
             main_script.write("#!/bin/bash\n")
-            main_script.write(
-                command
-                + f' > {self.tmpfile("output-stdout.txt")}  2> {self.tmpfile("output-stderr.txt")}\n'
-            )
-            main_script.write(f'echo $? > {self.tmpfile("output-exitcode.txt")}\n')
-            main_script.write(f'env > {self.tmpfile("output-env.txt")}\n')
-        os.chmod(self.tmpfile("main.sh"), 0o700)
-        self.proc = subprocess.run(
-            ["main.sh"], env=self.environ, cwd=self.temp_dir, shell=True
-        )
+            # write env vars
 
-        exitcode = open(self.tmpfile("output-exitcode.txt")).read().strip()
+            for env_name, env_value in self.environ.items():
+                # map any tmp_dir paths to the target_temp_dir, useful for docker mounts
+                tmp_dir_path = Path(self.tmp_dir)
+                if (
+                    target_tmp_dir
+                    and isinstance(env_value, Path)
+                    and tmp_dir_path in env_value.parents
+                ):
+                    tail = env_value.relative_to(tmp_dir_path)
+                    env_value = Path(target_tmp_dir) / tail
+                main_script.write(f"export {env_name}='{env_value}'\n")
+
+            # adjust curdir and PATH
+            # this ensures the stub commands get invoked and not any other commands available
+            # elsewhere on PATH
+            main_script.write('cd "$(dirname "$0")"\n')
+            main_script.write("export PATH=.:$PATH\n")
+
+            # invoke main command
+            main_script.write(
+                command + " > ./output-stdout.txt 2> ./output-stderr.txt\n"
+            )
+
+            # save returncode and final env vars
+            main_script.write(f"echo $? > ./output-exitcode.txt\n")
+            main_script.write(f"env > ./output-env.txt\n")
+
+        os.chmod(script_path, 0o700)
+        return script_path
+
+    def post_run(self, command):
+        exitcode = open(self.tmp_file_path("output-exitcode.txt")).read().strip()
         if exitcode != "0":
             raise ValueError(
                 f"Exit code {exitcode} running {command!r}.\n"
                 f"Stdout: {self.get_stdout()}\nError: {self.get_stderr()}"
             )
 
+    def run_local_command(self, command: str):
+        """Runs command (full path to any executable) in the exec context"""
+        if self.proc:
+            # various input/output filenames are not unique in the tempdir so we can only run once
+            raise ValueError("ExecContext can only be run once")
+
+        script_path = self.prepare_run_script(command)
+        print("Running:", script_path)
+        self.proc = subprocess.run([script_path], shell=True, check=True)
+        self.post_run(command)
+
+    def run_docker_command(self, docker_image_tag, command):
+        """Invokes command inside a docker image, mapping this exec context to the docker container."""
+        if self.proc:
+            raise ValueError("ExecContext can only be run once")
+
+        volume_mount_flag = f"-v{self.tmp_dir}:/mount"
+        script_path = self.prepare_run_script(command, target_tmp_dir="/mount")
+        docker_script_path = f"/mount/{os.path.basename(script_path)}"
+        docker_args = [
+            "docker",
+            "run",
+            volume_mount_flag,
+            docker_image_tag,
+            docker_script_path,
+        ]
+        print("Running:", docker_args)
+
+        self.proc = subprocess.run(
+            docker_args,
+            # shell=True,
+            check=True,
+        )
+
+        self.post_run(command)
+
     def get_stdout(self) -> str:
-        return open(self.tmpfile("output-stdout.txt")).read()
+        return self.tmp_file_content("output-stdout.txt")
 
     def get_stderr(self) -> str:
-        return open(self.tmpfile("output-stderr.txt")).read()
+        return self.tmp_file_content("output-stderr.txt")
 
     def get_output_env(self) -> Dict[str, str]:
         env = {}
-        for line in open(self.tmpfile("output-env.txt")):
+        for line in self.tmp_file_content("output-env.txt").splitlines():
             try:
                 name, val = line.split("=", 1)
                 env[name] = val.strip()
@@ -84,11 +141,10 @@ class ExecContext:
         return env
 
     def get_command_log(self, cmdname: str):
-        return open(self.tmpfile(cmdname + ".log")).read().splitlines(keepends=False)
+        return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
 
     def cleanup(self):
-        pass
-        # shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.temp_dir)
 
 
 @pytest.fixture(scope="function")
@@ -103,3 +159,19 @@ def exec_context():
 @pytest.fixture(scope="session")
 def repo_root():
     return Path(os.path.abspath(__file__)).parents[1]
+
+
+@pytest.fixture(scope="session")
+def action_docker_image_id(repo_root):
+    "Build a docker image using local source and return the tag"
+    _, iidfile = tempfile.mkstemp()
+    try:
+        proc = subprocess.run(
+            ["docker", "buildx", "build", ".", "--load", "--iidfile", iidfile],
+            cwd=repo_root / "src",
+            check=True,
+            capture_output=True,
+        )
+        return open(iidfile).read().strip()
+    finally:
+        os.remove(iidfile)
