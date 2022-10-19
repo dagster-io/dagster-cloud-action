@@ -35,6 +35,6 @@ runs:
     - run: >
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
-        --upload-pex-registry --update-dagster-cloud --python-version=${{ inputs.python_version }}
+        --upload-pex --update-code-location --python-version=${{ inputs.python_version }}
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo

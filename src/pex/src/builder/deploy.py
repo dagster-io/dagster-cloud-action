@@ -124,9 +124,9 @@ def build_locations(
     return location_builds
 
 
-@click.pass_context
-def get_published_deps_pex_name(ctx, requirements_hash: str) -> Optional[str]:
-    if ctx.params["upload_pex_registry"]:
+def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
+    ctx = click.get_current_context()
+    if ctx.params["upload_pex"]:
         return pex_registry.get_deps_pex_name_from_requirements_hash(requirements_hash)
     return None
 
@@ -135,25 +135,25 @@ def get_published_deps_pex_name(ctx, requirements_hash: str) -> Optional[str]:
 @click.argument("dagster_cloud_file", type=click.Path(exists=True))
 @click.argument("build_output_dir", type=click.Path(exists=False))
 @click.option(
-    "--upload-pex-registry",
+    "--upload-pex",
     is_flag=True,
     show_default=True,
     default=False,
     help="Upload PEX files to registry.",
 )
 @click.option(
-    "--update-dagster-cloud",
+    "--update-code-location",
     is_flag=True,
     show_default=True,
     default=False,
-    help="Update dagster cloud code location.",
+    help="Update code location to use new PEX files.",
 )
 @util.python_version_option()
 def deploy_main(
     dagster_cloud_file,
     build_output_dir,
-    upload_pex_registry,
-    update_dagster_cloud,
+    upload_pex,
+    update_code_location,
     python_version,
 ):
     # always build
@@ -165,7 +165,7 @@ def deploy_main(
         )
 
     # upload to registry if enabled
-    if upload_pex_registry:
+    if upload_pex:
         with github_context.log_group("Uploading PEX Files"):
             for location_build in location_builds:
                 paths = [
@@ -186,10 +186,10 @@ def deploy_main(
                         os.path.basename(location_build.deps_pex_path),
                     )
     else:
-        logging.info("Skipping upload to pex registry: no --upload-pex-registry")
+        logging.info("Skipping upload to pex registry: no --upload-pex")
 
     # update code location if enabled
-    if update_dagster_cloud:
+    if update_code_location:
         deployment = "prod"  # default
 
         github_event = github_context.github_event(os.path.dirname(dagster_cloud_file))
@@ -230,7 +230,7 @@ def deploy_main(
             ],
         )
     else:
-        logging.info("Skipping update of dagster cloud: no --update-dagster-cloud")
+        logging.info("Skipping code location update: no --update-code-location")
 
     logging.info("All done")
 
