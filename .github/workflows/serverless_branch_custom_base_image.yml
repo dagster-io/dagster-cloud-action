@@ -17,7 +17,7 @@ jobs:
         id: parse-workspace
         uses: ./actions/utils/parse_workspace
         with:
-          dagster_cloud_file: test/dagster_cloud.yaml
+          dagster_cloud_file: sample-repo/dagster_cloud.yaml
 
   dagster_cloud_build_push:
     runs-on: ubuntu-latest
