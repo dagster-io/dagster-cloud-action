@@ -36,7 +36,7 @@ def build_pex_using_setup_py(code_directory, tmp_pex_path, python_version):
     logging.info(f"Building packages using {python_interpreter} setup.py build")
     curdir = os.curdir
     os.chdir(code_directory)
-    if not os.path.exists('setup.py'):
+    if not os.path.exists("setup.py"):
         raise ValueError(f"setup.py not found in {code_directory!r}")
     try:
         with tempfile.TemporaryDirectory() as build_dir:

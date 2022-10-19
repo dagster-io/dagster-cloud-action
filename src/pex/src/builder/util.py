@@ -26,10 +26,21 @@ def run_self_module(module_name, args: List[str]):
     return proc
 
 
+def get_pex_flags(python_version: Tuple[str, str]) -> List[str]:
+    "python_version includes the major and minor version only, eg ('3', '8')"
+    version_tag = "".join(python_version)  # eg '38'
+    python_interpreter = python_interpreter_for(python_version)
+    return [
+        f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
+        f"--platform=macosx_12_0_x86_64-cp-{version_tag}-cp{version_tag}",
+        f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
+    ]
+
+
 def build_pex(
     sources_directories: List[str],
     requirements_filepaths: List[str],
-    python_version: Tuple[str, str],  # major and minor version, eg ('3', '8')
+    pex_flags: List[str],
     output_pex_path: str,
 ):
     """Invoke pex with common build flags and pass parameters through to specific pex flags
@@ -49,13 +60,7 @@ def build_pex(
     The python_version tuple eg ('3', '9') determines the target runtime environment. In theory
     we can build a pex in an environment without the target python version present.
     """
-    version_tag = "".join(python_version)  # eg '38'
-    python_interpreter = python_interpreter_for(python_version)
-    flags = [
-        f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
-        "--platform=current",
-        f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
-    ]
+    flags = pex_flags.copy()
     if not sources_directories and not requirements_filepaths:
         raise ValueError(
             "At least one of sources_directories or requirements_filepath required."

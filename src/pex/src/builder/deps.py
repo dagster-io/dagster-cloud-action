@@ -2,14 +2,12 @@
 
 import pkg_resources
 
-from dataclasses import dataclass
-import glob
+from dataclasses import dataclass, field
 import hashlib
 import logging
 import os
 import os.path
 import subprocess
-import sys
 import tempfile
 from typing import List, Tuple
 
@@ -26,11 +24,29 @@ STANDARD_PACKAGES = [
 
 @dataclass(frozen=True)
 class DepsRequirements:
-    hash: str
     requirements_txt: str
+    python_version: Tuple[str, str]
+    pex_flags: List[str]
+
+    @property
+    def hash(self) -> str:
+        # The hash is used to reuse a cached deps.pex. We should only reuse if the requrements_txt,
+        # python_version and pex_flags match exactly.
+        # Note requirements_txt may have floating dependencies, so this is not perfect and may
+        # reuse deps.pex even if a new PyPI package is published for a dependency.
+        # An easy workaround is to pin the dependency in setup.py.
+        return hashlib.sha1(
+            (
+                repr(self.requirements_txt)
+                + repr(self.python_version)
+                + repr(self.pex_flags)
+            ).encode("utf-8")
+        ).hexdigest()
 
 
-def get_deps_requirements(code_directory) -> DepsRequirements:
+def get_deps_requirements(
+    code_directory, python_version: Tuple[str, str]
+) -> DepsRequirements:
 
     # Combine dependencies specified in requirements.txt and setup.py
     lines = get_requirements_txt_deps(code_directory)
@@ -40,20 +56,19 @@ def get_deps_requirements(code_directory) -> DepsRequirements:
     deps_requirements_text = "\n".join(
         sorted(set(lines)) + [""]
     )  # empty string adds trailing newline
-    # note requirements.txt may have floating dependencies, so this is not perfect
-    deps_requirements_hash = hashlib.sha1(
-        deps_requirements_text.encode("utf-8")
-    ).hexdigest()
 
     logging.info("List of dependencies: %r", deps_requirements_text)
-    logging.info("deps_requirements_hash: %r", deps_requirements_hash)
-    return DepsRequirements(
-        hash=deps_requirements_hash, requirements_txt=deps_requirements_text
+    deps_requirements = DepsRequirements(
+        requirements_txt=deps_requirements_text,
+        python_version=python_version,
+        pex_flags=util.get_pex_flags(python_version),
     )
+    logging.info("deps_requirements_hash: %r", deps_requirements.hash)
+    return deps_requirements
 
 
 def build_deps_pex(code_directory, output_directory, python_version) -> str:
-    requirements = get_deps_requirements(code_directory)
+    requirements = get_deps_requirements(code_directory, python_version)
     return build_deps_from_requirements(requirements, output_directory, python_version)
 
 
@@ -76,7 +91,7 @@ def build_deps_from_requirements(
     proc = util.build_pex(
         sources_directories=[],
         requirements_filepaths=[deps_requirements_path],
-        python_version=python_version,
+        pex_flags=requirements.pex_flags,
         output_pex_path=tmp_pex_path,
     )
     if proc.returncode:
