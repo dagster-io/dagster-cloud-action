@@ -25,7 +25,7 @@ The `builder.deploy` module builds both source and deps pexes and optionally pus
 # Build both source and deps pex for a given yaml file:
 builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR>   
 
-# Build both pex files and upload to s3. 
+# Build both pex files and upload to the pex registry.
 # First run `elementl cloud run local-host-cloud` so this can use the s3 presigned URL generator API.
 
 export DAGSTER_CLOUD_API_TOKEN=user:test:shalabh
