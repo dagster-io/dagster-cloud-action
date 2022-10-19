@@ -2,7 +2,7 @@
 
 import pkg_resources
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import hashlib
 import logging
 import os
