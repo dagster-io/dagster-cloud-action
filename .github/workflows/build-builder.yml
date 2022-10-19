@@ -1,4 +1,4 @@
-name: Build and release builder.pex
+name: Build builder.pex
 on: 
   workflow_dispatch:
   push:
