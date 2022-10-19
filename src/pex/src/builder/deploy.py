@@ -5,7 +5,10 @@ import dataclasses
 import logging
 import os
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
+
+import click
+
 from . import (
     parse_workspace,
     deps,
@@ -34,13 +37,13 @@ class LocationBuild:
 
 
 def build_project(
-    dagster_cloud_yaml_file: str, output_directory: str
+    dagster_cloud_yaml_file: str, output_directory: str, python_version: Tuple[str, str]
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
 
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
 
-    location_builds = build_locations(locations, output_directory)
+    location_builds = build_locations(locations, output_directory, python_version)
 
     logging.info(f"Built locations (%s):", len(location_builds))
     for build in location_builds:
@@ -50,7 +53,9 @@ def build_project(
 
 
 def build_locations(
-    locations: List[parse_workspace.Location], output_directory: str
+    locations: List[parse_workspace.Location],
+    output_directory: str,
+    python_version: Tuple[str, str],
 ) -> List[LocationBuild]:
     location_builds = [
         LocationBuild(
@@ -91,7 +96,7 @@ def build_locations(
                 deps_requirements.hash,
             )
             deps_pex_path = deps.build_deps_from_requirements(
-                deps_requirements, output_directory
+                deps_requirements, output_directory, python_version
             )
 
             for location_build in builds:
@@ -100,7 +105,7 @@ def build_locations(
     # build each source once
     for location_build in location_builds:
         location_build.source_pex_path = source.build_source_pex(
-            location_build.location.directory, output_directory
+            location_build.location.directory, output_directory, python_version
         )
 
     # compute pex tags
@@ -119,29 +124,48 @@ def build_locations(
     return location_builds
 
 
-def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
-    if PEX_REGISTRY_ENABLED:
+@click.pass_context
+def get_published_deps_pex_name(ctx, requirements_hash: str) -> Optional[str]:
+    if ctx.params["upload_pex_registry"]:
         return pex_registry.get_deps_pex_name_from_requirements_hash(requirements_hash)
     return None
 
 
-if __name__ == "__main__":
-    # TODO: use a real command line parser
-    dagster_cloud_file_path, build_output_dir = sys.argv[1:3]
-    flags = set(sys.argv[3:])  # '--deploy', '--enable-pex-registry'
-
-    # whether to upload built files to the pex registry
-    PEX_REGISTRY_ENABLED = "--enable-pex-registry" in flags
-
-    # where to update dagster cloud code location with pex tag
-    SHOULD_DEPLOY = "--deploy" in flags
-
+@click.command()
+@click.argument("dagster_cloud_file", type=click.Path(exists=True))
+@click.argument("build_output_dir", type=click.Path(exists=False))
+@click.option(
+    "--upload-pex-registry",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Upload PEX files to registry.",
+)
+@click.option(
+    "--update-dagster-cloud",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Update dagster cloud code location.",
+)
+@util.python_version_option()
+def deploy_main(
+    dagster_cloud_file,
+    build_output_dir,
+    upload_pex_registry,
+    update_dagster_cloud,
+    python_version,
+):
     # always build
     with github_context.log_group("Building PEX Files"):
-        location_builds = build_project(dagster_cloud_file_path, build_output_dir)
+        location_builds = build_project(
+            dagster_cloud_file,
+            build_output_dir,
+            python_version=tuple(python_version.split(".")),
+        )
 
     # upload to registry if enabled
-    if PEX_REGISTRY_ENABLED:
+    if upload_pex_registry:
         with github_context.log_group("Uploading PEX Files"):
             for location_build in location_builds:
                 paths = [
@@ -162,15 +186,13 @@ if __name__ == "__main__":
                         os.path.basename(location_build.deps_pex_path),
                     )
     else:
-        logging.info("Skipping upload to pex registry: no --enable-pex-registry")
+        logging.info("Skipping upload to pex registry: no --upload-pex-registry")
 
     # update code location if enabled
-    if SHOULD_DEPLOY:
+    if update_dagster_cloud:
         deployment = "prod"  # default
 
-        github_event = github_context.github_event(
-            os.path.dirname(dagster_cloud_file_path)
-        )
+        github_event = github_context.github_event(os.path.dirname(dagster_cloud_file))
         if github_event.branch_name:
             with github_context.log_group("Updating Branch Deployment"):
                 logging.info(
@@ -197,7 +219,7 @@ if __name__ == "__main__":
                     location_name,
                     image=PEX_BASE_IMAGE,
                     pex_tag=location_build.pex_tag,
-                    location_file=dagster_cloud_file_path,
+                    location_file=dagster_cloud_file,
                     commit_hash=github_event.github_sha,
                 )
 
@@ -207,7 +229,11 @@ if __name__ == "__main__":
                 location_build.location.name for location_build in location_builds
             ],
         )
-
-    # TODO: wait for dagster cloud to apply location updates
+    else:
+        logging.info("Skipping update of dagster cloud: no --update-dagster-cloud")
 
     logging.info("All done")
+
+
+if __name__ == "__main__":
+    deploy_main()

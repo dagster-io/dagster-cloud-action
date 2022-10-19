@@ -4,8 +4,10 @@ import logging
 import os
 import subprocess
 import sys
-from typing import List
+from typing import List, Tuple
 from zipfile import ZipFile
+
+import click
 
 from dagster_cloud_cli import gql
 
@@ -27,6 +29,7 @@ def run_self_module(module_name, args: List[str]):
 def build_pex(
     sources_directories: List[str],
     requirements_filepaths: List[str],
+    python_version: Tuple[str, str],  # major and minor version, eg ('3', '8')
     output_pex_path: str,
 ):
     """Invoke pex with common build flags and pass parameters through to specific pex flags
@@ -41,13 +44,17 @@ def build_pex(
 
     Packages for the current platform are always included. (--platform=current)
     The manylinux platform ensures pexes built on local machines (macos, windows) are compatible
-    with linux on cloud. For now we hardcode 'cp38' for CPython 3.8.
-    TODO: Make Python version configurable.
+    with linux on cloud.
+
+    The python_version tuple eg ('3', '9') determines the target runtime environment. In theory
+    we can build a pex in an environment without the target python version present.
     """
+    version_tag = "".join(python_version)  # eg '38'
+    python_interpreter = python_interpreter_for(python_version)
     flags = [
-        "--interpreter-constraint=CPython>=3.8,<3.9",  # extra check to ensure run environment has py 3.8
+        f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
         "--platform=current",
-        f"--platform=manylinux2014_x86_64-cp-38-cp38",
+        f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
     ]
     if not sources_directories and not requirements_filepaths:
         raise ValueError(
@@ -101,3 +108,18 @@ def url_for_deployment(deployment_name):
         raise ValueError("DAGSTER_CLOUD_URL not defined")
 
     return f"{dagster_cloud_url}/{deployment_name}"
+
+
+def python_interpreter_for(python_version: Tuple[str, str]) -> str:
+    return "python" + ".".join(python_version)  # eg 'python3.8'
+
+
+def python_version_option():
+    "reusable click.option"
+    return click.option(
+        "--python-version",
+        type=click.Choice(["3.8", "3.9", "3.10"]),
+        default="3.8",
+        show_default=True,
+        help="Target Python version.",
+    )

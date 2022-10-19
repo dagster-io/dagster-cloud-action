@@ -11,7 +11,9 @@ import os.path
 import subprocess
 import sys
 import tempfile
-from typing import List
+from typing import List, Tuple
+
+import click
 
 from . import util
 
@@ -50,13 +52,15 @@ def get_deps_requirements(code_directory) -> DepsRequirements:
     )
 
 
-def build_deps_pex(code_directory, output_directory) -> str:
+def build_deps_pex(code_directory, output_directory, python_version) -> str:
     requirements = get_deps_requirements(code_directory)
-    return build_deps_from_requirements(requirements, output_directory)
+    return build_deps_from_requirements(requirements, output_directory, python_version)
 
 
 def build_deps_from_requirements(
-    requirements: DepsRequirements, output_directory: str
+    requirements: DepsRequirements,
+    output_directory: str,
+    python_version: Tuple[str, str],
 ) -> str:
     """Builds deps-<HASH>.pex and returns the path to that file."""
     os.makedirs(output_directory, exist_ok=True)
@@ -68,10 +72,11 @@ def build_deps_from_requirements(
     with open(deps_requirements_path, "w") as deps_requirements_file:
         deps_requirements_file.write(requirements.requirements_txt)
 
-    logging.info("Building deps pex...")
+    logging.info(f"Building deps pex for Python version {python_version}")
     proc = util.build_pex(
         sources_directories=[],
         requirements_filepaths=[deps_requirements_path],
+        python_version=python_version,
         output_pex_path=tmp_pex_path,
     )
     if proc.returncode:
@@ -124,6 +129,16 @@ def get_setup_py_deps(code_directory: str) -> List[str]:
     return lines
 
 
-if __name__ == "__main__":
-    deps_pex_path = build_deps_pex(sys.argv[1], sys.argv[2])
+@click.command()
+@click.argument("project_dir", type=click.Path(exists=True))
+@click.argument("build_output_dir", type=click.Path(exists=False))
+@util.python_version_option()
+def deps_main(project_dir, build_output_dir, python_version):
+    deps_pex_path = build_deps_pex(
+        project_dir, build_output_dir, tuple(python_version.split("."))
+    )
     print(f"Wrote: {deps_pex_path}")
+
+
+if __name__ == "__main__":
+    deps_main()

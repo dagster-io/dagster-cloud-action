@@ -19,6 +19,7 @@ pipenv requirements --exclude-markers > src/requirements.txt
 
 # Generate a multi platform builder.pex (linux and macos)
 pex -r src/requirements.txt -D src -o build/builder.pex -v --include-tools \
+    --python=python3.8  # require running under 3.8, in case multiple pythons are present on PATH
     --platform=manylinux2014_x86_64-cp-38-cp38 --platform=macosx_12_0_x86_64-cp-38-cp38
 
 # Don't accidentally check into git

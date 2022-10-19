@@ -3,21 +3,23 @@
 import logging
 import os
 import os.path
-import shutil
 import tempfile
-import setuptools
+from typing import Tuple
+from uuid import uuid4
 import subprocess
 import sys
 from . import util
 
+import click
 
-def build_source_pex(code_directory, output_directory):
+
+def build_source_pex(code_directory, output_directory, python_version: Tuple[str, str]):
     output_directory = os.path.abspath(output_directory)
     os.makedirs(output_directory, exist_ok=True)
     code_directory = os.path.abspath(code_directory)
-    tmp_pex_path = os.path.join(output_directory, f"source-{hash(code_directory)}.pex")
+    tmp_pex_path = os.path.join(output_directory, f"source-tmp-{uuid4()}.pex")
 
-    build_pex_using_setup_py(code_directory, tmp_pex_path)
+    build_pex_using_setup_py(code_directory, tmp_pex_path, python_version)
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]
@@ -28,48 +30,46 @@ def build_source_pex(code_directory, output_directory):
     return final_pex_path
 
 
-def build_pex_using_setup_py(code_directory, tmp_pex_path):
+def build_pex_using_setup_py(code_directory, tmp_pex_path, python_version):
     "Builds package using setup.py and copies built output into PEX."
-    logging.info("Building packages using setup.py build")
+    python_interpreter = util.python_interpreter_for(python_version)
+    logging.info(f"Building packages using {python_interpreter} setup.py build")
     curdir = os.curdir
     os.chdir(code_directory)
+    if not os.path.exists('setup.py'):
+        raise ValueError(f"setup.py not found in {code_directory!r}")
     try:
         with tempfile.TemporaryDirectory() as build_dir:
-            command = ["python", "setup.py", "build", "--build-lib", build_dir]
+            # build setup.py with the python version specified
+            command = [
+                python_interpreter,
+                "setup.py",
+                "build",
+                "--build-lib",
+                build_dir,
+            ]
             subprocess.run(command, capture_output=True, check=True)
             # note this may include tests directories
             util.build_pex(
-                [build_dir], requirements_filepaths=[], output_pex_path=tmp_pex_path
+                [build_dir],
+                requirements_filepaths=[],
+                python_version=python_version,
+                output_pex_path=tmp_pex_path,
             )
     finally:
         os.chdir(curdir)
 
 
-def build_pex_using_find_packages(code_directory, tmp_pex_path):
-    """Finds all python packages and copies them into the PEX."""
-    # determine the top level source packages in the project
-    source_packages = setuptools.find_packages(code_directory)
-    source_packages = [
-        pkg for pkg in source_packages if not pkg.endswith("_tests") and "." not in pkg
-    ]
-    if not source_packages:
-        raise ValueError("No packages found", code_directory)
-    logging.info("Including packages for source pex: %r", source_packages)
-
-    # need a new directory with just the source pakcages
-    # create under project root so hard link works
-    with tempfile.TemporaryDirectory() as src_dir:
-        for pkg in source_packages:
-            source_path = os.path.join(code_directory, pkg)
-            dest_path = os.path.join(src_dir, pkg)
-            # use os.link to just create hard links instead of actually copying all files over
-            shutil.copytree(source_path, dest_path, copy_function=os.link)
-
-        # now we can make the pex with just the source packages
-        util.build_pex(
-            [src_dir], requirements_filepaths=[], output_pex_path=tmp_pex_path
-        )
+@click.command()
+@click.argument("project_dir", type=click.Path(exists=True))
+@click.argument("build_output_dir", type=click.Path(exists=False))
+@util.python_version_option()
+def source_main(project_dir, build_output_dir, python_version):
+    source_pex_path = build_source_pex(
+        project_dir, build_output_dir, tuple(python_version.split("."))
+    )
+    print(f"Wrote: {source_pex_path}")
 
 
 if __name__ == "__main__":
-    build_source_pex(sys.argv[1], sys.argv[2])
+    source_main()
