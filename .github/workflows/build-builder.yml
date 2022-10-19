@@ -32,27 +32,9 @@ jobs:
       - name: Test run builder.pex
         run: src/pex/build/builder.pex -m builder.selftest
 
-      - name: Create draft release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: latest
-          release_name: latest
-          draft: true
-          prerelease: false
-
-      - name: Upload builder.pex
-        id: upload_release
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: src/pex/build/builder.pex
-          asset_name: builder.pex
-          asset_content_type: application/pex
+      - name: Publish release
+        id: publish_release
+        run: gh release create latest src/pex/build/builder.pex
 
       - uses: actions/upload-artifact@v3
         with:
