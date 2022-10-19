@@ -1,4 +1,4 @@
-name: Build builder.pex
+name: Build and release builder.pex
 on: 
   workflow_dispatch:
   push:
@@ -28,16 +28,30 @@ jobs:
         run: bash pex/build-builder.sh
       - name: Test run builder.pex
         run: src/pex/build/builder.pex -m builder.selftest
-      - name: Commit builder.pex
-        run: |
-          cp src/pex/build/builder.pex generated/gha/builder.pex
-          chmod +x generated/gha/builder.pex
-          git config --global user.name 'Shalabh Chaturvedi (automated)'
-          git config --global user.email 'shalabhc@users.noreply.github.com'
-          git add generated/gha/builder.pex
-          git commit -m "Automated rebuild"
-          git push
+
+      - name: Create draft release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: latest
+          draft: true
+          prerelease: false
+
+      - name: Upload builder.pex
+        id: upload_release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src/pex/build/builder.pex
+          asset_name: builder.pex
+          asset_content_type: application/pex
+
       - uses: actions/upload-artifact@v3
         with:
           name: builder-pex
-          path: pex/build/builder.pex
+          path: src/pex/build/builder.pex
