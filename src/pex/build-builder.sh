@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Build the builder.pex from Pexfile.lock and src/
 # Can be run locally or on GHA - modifies the python environment by
 # installing pipenv and pex.
@@ -10,7 +12,6 @@ set -o xtrace   # debug printing
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd $SCRIPT_DIR
 echo "Running in $SCRIPT_DIR"
-
 
 BUILDER_PEX_PATH="${1:-build}/builder.pex"
 echo "Going to build $BUILDER_PEX_PATH"
