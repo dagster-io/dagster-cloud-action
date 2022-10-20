@@ -1,0 +1,6 @@
+setup.py
+dagster_project1/__init__.py
+dagster_project1.egg-info/PKG-INFO
+dagster_project1.egg-info/SOURCES.txt
+dagster_project1.egg-info/dependency_links.txt
+dagster_project1.egg-info/top_level.txt

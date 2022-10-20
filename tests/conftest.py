@@ -144,7 +144,7 @@ class ExecContext:
         return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
 
     def cleanup(self):
-        shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.tmp_dir)
 
 
 @pytest.fixture(scope="function")
@@ -175,3 +175,19 @@ def action_docker_image_id(repo_root):
         return open(iidfile).read().strip()
     finally:
         os.remove(iidfile)
+
+
+@pytest.fixture(scope="session")
+def builder_pex_path(repo_root):
+    "Path to a freshly built builder.pex file."
+    with tempfile.TemporaryDirectory() as tmpdir:
+        proc = subprocess.run(
+            ["./build-builder.sh", tmpdir],
+            cwd=repo_root / "src/pex",
+            check=True,
+            capture_output=True,
+        )
+        builder_pex_path = os.path.join(tmpdir, "builder.pex")
+        if not os.path.exists(builder_pex_path):
+            raise ValueError("builder.pex not created:" + proc.stderr.decode("utf-8"))
+        yield builder_pex_path
