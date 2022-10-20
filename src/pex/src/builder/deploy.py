@@ -3,16 +3,20 @@
 import dataclasses
 import logging
 import os
-import sys
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import click
 
-from . import (code_location, deps, github_context, parse_workspace,
-               pex_registry, source, util)
-
-PEX_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-agent-pre-license:pexdemo"
+from . import (
+    code_location,
+    deps,
+    github_context,
+    parse_workspace,
+    pex_registry,
+    source,
+    util,
+)
 
 
 @dataclass
@@ -126,6 +130,10 @@ def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
     return None
 
 
+# TODO: Publish newer base image
+DEFAULT_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-agent-pre-license:pexdemo"
+
+
 @click.command()
 @click.argument("dagster_cloud_file", type=click.Path(exists=True))
 @click.argument("build_output_dir", type=click.Path(exists=False))
@@ -209,10 +217,13 @@ def deploy_main(
                     deployment,
                     location_build.pex_tag,
                 )
+                base_image = os.getenv("CUSTOM_BASE_IMAGE")
+                if not base_image:
+                    base_image = DEFAULT_BASE_IMAGE
                 code_location.add_or_update_code_location(
                     deployment,
                     location_name,
-                    image=PEX_BASE_IMAGE,
+                    image=base_image,
                     pex_tag=location_build.pex_tag,
                     location_file=dagster_cloud_file,
                     commit_hash=github_event.github_sha,
