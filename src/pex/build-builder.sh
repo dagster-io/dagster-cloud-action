@@ -3,8 +3,6 @@
 # Build the builder.pex from Pexfile.lock and src/
 # Can be run locally or on GHA - modifies the python environment by
 # installing pipenv and pex.
-# Note builder.pex requires Python 3.8, however it can build pex files that target
-# other versions.
 
 set -o xtrace   # debug printing
 
