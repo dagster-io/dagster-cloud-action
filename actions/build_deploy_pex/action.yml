@@ -38,10 +38,19 @@ runs:
       with:
         python-version: ${{ inputs.python_version }}
 
-    - run: >
+    - if: ${{ inputs.deploy == true }}
+      run: >
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
-        ${{ inputs.deploy && '--upload-pex --update-code-location' || '' }}
+        --upload-pex --update-code-location
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/action-repo
+
+    - if: ${{ inputs.deploy != true }}
+      run: >
+        generated/gha/builder.pex -m builder.deploy 
+        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        --python-version=${{ inputs.python_version }}
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
