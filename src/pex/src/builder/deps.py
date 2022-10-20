@@ -126,11 +126,18 @@ def get_setup_py_deps(code_directory: str) -> List[str]:
         raise ValueError("setup.py not found", setup_py_path)
 
     lines = []
-    # write out egg_info files and read requires.txt
+    # write out egg_info files and load as distribution
     with tempfile.TemporaryDirectory() as temp_dir:
-        subprocess.run(
-            ["python", setup_py_path, "egg_info", f"--egg-base={temp_dir}"], check=True
+        proc = subprocess.run(
+            ["python", setup_py_path, "egg_info", f"--egg-base={temp_dir}"],
+            capture_output=True,
         )
+        if proc.returncode:
+            raise ValueError(
+                "Error running setup.py egg_info: "
+                + proc.stdout.decode("utf-8")
+                + proc.stderr.decode("utf-8")
+            )
         # read in requirements using pkg_resources
         dists = list(pkg_resources.find_distributions(temp_dir))
         if len(dists) != 1:
