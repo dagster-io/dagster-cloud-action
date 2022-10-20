@@ -1,5 +1,5 @@
-name: "Build pex files and update Dagster cloud"
-description: "Builds source.pex and deps.pex, publishes to dagster cloud, and updates the code location"
+name: "Build and deploy dagster code locations"
+description: "Build project as source.pex and deps.pex, publish to dagster cloud, and update the code location"
 inputs:
   dagster_cloud_file:
     description: 'Path to dagster_cloud.yaml'
