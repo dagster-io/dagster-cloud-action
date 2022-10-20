@@ -1,4 +1,4 @@
-from dagster import asset, define_asset_job, repository, AssetSelection
+from dagster import AssetSelection, asset, define_asset_job, repository
 
 
 @asset

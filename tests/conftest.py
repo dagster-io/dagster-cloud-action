@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import Dict
 
 import pytest
