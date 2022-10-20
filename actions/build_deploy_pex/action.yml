@@ -11,7 +11,7 @@ inputs:
   deploy:
     description: 'Whether to upload the pex files and update the code location'
     required: false
-    default: true
+    default: 'true'
   build_output_dir:
     description: 'Directory for built artifacts'
     required: false
@@ -38,7 +38,7 @@ runs:
       with:
         python-version: ${{ inputs.python_version }}
 
-    - if: ${{ inputs.deploy == true }}
+    - if: ${{ inputs.deploy == 'true' }}
       run: >
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
@@ -47,7 +47,7 @@ runs:
       shell: bash
       working-directory: $GITHUB_WORKSPACE/action-repo
 
-    - if: ${{ inputs.deploy != true }}
+    - if: ${{ inputs.deploy != 'true' }}
       run: >
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
