@@ -183,7 +183,7 @@ def builder_pex_path(repo_root):
     with tempfile.TemporaryDirectory() as tmpdir:
         proc = subprocess.run(
             ["./build-builder.sh", tmpdir],
-            cwd=repo_root / "src/pex",
+            cwd=repo_root / "src/pex-builder",
             check=True,
             capture_output=True,
         )

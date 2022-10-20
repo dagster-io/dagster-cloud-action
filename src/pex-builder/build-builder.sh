@@ -16,17 +16,17 @@ echo "Going to build $BUILDER_PEX_PATH"
 
 export PIPENV_IGNORE_VIRTUALENVS=1
 pip install pipenv pex
-mkdir build
+
+# Build this python project. This will create the build/lib directory.
+python setup.py build
 
 # Generate a requirements.txt from Pipfile.lock
-# Put it in src so it also gets copied into pex for reference
-pipenv requirements --exclude-markers > src/requirements.txt
+# Put it in build/lib so it also gets copied into the builder.pex for reference
+pipenv requirements --exclude-markers > build/lib/requirements.txt
 
 # Generate a multi platform builder.pex (linux and macos)
 # Require running builder.pex under 3.8, in case multiple pythons are present on PATH
-pex -r src/requirements.txt -D src -o $BUILDER_PEX_PATH -v --include-tools \
+pex -r build/lib/requirements.txt -D build/lib -o $BUILDER_PEX_PATH -v --include-tools \
     --python=python3.8 \
     --platform=manylinux2014_x86_64-cp-38-cp38 --platform=macosx_12_0_x86_64-cp-38-cp38
 
-# Don't accidentally check into git
-rm src/requirements.txt
