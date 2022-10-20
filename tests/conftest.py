@@ -180,6 +180,9 @@ def action_docker_image_id(repo_root):
 @pytest.fixture(scope="session")
 def builder_pex_path(repo_root):
     "Path to a freshly built builder.pex file."
+    # To cut down test time during local iteration, build once and reuse
+    # yield repo_root / "src/pex-builder/build/builder.pex"
+
     with tempfile.TemporaryDirectory() as tmpdir:
         proc = subprocess.run(
             ["./build-builder.sh", tmpdir],
