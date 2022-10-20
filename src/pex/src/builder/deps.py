@@ -1,20 +1,18 @@
 # Build deps.pex, given a project root
 
-import pkg_resources
-
-from dataclasses import dataclass
 import hashlib
 import logging
 import os
 import os.path
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from typing import List, Tuple
 
 import click
+import pkg_resources
 
 from . import util
-
 
 STANDARD_PACKAGES = [
     # improves debugging as per https://pex.readthedocs.io/en/latest/recipes.html#long-running-pex-applications-and-daemons

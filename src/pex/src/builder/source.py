@@ -3,14 +3,15 @@
 import logging
 import os
 import os.path
+import subprocess
+import sys
 import tempfile
 from typing import Tuple
 from uuid import uuid4
-import subprocess
-import sys
-from . import util
 
 import click
+
+from . import util
 
 
 def build_source_pex(code_directory, output_directory, python_version: Tuple[str, str]):

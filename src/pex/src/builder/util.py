@@ -1,14 +1,13 @@
-from contextlib import contextmanager
 import json
 import logging
 import os
 import subprocess
 import sys
+from contextlib import contextmanager
 from typing import List, Tuple
 from zipfile import ZipFile
 
 import click
-
 from dagster_cloud_cli import gql
 
 logging.basicConfig(level=logging.INFO)

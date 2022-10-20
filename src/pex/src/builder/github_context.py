@@ -1,10 +1,10 @@
-from contextlib import contextmanager
 import json
 import logging
 import os
 import pprint
 import subprocess
 import time
+from contextlib import contextmanager
 from typing import Dict
 
 # Loads event details from within a gihub action

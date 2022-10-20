@@ -1,23 +1,16 @@
 # end-to-end workflow for rebuilding and publishing code locations
 
-from dataclasses import dataclass
 import dataclasses
 import logging
 import os
 import sys
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import click
 
-from . import (
-    parse_workspace,
-    deps,
-    source,
-    util,
-    code_location,
-    github_context,
-    pex_registry,
-)
+from . import (code_location, deps, github_context, parse_workspace,
+               pex_registry, source, util)
 
 PEX_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-agent-pre-license:pexdemo"
 

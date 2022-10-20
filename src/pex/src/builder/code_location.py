@@ -1,15 +1,11 @@
 import logging
-import pprint
+import sys
 from typing import List, Optional
 
-from . import github_context
-
-import sys
-
-from dagster_cloud_cli import gql, config_utils
+from dagster_cloud_cli import config_utils, gql
 from dagster_cloud_cli.commands import workspace
 
-from . import util
+from . import github_context, util
 
 # This module can directly call dagster_cloud_cli once the pex changes are released with the cli.
 # Right now there is some code duplication between here and the cli commands.
