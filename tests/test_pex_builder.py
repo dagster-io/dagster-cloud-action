@@ -134,6 +134,7 @@ def test_builder_deploy_with_upload(builder_module, repo_root):
     def s3_urls_for_put(filenames):
         return filenames
 
+    # Consider switching to responses package
     def requests_get(url):
         response = requests.Response()
         if url in s3_objects:
