@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import Dict
 
 import pytest
@@ -17,7 +17,7 @@ class ExecContext:
         self.proc = None
 
     def tmp_file_path(self, filename) -> Path:
-        "Return a Path object pointing to named file in temp_dir."
+        "Return a Path object pointing to named file in tmp_dir."
         return Path(self.tmp_dir) / filename
 
     def tmp_file_content(self, filename):
@@ -51,7 +51,7 @@ class ExecContext:
             # write env vars
 
             for env_name, env_value in self.environ.items():
-                # map any tmp_dir paths to the target_temp_dir, useful for docker mounts
+                # map any tmp_dir paths to the target_tmp_dir, useful for docker mounts
                 tmp_dir_path = Path(self.tmp_dir)
                 if (
                     target_tmp_dir
@@ -144,7 +144,7 @@ class ExecContext:
         return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
 
     def cleanup(self):
-        shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.tmp_dir)
 
 
 @pytest.fixture(scope="function")
