@@ -4,9 +4,7 @@ import logging
 import os
 import os.path
 import subprocess
-import sys
 import tempfile
-from typing import Tuple
 from uuid import uuid4
 
 import click
@@ -14,7 +12,7 @@ import click
 from . import util
 
 
-def build_source_pex(code_directory, output_directory, python_version: Tuple[str, str]):
+def build_source_pex(code_directory, output_directory, python_version):
     output_directory = os.path.abspath(output_directory)
     os.makedirs(output_directory, exist_ok=True)
     code_directory = os.path.abspath(code_directory)
@@ -67,7 +65,7 @@ def build_pex_using_setup_py(code_directory, tmp_pex_path, python_version):
 @util.python_version_option()
 def source_main(project_dir, build_output_dir, python_version):
     source_pex_path = build_source_pex(
-        project_dir, build_output_dir, tuple(python_version.split("."))
+        project_dir, build_output_dir, util.parse_python_version(python_version)
     )
     print(f"Wrote: {source_pex_path}")
 

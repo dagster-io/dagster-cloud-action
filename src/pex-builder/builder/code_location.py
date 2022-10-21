@@ -58,7 +58,7 @@ def create_or_update_branch_deployment(
     # author_email=author_email,
     # author_avatar_url=author_avatar_url,
 
-    # TODO: determine the parent full deployment name based on context. 
+    # TODO: determine the parent full deployment name based on context.
     # For serverless there is only one full deployment so this works for now.
     with util.graphql_client("prod") as client:
         return gql.create_or_update_branch_deployment(

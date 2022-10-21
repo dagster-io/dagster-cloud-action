@@ -4,13 +4,17 @@ import os
 import subprocess
 import sys
 from contextlib import contextmanager
-from typing import List, Tuple
+from typing import List
 from zipfile import ZipFile
 
 import click
 from dagster_cloud_cli import gql
+from packaging import version
 
 logging.basicConfig(level=logging.INFO)
+TARGET_PYTHON_VERSIONS = [
+    version.Version(python_version) for python_version in ["3.8", "3.9", "3.10"]
+]
 
 
 def run_self_module(module_name, args: List[str]):
@@ -25,9 +29,13 @@ def run_self_module(module_name, args: List[str]):
     return proc
 
 
-def get_pex_flags(python_version: Tuple[str, str]) -> List[str]:
-    "python_version includes the major and minor version only, eg ('3', '8')"
-    version_tag = "".join(python_version)  # eg '38'
+def get_pex_flags(python_version: version.Version) -> List[str]:
+    "python_version should includes the major and minor version only, eg Version('3.8')"
+    if python_version not in TARGET_PYTHON_VERSIONS:
+        raise ValueError(
+            f"Unsupported python version {python_version}. Supported: {TARGET_PYTHON_VERSIONS}."
+        )
+    version_tag = f"{python_version.major}{python_version.minor}"  # eg '38'
     python_interpreter = python_interpreter_for(python_version)
     return [
         f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
@@ -114,16 +122,20 @@ def url_for_deployment(deployment_name):
     return f"{dagster_cloud_url}/{deployment_name}"
 
 
-def python_interpreter_for(python_version: Tuple[str, str]) -> str:
-    return "python" + ".".join(python_version)  # eg 'python3.8'
+def python_interpreter_for(python_version: version.Version) -> str:
+    return "python" + str(python_version)  # eg 'python3.8'
 
 
 def python_version_option():
     "reusable click.option"
     return click.option(
         "--python-version",
-        type=click.Choice(["3.8", "3.9", "3.10"]),
+        type=click.Choice([str(v) for v in TARGET_PYTHON_VERSIONS]),
         default="3.8",
         show_default=True,
         help="Target Python version.",
     )
+
+
+def parse_python_version(python_version: str) -> version.Version:
+    return version.Version(python_version)

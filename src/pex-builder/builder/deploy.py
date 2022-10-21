@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import click
+from packaging import version
 
 from . import (
     code_location,
@@ -37,7 +38,7 @@ def build_project(
     dagster_cloud_yaml_file: str,
     output_directory: str,
     upload_pex: bool,
-    python_version: Tuple[str, str],
+    python_version: version.Version,
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
 
@@ -58,7 +59,7 @@ def build_locations(
     locations: List[parse_workspace.Location],
     output_directory: str,
     upload_pex: bool,
-    python_version: Tuple[str, str],
+    python_version: version.Version,
 ) -> List[LocationBuild]:
     location_builds = [
         LocationBuild(
@@ -103,7 +104,7 @@ def build_locations(
                 deps_requirements.hash,
             )
             deps_pex_path = deps.build_deps_from_requirements(
-                deps_requirements, output_directory, python_version
+                deps_requirements, output_directory
             )
 
             for location_build in builds:
@@ -186,7 +187,7 @@ def deploy_main(
             dagster_cloud_file,
             build_output_dir,
             upload_pex=upload_pex,
-            python_version=tuple(python_version.split(".")),
+            python_version=util.parse_python_version(python_version),
         )
 
     # upload to registry if enabled

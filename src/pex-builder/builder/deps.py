@@ -7,10 +7,11 @@ import os.path
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 import click
 import pkg_resources
+from packaging import version
 
 from . import util
 
@@ -23,7 +24,7 @@ STANDARD_PACKAGES = [
 @dataclass(frozen=True)
 class DepsRequirements:
     requirements_txt: str
-    python_version: Tuple[str, str]
+    python_version: version.Version
     pex_flags: List[str]
 
     @property
@@ -36,14 +37,14 @@ class DepsRequirements:
         return hashlib.sha1(
             (
                 repr(self.requirements_txt)
-                + repr(self.python_version)
+                + str(self.python_version)
                 + repr(self.pex_flags)
             ).encode("utf-8")
         ).hexdigest()
 
 
 def get_deps_requirements(
-    code_directory, python_version: Tuple[str, str]
+    code_directory, python_version: version.Version
 ) -> DepsRequirements:
 
     # Combine dependencies specified in requirements.txt and setup.py
@@ -67,13 +68,12 @@ def get_deps_requirements(
 
 def build_deps_pex(code_directory, output_directory, python_version) -> str:
     requirements = get_deps_requirements(code_directory, python_version)
-    return build_deps_from_requirements(requirements, output_directory, python_version)
+    return build_deps_from_requirements(requirements, output_directory)
 
 
 def build_deps_from_requirements(
     requirements: DepsRequirements,
     output_directory: str,
-    python_version: Tuple[str, str],
 ) -> str:
     """Builds deps-<HASH>.pex and returns the path to that file."""
     os.makedirs(output_directory, exist_ok=True)
@@ -85,7 +85,7 @@ def build_deps_from_requirements(
     with open(deps_requirements_path, "w") as deps_requirements_file:
         deps_requirements_file.write(requirements.requirements_txt)
 
-    logging.info(f"Building deps pex for Python version {python_version}")
+    logging.info(f"Building deps pex for Python version {requirements.python_version}")
     proc = util.build_pex(
         sources_directories=[],
         requirements_filepaths=[deps_requirements_path],
@@ -155,7 +155,7 @@ def get_setup_py_deps(code_directory: str) -> List[str]:
 @util.python_version_option()
 def deps_main(project_dir, build_output_dir, python_version):
     deps_pex_path = build_deps_pex(
-        project_dir, build_output_dir, tuple(python_version.split("."))
+        project_dir, build_output_dir, util.parse_python_version(python_version)
     )
     print(f"Wrote: {deps_pex_path}")
 
