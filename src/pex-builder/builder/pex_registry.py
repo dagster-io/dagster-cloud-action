@@ -65,6 +65,8 @@ def get_deps_pex_name_from_requirements_hash(
         return None
 
     url = urls[0]
+    if not url:
+        return None
 
     result = requests.get(url)
     if result.ok:

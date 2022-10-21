@@ -5,8 +5,10 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import List
+from unittest import mock
 
 import pytest
+import requests
 
 
 @contextmanager
@@ -31,7 +33,7 @@ def run_builder(builder_pex_path, builder_args: List[str]):
         yield (build_output_dir, list(pex_files), list(set(all_files) - pex_files))
 
 
-def test_pex_deploy(repo_root, builder_pex_path):
+def test_pex_deploy_build_only(repo_root, builder_pex_path):
     dagster_project1_yaml = (
         repo_root / "tests/test-repos/dagster_project1/dagster_cloud.yaml"
     )
@@ -92,7 +94,7 @@ def test_pex_deps_build(repo_root, builder_pex_path):
             )
             assert "version" in output
 
-            # try to import nonexistant dependency
+            # try to import nonexistent dependency
             with pytest.raises(subprocess.CalledProcessError) as exc:
                 subprocess.check_output(
                     ["./" + deps_file, str(import_pandas_code)],
@@ -117,3 +119,82 @@ def test_pex_deps_build(repo_root, builder_pex_path):
                 encoding="utf-8",
             )
             assert "OK" in output
+
+
+def test_builder_deploy_with_upload(builder_module, repo_root):
+    from builder import deploy
+
+    s3_objects = {}
+
+    def s3_urls_for_get(filenames):
+        return [
+            (filename if filename in s3_objects else None) for filename in filenames
+        ]
+
+    def s3_urls_for_put(filenames):
+        return filenames
+
+    def requests_get(url):
+        response = requests.Response()
+        if url in s3_objects:
+            response._content = s3_objects[url]
+            response.status_code = 200
+        else:
+            response.status_code = 404
+        return response
+
+    def requests_put(url, data):
+        s3_objects[url] = data.read() if hasattr(data, "read") else data
+        response = requests.Response()
+        response.status_code = 200
+        return response
+
+    dagster_project1_yaml = (
+        repo_root / "tests/test-repos/dagster_project1/dagster_cloud.yaml"
+    )
+    with mock.patch(
+        "builder.pex_registry.get_s3_urls_for_get", s3_urls_for_get
+    ) as _, mock.patch(
+        "builder.pex_registry.get_s3_urls_for_put", s3_urls_for_put
+    ) as _, mock.patch(
+        "requests.get", requests_get
+    ) as _, mock.patch(
+        "requests.put", requests_put
+    ) as _, tempfile.TemporaryDirectory() as build_output_dir:
+        deploy.deploy_main(
+            str(dagster_project1_yaml),
+            build_output_dir,
+            upload_pex=True,
+            update_code_location=False,
+            python_version="3.8",
+        )
+        # deps-HASH.pex, source-HASH.pex and requirements-HASH.txt
+        assert len(s3_objects) == 3
+        deps_pex_key = [key for key in s3_objects if key.startswith("deps-")][0]
+        requirements_key = [
+            key for key in s3_objects if key.startswith("requirements-")
+        ][0]
+
+        # if we rebuild, the deps.pex should not be rebuilt or published
+        with mock.patch("builder.deps.build_deps_pex") as build_deps_pex_mock:
+            s3_objects[deps_pex_key] = "current value"
+            deploy.deploy_main(
+                str(dagster_project1_yaml),
+                build_output_dir,
+                upload_pex=True,
+                update_code_location=False,
+                python_version="3.8",
+            )
+            build_deps_pex_mock.assert_not_called()
+            assert s3_objects[deps_pex_key] == "current value"
+
+        # if the requirements-HASH is missing and we rebuild, the deps should get rebuilt
+        del s3_objects[requirements_key]
+        deploy.deploy_main(
+            str(dagster_project1_yaml),
+            build_output_dir,
+            upload_pex=True,
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert s3_objects[deps_pex_key] != "current value"

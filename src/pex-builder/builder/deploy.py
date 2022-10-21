@@ -34,13 +34,18 @@ class LocationBuild:
 
 
 def build_project(
-    dagster_cloud_yaml_file: str, output_directory: str, python_version: Tuple[str, str]
+    dagster_cloud_yaml_file: str,
+    output_directory: str,
+    upload_pex: bool,
+    python_version: Tuple[str, str],
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
 
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
 
-    location_builds = build_locations(locations, output_directory, python_version)
+    location_builds = build_locations(
+        locations, output_directory, upload_pex, python_version
+    )
 
     logging.info(f"Built locations (%s):", len(location_builds))
     for build in location_builds:
@@ -52,6 +57,7 @@ def build_project(
 def build_locations(
     locations: List[parse_workspace.Location],
     output_directory: str,
+    upload_pex: bool,
     python_version: Tuple[str, str],
 ) -> List[LocationBuild]:
     location_builds = [
@@ -78,7 +84,9 @@ def build_locations(
         deps_requirements = builds[0].deps_requirements
 
         # don't build deps.pex files that are already published
-        published_deps_pex = get_published_deps_pex_name(deps_requirements.hash)
+        published_deps_pex = (
+            get_published_deps_pex_name(deps_requirements.hash) if upload_pex else None
+        )
 
         if published_deps_pex:
             logging.info(
@@ -124,10 +132,7 @@ def build_locations(
 
 
 def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
-    ctx = click.get_current_context()
-    if ctx.params["upload_pex"]:
-        return pex_registry.get_deps_pex_name_from_requirements_hash(requirements_hash)
-    return None
+    return pex_registry.get_deps_pex_name_from_requirements_hash(requirements_hash)
 
 
 # TODO: Publish newer base image
@@ -152,18 +157,35 @@ DEFAULT_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud
     help="Update code location to use new PEX files.",
 )
 @util.python_version_option()
-def deploy_main(
+def cli(
     dagster_cloud_file,
     build_output_dir,
     upload_pex,
     update_code_location,
     python_version,
 ):
+    deploy_main(
+        dagster_cloud_file,
+        build_output_dir,
+        upload_pex,
+        update_code_location,
+        python_version,
+    )
+
+
+def deploy_main(
+    dagster_cloud_file: str,
+    build_output_dir: str,
+    upload_pex: bool,
+    update_code_location: bool,
+    python_version: str,
+):
     # always build
     with github_context.log_group("Building PEX Files"):
         location_builds = build_project(
             dagster_cloud_file,
             build_output_dir,
+            upload_pex=upload_pex,
             python_version=tuple(python_version.split(".")),
         )
 
@@ -242,4 +264,4 @@ def deploy_main(
 
 
 if __name__ == "__main__":
-    deploy_main()
+    cli()
