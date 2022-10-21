@@ -7,6 +7,8 @@ RUN if [ -f "dagster_cloud_pre_install.sh" ]; then \
         ./dagster_cloud_pre_install.sh; \
     fi
 
+RUN pip install --upgrade pip
+
 # This is to enable Docker caching - if setup.py exists, we install the dependencies before
 # copying all other files
 RUN if [ -f "setup.py" ]; then \
