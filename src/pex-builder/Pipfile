@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 pex = "*"
-dagster-cloud-cli = "*"
+dagster-cloud-cli = ">=1.0.14"
 dagster = "*"
 click = "*"
 
