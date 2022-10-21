@@ -24,7 +24,7 @@ runs:
     - name: Checkout action repo
       uses: actions/checkout@v3
       with:
-        repository: dagster-io/dagster-cloud-action-pex
+        repository: dagster-io/dagster-cloud-action
         path: $GITHUB_WORKSPACE/action-repo
 
     - name: Set up Python 3.8
