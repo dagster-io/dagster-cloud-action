@@ -1,8 +1,10 @@
+import importlib
 import os
-from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
+from pathlib import Path
 from typing import Dict
 
 import pytest
@@ -144,7 +146,7 @@ class ExecContext:
         return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
 
     def cleanup(self):
-        shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.tmp_dir)
 
 
 @pytest.fixture(scope="function")
@@ -175,3 +177,48 @@ def action_docker_image_id(repo_root):
         return open(iidfile).read().strip()
     finally:
         os.remove(iidfile)
+
+
+@pytest.fixture(scope="session")
+def builder_pex_path(repo_root):
+    "Path to a freshly built builder.pex file, can be run as a subprocess."
+    # To cut down test time during local iteration, build once and reuse
+    # yield repo_root / "src/pex-builder/build/builder.pex"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        proc = subprocess.run(
+            ["./build-builder.sh", tmpdir],
+            cwd=repo_root / "src/pex-builder",
+            check=True,
+            capture_output=True,
+        )
+        path = os.path.join(tmpdir, "builder.pex")
+        if not os.path.exists(path):
+            raise ValueError("builder.pex not created:" + proc.stderr.decode("utf-8"))
+        yield path
+
+
+@pytest.fixture(scope="session")
+def builder_module(builder_pex_path):
+    "Imported builder module object, for in-process testing of builder code."
+    # This contains the same code as the builder.pex, but using it as a module
+    # makes patching easier. To make sure we use the same dependencies that are
+    # packed in builder.pex, we unpack builder.pex to a venv and add the venv
+    # directory to sys.path.
+
+    with tempfile.TemporaryDirectory() as venv_dir:
+        try:
+            # special invocation to have builder.pex unpack itself
+            subprocess.check_output(
+                [builder_pex_path, "venv", venv_dir],
+                env={"PEX_TOOLS": "1", **os.environ},
+                stderr=subprocess.STDOUT,
+                encoding="utf-8",
+            )
+        except subprocess.CalledProcessError as exc:
+            raise ValueError("Could not unpack builder:" + exc.output)
+        sys.path.insert(0, os.path.join(venv_dir, "lib/python3.8/site-packages"))
+        try:
+            yield importlib.import_module("builder")
+        finally:
+            sys.path.pop(0)

@@ -1,0 +1,56 @@
+name: 'Build and deploy dagster code locations'
+description: 'Build project as source.pex and deps.pex, publish to dagster cloud, and update the code location'
+inputs:
+  dagster_cloud_file:
+    description: 'Path to dagster_cloud.yaml'
+    required: true
+  python_version:
+    description: 'Python version string, major.minor only, eg "3.8"'
+    required: false
+    default: '3.8'
+  deploy:
+    description: 'Whether to upload the pex files and update the code location'
+    required: false
+    default: 'true'
+  build_output_dir:
+    description: 'Directory for built artifacts'
+    required: false
+    default: '/tmp/build'
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout action repo
+      uses: actions/checkout@v3
+      with:
+        repository: dagster-io/dagster-cloud-action
+        path: $GITHUB_WORKSPACE/action-repo
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.8"
+
+    - if: ${{ inputs.python_version != '3.8' }}
+      name: Set up Python ${{ inputs.python_version }} for target
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - if: ${{ inputs.deploy == 'true' }}
+      run: >
+        generated/gha/builder.pex -m builder.deploy 
+        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        --python-version=${{ inputs.python_version }}
+        --upload-pex --update-code-location
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/action-repo
+
+    - if: ${{ inputs.deploy != 'true' }}
+      run: >
+        generated/gha/builder.pex -m builder.deploy 
+        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        --python-version=${{ inputs.python_version }}
+      shell: bash
+      working-directory: $GITHUB_WORKSPACE/action-repo
