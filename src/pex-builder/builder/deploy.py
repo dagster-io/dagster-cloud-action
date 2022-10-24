@@ -136,8 +136,8 @@ def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
     return pex_registry.get_deps_pex_name_from_requirements_hash(requirements_hash)
 
 
-# TODO: Publish newer base image
-DEFAULT_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-agent-pre-license:pexdemo"
+# TODO: Support multiple python versions
+DEFAULT_BASE_IMAGE = "ghcr.io/dagster-io/dagster-cloud-serverless-base-py38:latest"
 
 
 @click.command()
