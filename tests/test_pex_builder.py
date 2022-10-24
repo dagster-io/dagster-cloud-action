@@ -121,47 +121,13 @@ def test_pex_deps_build(repo_root, builder_pex_path):
             assert "OK" in output
 
 
-def test_builder_deploy_with_upload(builder_module, repo_root):
+def test_builder_deploy_with_upload(builder_module, repo_root, pex_registry_fixture):
     from builder import deploy
-
-    s3_objects = {}
-
-    def s3_urls_for_get(filenames):
-        return [
-            (filename if filename in s3_objects else None) for filename in filenames
-        ]
-
-    def s3_urls_for_put(filenames):
-        return filenames
-
-    # Consider switching to responses package
-    def requests_get(url):
-        response = requests.Response()
-        if url in s3_objects:
-            response._content = s3_objects[url]
-            response.status_code = 200
-        else:
-            response.status_code = 404
-        return response
-
-    def requests_put(url, data):
-        s3_objects[url] = data.read() if hasattr(data, "read") else data
-        response = requests.Response()
-        response.status_code = 200
-        return response
 
     dagster_project1_yaml = (
         repo_root / "tests/test-repos/dagster_project1/dagster_cloud.yaml"
     )
-    with mock.patch(
-        "builder.pex_registry.get_s3_urls_for_get", s3_urls_for_get
-    ) as _, mock.patch(
-        "builder.pex_registry.get_s3_urls_for_put", s3_urls_for_put
-    ) as _, mock.patch(
-        "requests.get", requests_get
-    ) as _, mock.patch(
-        "requests.put", requests_put
-    ) as _, tempfile.TemporaryDirectory() as build_output_dir:
+    with tempfile.TemporaryDirectory() as build_output_dir:
         deploy.deploy_main(
             str(dagster_project1_yaml),
             build_output_dir,
@@ -170,15 +136,15 @@ def test_builder_deploy_with_upload(builder_module, repo_root):
             python_version="3.8",
         )
         # deps-HASH.pex, source-HASH.pex and requirements-HASH.txt
-        assert len(s3_objects) == 3
-        deps_pex_key = [key for key in s3_objects if key.startswith("deps-")][0]
+        assert len(pex_registry_fixture) == 3
+        deps_pex_key = [key for key in pex_registry_fixture if key.startswith("deps-")][0]
         requirements_key = [
-            key for key in s3_objects if key.startswith("requirements-")
+            key for key in pex_registry_fixture if key.startswith("requirements-")
         ][0]
 
         # if we rebuild, the deps.pex should not be rebuilt or published
         with mock.patch("builder.deps.build_deps_pex") as build_deps_pex_mock:
-            s3_objects[deps_pex_key] = "current value"
+            pex_registry_fixture[deps_pex_key] = "current value"
             deploy.deploy_main(
                 str(dagster_project1_yaml),
                 build_output_dir,
@@ -187,10 +153,10 @@ def test_builder_deploy_with_upload(builder_module, repo_root):
                 python_version="3.8",
             )
             build_deps_pex_mock.assert_not_called()
-            assert s3_objects[deps_pex_key] == "current value"
+            assert pex_registry_fixture[deps_pex_key] == "current value"
 
         # if the requirements-HASH is missing and we rebuild, the deps should get rebuilt
-        del s3_objects[requirements_key]
+        del pex_registry_fixture[requirements_key]
         deploy.deploy_main(
             str(dagster_project1_yaml),
             build_output_dir,
@@ -198,4 +164,4 @@ def test_builder_deploy_with_upload(builder_module, repo_root):
             update_code_location=False,
             python_version="3.8",
         )
-        assert s3_objects[deps_pex_key] != "current value"
+        assert pex_registry_fixture[deps_pex_key] != "current value"
