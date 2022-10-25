@@ -58,7 +58,10 @@ def requirements_hash_filename(requirements_hash: str):
 def get_requirements_hash_values(
     requirements_hash: str,
 ) -> Optional[Dict[str, Any]]:
-    """Returns the 'deps-<HASH>.pex' filename and other details for requirements_hash if already uploaded."""
+    """Returns a metadata dict for the requirements_hash. The dict contains:
+    'deps_pex_name': filename for the deps pex, eg 'deps-123234334.pex'
+    'dagster_version': dagster package version included in the deps, eg '1.0.14'
+    """
     urls = get_s3_urls_for_get([requirements_hash_filename(requirements_hash)])
     if not urls:
         return None
@@ -70,6 +73,7 @@ def get_requirements_hash_values(
     result = requests.get(url)
     if result.ok:
         data = json.loads(result.content)
+        # Don't return partial information
         if "deps_pex_name" in data and "dagster_version" in data:
             return data
     return None
