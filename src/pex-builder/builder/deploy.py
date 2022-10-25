@@ -142,12 +142,9 @@ def build_locations(
     return location_builds
 
 
-DEFAULT_BASE_IMAGE_PREFIX = "ghcr.io/dagster-io/dagster-cloud-serverless-base-py38:"
-
-
 def get_base_image_for(dagster_version: str):
     # TODO: verify this image exists in the registry
-    return DEFAULT_BASE_IMAGE_PREFIX + dagster_version
+    return f"ghcr.io/dagster-io/dagster-cloud-serverless-base-py38:{dagster_version}"
 
 
 @click.command()
