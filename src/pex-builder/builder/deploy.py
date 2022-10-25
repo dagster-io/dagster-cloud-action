@@ -4,7 +4,7 @@ import dataclasses
 import logging
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import click
 from packaging import version
@@ -29,6 +29,9 @@ class LocationBuild:
     # One of deps_pex_path or published_deps_pex should be set
     deps_pex_path: Optional[str] = None  # locally build deps.pex
     published_deps_pex: Optional[str] = None  # already published deps.pex
+    dagster_version: Optional[
+        str
+    ] = None  # set for both, already published and locally built deps
 
     source_pex_path: Optional[str] = None
     pex_tag: Optional[str] = None  # composite tag used to identify the set of pex files
@@ -85,11 +88,14 @@ def build_locations(
         deps_requirements = builds[0].deps_requirements
 
         # don't build deps.pex files that are already published
-        published_deps_pex = (
-            get_published_deps_pex_name(deps_requirements.hash) if upload_pex else None
+        published_deps_pex_info = (
+            pex_registry.get_requirements_hash_values(deps_requirements.hash)
+            if upload_pex
+            else None
         )
 
-        if published_deps_pex:
+        if published_deps_pex_info:
+            published_deps_pex = published_deps_pex_info["deps_pex_name"]
             logging.info(
                 "Found published deps.pex %r for requirements_hash %r, skipping rebuild.",
                 published_deps_pex,
@@ -98,17 +104,21 @@ def build_locations(
 
             for location_build in builds:
                 location_build.published_deps_pex = published_deps_pex
+                location_build.dagster_version = published_deps_pex_info[
+                    "dagster_version"
+                ]
         else:
             logging.info(
                 "No published deps.pex found for requirements_hash %r, will rebuild.",
                 deps_requirements.hash,
             )
-            deps_pex_path = deps.build_deps_from_requirements(
+            deps_pex_path, dagster_version = deps.build_deps_from_requirements(
                 deps_requirements, output_directory
             )
 
             for location_build in builds:
                 location_build.deps_pex_path = deps_pex_path
+                location_build.dagster_version = dagster_version
 
     # build each source once
     for location_build in location_builds:
@@ -132,12 +142,12 @@ def build_locations(
     return location_builds
 
 
-def get_published_deps_pex_name(requirements_hash: str) -> Optional[str]:
-    return pex_registry.get_deps_pex_name_from_requirements_hash(requirements_hash)
+DEFAULT_BASE_IMAGE_PREFIX = "ghcr.io/dagster-io/dagster-cloud-serverless-base-py38:"
 
 
-# TODO: Publish newer base image
-DEFAULT_BASE_IMAGE = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-agent-pre-license:pexdemo"
+def get_base_image_for(dagster_version: str):
+    # TODO: verify this image exists in the registry
+    return DEFAULT_BASE_IMAGE_PREFIX + dagster_version
 
 
 @click.command()
@@ -210,6 +220,7 @@ def deploy_main(
                     pex_registry.set_requirements_hash_values(
                         location_build.deps_requirements.hash,
                         os.path.basename(location_build.deps_pex_path),
+                        dagster_version=location_build.dagster_version,
                     )
     else:
         logging.info("Skipping upload to pex registry: no --upload-pex")
@@ -242,7 +253,7 @@ def deploy_main(
                 )
                 base_image = os.getenv("CUSTOM_BASE_IMAGE")
                 if not base_image:
-                    base_image = DEFAULT_BASE_IMAGE
+                    base_image = get_base_image_for(location_build.dagster_version)
                 code_location.add_or_update_code_location(
                     deployment,
                     location_name,

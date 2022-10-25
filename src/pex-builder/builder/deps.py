@@ -4,10 +4,11 @@ import hashlib
 import logging
 import os
 import os.path
+import re
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 import click
 import pkg_resources
@@ -66,7 +67,7 @@ def get_deps_requirements(
     return deps_requirements
 
 
-def build_deps_pex(code_directory, output_directory, python_version) -> str:
+def build_deps_pex(code_directory, output_directory, python_version) -> Tuple[str, str]:
     requirements = get_deps_requirements(code_directory, python_version)
     return build_deps_from_requirements(requirements, output_directory)
 
@@ -74,8 +75,8 @@ def build_deps_pex(code_directory, output_directory, python_version) -> str:
 def build_deps_from_requirements(
     requirements: DepsRequirements,
     output_directory: str,
-) -> str:
-    """Builds deps-<HASH>.pex and returns the path to that file."""
+) -> Tuple[str, str]:
+    """Builds deps-<HASH>.pex and returns the path to that file and the dagster version."""
     os.makedirs(output_directory, exist_ok=True)
     deps_requirements_path = os.path.join(
         output_directory, f"deps-requirements-{requirements.hash}.txt"
@@ -102,7 +103,21 @@ def build_deps_from_requirements(
     final_pex_path = os.path.join(output_directory, f"deps-{pex_hash}.pex")
     os.rename(tmp_pex_path, final_pex_path)
     logging.info("Wrote deps pex: %r", final_pex_path)
-    return final_pex_path
+
+    distribution_names = pex_info["distributions"].keys()
+    dagster_distributions = [
+        name for name in distribution_names if name.startswith("dagster-")
+    ]
+    # the distribution is named something like 'dagster-1.0.14-py3-none-any.whl'
+    pattern = re.compile(f"dagster-(.+?)-py")
+    for name in distribution_names:
+        match = pattern.match(name)
+        if match:
+            dagster_version = match.group(1)
+            break
+    else:
+        raise ValueError("Did not find a dagster distribution in the deps pex")
+    return final_pex_path, dagster_version
 
 
 def get_requirements_txt_deps(code_directory: str) -> List[str]:
@@ -154,10 +169,10 @@ def get_setup_py_deps(code_directory: str) -> List[str]:
 @click.argument("build_output_dir", type=click.Path(exists=False))
 @util.python_version_option()
 def deps_main(project_dir, build_output_dir, python_version):
-    deps_pex_path = build_deps_pex(
+    deps_pex_path, dagster_version = build_deps_pex(
         project_dir, build_output_dir, util.parse_python_version(python_version)
     )
-    print(f"Wrote: {deps_pex_path}")
+    print(f"Wrote: {deps_pex_path} which includes dagster version {dagster_version}")
 
 
 if __name__ == "__main__":
