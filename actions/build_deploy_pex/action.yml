@@ -24,8 +24,9 @@ runs:
     - name: Checkout action repo
       uses: actions/checkout@v3
       with:
-        # TODO: remove branch indicator before merge
-        repository: dagster-io/dagster-cloud-action@shalabhc/peg-image-tag-to-dagster-version
+        repository: dagster-io/dagster-cloud-action
+        # TODO: remove ref indicator before merge
+        ref: 'shalabhc/peg-image-tag-to-dagster-version'
         path: $GITHUB_WORKSPACE/action-repo
 
     - name: Set up Python 3.8
