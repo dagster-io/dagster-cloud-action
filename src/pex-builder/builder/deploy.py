@@ -140,9 +140,14 @@ def build_locations(
     return location_builds
 
 
-def get_base_image_for(dagster_version: str):
+def get_base_image_for(location_build: LocationBuild):
+    python_version = location_build.deps_requirements.python_version
+    dagster_version = location_build.dagster_version
+    py_tag = f"py{python_version.major}{python_version.minor}"  # eg 'py38'
     # TODO: verify this image exists in the registry
-    return f"ghcr.io/dagster-io/dagster-cloud-serverless-base-py38:{dagster_version}"
+    return (
+        f"ghcr.io/dagster-io/dagster-cloud-serverless-base-{py_tag}:{dagster_version}"
+    )
 
 
 @click.command()
@@ -248,7 +253,7 @@ def deploy_main(
                 )
                 base_image = os.getenv("CUSTOM_BASE_IMAGE")
                 if not base_image:
-                    base_image = get_base_image_for(location_build.dagster_version)
+                    base_image = get_base_image_for(location_build)
                 code_location.add_or_update_code_location(
                     deployment,
                     location_name,
