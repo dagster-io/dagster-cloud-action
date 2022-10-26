@@ -39,6 +39,10 @@ runs:
         python-version: ${{ inputs.python_version }}
 
     - if: ${{ inputs.deploy == 'true' }}
+      run: cd $GITHUB_ACTION_PATH && ls && pwd
+      shell: bash
+
+    - if: ${{ inputs.deploy == 'true' }}
       run: >
         cd $GITHUB_ACTION_PATH &&
         generated/gha/builder.pex -m builder.deploy 
