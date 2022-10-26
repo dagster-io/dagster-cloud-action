@@ -23,6 +23,7 @@ runs:
 
   steps:
     - run: echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV
+      shell: bash
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v3
