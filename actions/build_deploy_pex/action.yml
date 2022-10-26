@@ -20,12 +20,9 @@ inputs:
 
 runs:
   using: "composite"
+
   steps:
-    # - name: Checkout action repo
-    #   uses: actions/checkout@v3
-    #   with:
-    #     repository: dagster-io/dagster-cloud-action
-    #     path: $GITHUB_WORKSPACE/action-repo
+    - run: echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v3
@@ -39,12 +36,8 @@ runs:
         python-version: ${{ inputs.python_version }}
 
     - if: ${{ inputs.deploy == 'true' }}
-      run: cd $GITHUB_ACTION_PATH && ls && pwd
-      shell: bash
-
-    - if: ${{ inputs.deploy == 'true' }}
       run: >
-        cd $GITHUB_ACTION_PATH &&
+        cd $ACTION_REPO &&
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
@@ -53,7 +46,7 @@ runs:
 
     - if: ${{ inputs.deploy != 'true' }}
       run: >
-        cd $GITHUB_ACTION_PATH &&
+        cd $ACTION_REPO &&
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
