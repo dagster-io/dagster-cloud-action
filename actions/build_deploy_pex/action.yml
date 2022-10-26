@@ -21,13 +21,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout action repo
-      uses: actions/checkout@v3
-      with:
-        repository: dagster-io/dagster-cloud-action
-        # TODO: remove ref indicator before merge
-        ref: 'shalabhc/peg-image-tag-to-dagster-version'
-        path: $GITHUB_WORKSPACE/action-repo
+    # - name: Checkout action repo
+    #   uses: actions/checkout@v3
+    #   with:
+    #     repository: dagster-io/dagster-cloud-action
+    #     path: $GITHUB_WORKSPACE/action-repo
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v3
@@ -47,7 +45,7 @@ runs:
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
       shell: bash
-      working-directory: $GITHUB_WORKSPACE/action-repo
+      working-directory: $GITHUB_ACTION_PATH
 
     - if: ${{ inputs.deploy != 'true' }}
       run: >
@@ -55,4 +53,4 @@ runs:
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
       shell: bash
-      working-directory: $GITHUB_WORKSPACE/action-repo
+      working-directory: $GITHUB_ACTION_PATH
