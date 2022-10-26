@@ -40,17 +40,17 @@ runs:
 
     - if: ${{ inputs.deploy == 'true' }}
       run: >
+        cd $GITHUB_ACTION_PATH &&
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
       shell: bash
-      working-directory: $GITHUB_ACTION_PATH
 
     - if: ${{ inputs.deploy != 'true' }}
       run: >
+        cd $GITHUB_ACTION_PATH &&
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
       shell: bash
-      working-directory: $GITHUB_ACTION_PATH
