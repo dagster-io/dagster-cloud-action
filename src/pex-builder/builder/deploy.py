@@ -29,7 +29,7 @@ class LocationBuild:
     # One of deps_pex_path or published_deps_pex should be set
     deps_pex_path: Optional[str] = None  # locally build deps.pex
     published_deps_pex: Optional[str] = None  # already published deps.pex
-    # dagster_version should be alway set for both cases, pre published and locally built deps
+    # dagster_version should be always set for both cases, pre published and locally built deps
     dagster_version: Optional[str] = None
     source_pex_path: Optional[str] = None
     pex_tag: Optional[str] = None  # composite tag used to identify the set of pex files
