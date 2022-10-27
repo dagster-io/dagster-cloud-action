@@ -28,13 +28,13 @@ runs:
     - name: Environment variables
       run: >
         echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV &&
-        echo "FLAG_DEPS_CACHE_TAG_WRITE=--deps-cache-tag-write=${{ github.repository }}/${{ github.ref }}"
+        echo "FLAG_DEPS_CACHE_TAG_WRITE=--deps-cache-tag-write=${{ github.repository }}/${{ github.ref }}" >> $GITHUB_ENV
       shell: bash
 
     - name: Environment variables
       if: ${{ inputs.force_rebuild_deps != 'true' }}
       run: >
-        echo "FLAG_DEPS_CACHE_TAG_READ=--deps-cache-tag-read=${{ github.repository }}/${{ github.ref }}"
+        echo "FLAG_DEPS_CACHE_TAG_READ=--deps-cache-tag-read=${{ github.repository }}/${{ github.ref }}" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Python 3.8
