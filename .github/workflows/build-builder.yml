@@ -27,12 +27,12 @@ jobs:
           python-version: "3.8"
 
       - name: Run script to build builder.pex
-        run: bash src/pex/build-builder.sh
+        run: bash src/pex-builder/build-builder.sh
 
       - name: Test run builder.pex
-        run: src/pex/build/builder.pex -m builder.selftest
+        run: src/pex-builder/build/builder.pex -m builder.selftest
 
       - uses: actions/upload-artifact@v3
         with:
           name: builder-pex
-          path: src/pex/build/builder.pex
+          path: src/pex-builder/build/builder.pex
