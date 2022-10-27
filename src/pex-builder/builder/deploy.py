@@ -39,6 +39,7 @@ def build_project(
     dagster_cloud_yaml_file: str,
     output_directory: str,
     upload_pex: bool,
+    deps_cache_tag: Optional[str],
     python_version: version.Version,
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
@@ -46,7 +47,7 @@ def build_project(
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
 
     location_builds = build_locations(
-        locations, output_directory, upload_pex, python_version
+        locations, output_directory, upload_pex, deps_cache_tag, python_version
     )
 
     logging.info(f"Built locations (%s):", len(location_builds))
@@ -60,13 +61,16 @@ def build_locations(
     locations: List[parse_workspace.Location],
     output_directory: str,
     upload_pex: bool,
+    deps_cache_tag: Optional[str],
     python_version: version.Version,
 ) -> List[LocationBuild]:
     location_builds = [
         LocationBuild(
             location=location,
             deps_requirements=deps.get_deps_requirements(
-                location.directory, python_version=python_version
+                location.directory,
+                python_version=python_version,
+                cache_tag=deps_cache_tag,
             ),
         )
         for location in locations
@@ -85,12 +89,11 @@ def build_locations(
         builds = builds_for_requirements_hash[requirements_hash]
         deps_requirements = builds[0].deps_requirements
 
-        # don't build deps.pex files that are already published
-        published_deps_pex_info = (
-            pex_registry.get_requirements_hash_values(deps_requirements.hash)
-            if upload_pex
-            else None
-        )
+        # if a cache_tag is specified, don't build deps.pex files that are already published
+        if upload_pex and deps_requirements.cache_tag:
+            published_deps_pex_info = pex_registry.get_requirements_hash_values(deps_requirements.hash)
+        else:
+            published_deps_pex_info = None
 
         if published_deps_pex_info:
             published_deps_pex = published_deps_pex_info["deps_pex_name"]
@@ -161,6 +164,13 @@ def get_base_image_for(location_build: LocationBuild):
     help="Upload PEX files to registry.",
 )
 @click.option(
+    "--deps-cache-tag",
+    type=str,
+    required=False,
+    help="Enables caching for the deps pex file, "
+    "using this tag in addition to the requirements list as the cache key",
+)
+@click.option(
     "--update-code-location",
     is_flag=True,
     show_default=True,
@@ -172,6 +182,7 @@ def cli(
     dagster_cloud_file,
     build_output_dir,
     upload_pex,
+    deps_cache_tag,
     update_code_location,
     python_version,
 ):
@@ -179,6 +190,7 @@ def cli(
         dagster_cloud_file,
         build_output_dir,
         upload_pex,
+        deps_cache_tag,
         update_code_location,
         python_version,
     )
@@ -188,6 +200,7 @@ def deploy_main(
     dagster_cloud_file: str,
     build_output_dir: str,
     upload_pex: bool,
+    deps_cache_tag: Optional[str],
     update_code_location: bool,
     python_version: str,
 ):
@@ -197,6 +210,7 @@ def deploy_main(
             dagster_cloud_file,
             build_output_dir,
             upload_pex=upload_pex,
+            deps_cache_tag=deps_cache_tag,
             python_version=util.parse_python_version(python_version),
         )
 
@@ -273,6 +287,8 @@ def deploy_main(
         logging.info("Skipping code location update: no --update-code-location")
 
     logging.info("All done")
+
+    return location_builds
 
 
 if __name__ == "__main__":

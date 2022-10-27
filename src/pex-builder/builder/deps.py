@@ -8,7 +8,7 @@ import re
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import click
 import pkg_resources
@@ -27,11 +27,12 @@ class DepsRequirements:
     requirements_txt: str
     python_version: version.Version
     pex_flags: List[str]
+    cache_tag: Optional[str]
 
     @property
     def hash(self) -> str:
         # The hash is used to reuse a cached deps.pex. We should only reuse if the requrements_txt,
-        # python_version and pex_flags match exactly.
+        # python_version, pex_flags and cache_tag match exactly.
         # Note requirements_txt may have floating dependencies, so this is not perfect and may
         # reuse deps.pex even if a new PyPI package is published for a dependency.
         # An easy workaround is to pin the dependency in setup.py.
@@ -40,12 +41,13 @@ class DepsRequirements:
                 repr(self.requirements_txt)
                 + str(self.python_version)
                 + repr(self.pex_flags)
+                + repr(self.cache_tag)
             ).encode("utf-8")
         ).hexdigest()
 
 
 def get_deps_requirements(
-    code_directory, python_version: version.Version
+    code_directory, python_version: version.Version, cache_tag: Optional[str]
 ) -> DepsRequirements:
 
     # Combine dependencies specified in requirements.txt and setup.py
@@ -62,13 +64,14 @@ def get_deps_requirements(
         requirements_txt=deps_requirements_text,
         python_version=python_version,
         pex_flags=util.get_pex_flags(python_version),
+        cache_tag=cache_tag,
     )
     logging.info("deps_requirements_hash: %r", deps_requirements.hash)
     return deps_requirements
 
 
 def build_deps_pex(code_directory, output_directory, python_version) -> Tuple[str, str]:
-    requirements = get_deps_requirements(code_directory, python_version)
+    requirements = get_deps_requirements(code_directory, python_version, cache_tag=None)
     return build_deps_from_requirements(requirements, output_directory)
 
 
