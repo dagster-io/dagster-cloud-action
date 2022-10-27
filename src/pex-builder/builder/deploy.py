@@ -167,8 +167,8 @@ def get_base_image_for(location_build: LocationBuild):
     "--deps-cache-tag",
     type=str,
     required=False,
-    help="Enables caching for the deps pex file, "
-    "using this tag in addition to the requirements list as the cache key",
+    help="Enables caching for the deps pex file. "
+    "Uses this tag in addition to the requirements list as the cache key",
 )
 @click.option(
     "--update-code-location",
