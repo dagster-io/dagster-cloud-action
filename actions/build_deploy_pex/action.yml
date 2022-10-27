@@ -16,13 +16,25 @@ inputs:
     description: 'Directory for built artifacts'
     required: false
     default: '/tmp/build'
-
+  force_rebuild_deps:
+    description: 'Whether to rebuild the dependencies, even if requirements.txt and setup.py did not change'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
 
   steps:
-    - run: echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV
+    - name: Environment variables
+      run: >
+        echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV &&
+        echo "FLAG_DEPS_CACHE_TAG_WRITE=--deps-cache-tag-write=${{ github.repository }}/${{ github.ref }}"
+      shell: bash
+
+    - name: Environment variables
+      if: ${{ input.force_rebuild_deps != 'true' }}
+      run: >
+        echo "FLAG_DEPS_CACHE_TAG_READ=--deps-cache-tag-read=${{ github.repository }}/${{ github.ref }}"
       shell: bash
 
     - name: Set up Python 3.8
@@ -43,6 +55,8 @@ runs:
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
+        $FLAG_DEPS_CACHE_TAG_WRITE
+        $FLAG_DEPS_CACHE_TAG_READ
       shell: bash
 
     - if: ${{ inputs.deploy != 'true' }}
@@ -51,4 +65,6 @@ runs:
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
+        $FLAG_DEPS_CACHE_TAG_WRITE
+        $FLAG_DEPS_CACHE_TAG_READ
       shell: bash
