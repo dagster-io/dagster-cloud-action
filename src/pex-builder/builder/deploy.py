@@ -177,13 +177,13 @@ def get_base_image_for(location_build: LocationBuild):
     "--deps-cache-tag-read",
     type=str,
     required=False,
-    help="Specify caching for the deps pex file. See summary for details.",
+    help="The cache_tag to read for the deps pex file. See summary for details.",
 )
 @click.option(
     "--deps-cache-tag-write",
     type=str,
     required=False,
-    help="Specify caching for the deps pex file. See summary for details.",
+    help="The cache_tag to write for the deps pex file. See summary for details.",
 )
 @click.option(
     "--update-code-location",
@@ -206,7 +206,7 @@ def cli(
 
     Examples:
 
-    To build the code locally but not deploy:
+    To build the code locally but not upload the code:
     $ builder.pex deploy path/to/dagster_cloud.yaml path/to/build_output
 
     To build and upload the code, but not update the code location:
