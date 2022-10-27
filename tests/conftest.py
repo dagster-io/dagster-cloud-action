@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Dict
 from unittest import mock
 
-import requests
 import pytest
+import requests
 
 from . import command_stub
 
