@@ -32,7 +32,7 @@ runs:
       shell: bash
 
     - name: Environment variables
-      if: ${{ input.force_rebuild_deps != 'true' }}
+      if: ${{ inputs.force_rebuild_deps != 'true' }}
       run: >
         echo "FLAG_DEPS_CACHE_TAG_READ=--deps-cache-tag-read=${{ github.repository }}/${{ github.ref }}"
       shell: bash
