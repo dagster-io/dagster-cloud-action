@@ -1,9 +1,8 @@
 import json
 import logging
 import os
-import sys
 from tempfile import TemporaryDirectory
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 
@@ -56,10 +55,13 @@ def requirements_hash_filename(requirements_hash: str):
     return f"requirements-{requirements_hash}.txt"
 
 
-def get_deps_pex_name_from_requirements_hash(
+def get_requirements_hash_values(
     requirements_hash: str,
-) -> Optional[str]:
-    """Returns the 'deps-<HASH>.pex' filename for requirements_hash if already uploaded."""
+) -> Optional[Dict[str, Any]]:
+    """Returns a metadata dict for the requirements_hash. The dict contains:
+    'deps_pex_name': filename for the deps pex, eg 'deps-123234334.pex'
+    'dagster_version': dagster package version included in the deps, eg '1.0.14'
+    """
     urls = get_s3_urls_for_get([requirements_hash_filename(requirements_hash)])
     if not urls:
         return None
@@ -71,14 +73,20 @@ def get_deps_pex_name_from_requirements_hash(
     result = requests.get(url)
     if result.ok:
         data = json.loads(result.content)
-        return data["deps_pex_name"]
+        # Don't return partial information
+        if "deps_pex_name" in data and "dagster_version" in data:
+            return data
     return None
 
 
-def set_requirements_hash_values(requirements_hash: str, deps_pex_name: str):
-    """Saves the deps_pex_name into the requirements hash file."""
+def set_requirements_hash_values(
+    requirements_hash: str, deps_pex_name: str, dagster_version: str
+):
+    """Saves the deps_pex_name and dagster_version into the requirements hash file."""
     filename = requirements_hash_filename(requirements_hash)
-    content = json.dumps({"deps_pex_name": deps_pex_name})
+    content = json.dumps(
+        {"deps_pex_name": deps_pex_name, "dagster_version": dagster_version}
+    )
     with TemporaryDirectory() as tmp_dir:
         filepath = os.path.join(tmp_dir, filename)
         with open(filepath, "w") as f:
