@@ -264,5 +264,6 @@ def pex_registry_fixture():
     ) as _, mock.patch(
         "requests.get", requests_get
     ) as _, mock.patch(
-        "requests.put", requests_put):
+        "requests.put", requests_put
+    ):
         yield s3_objects

@@ -121,47 +121,91 @@ def test_pex_deps_build(repo_root, builder_pex_path):
             assert "OK" in output
 
 
-def test_builder_deploy_with_upload(builder_module, repo_root, pex_registry_fixture):
+@mock.patch("builder.deps.build_deps_from_requirements")
+@mock.patch("builder.source.build_source_pex")
+def test_builder_deploy_with_upload(
+    build_source_pex_mock,
+    build_deps_from_requirements_mock,
+    builder_module,
+    repo_root,
+    pex_registry_fixture,
+):
     from builder import deploy
 
     dagster_project1_yaml = (
         repo_root / "tests/test-repos/dagster_project1/dagster_cloud.yaml"
     )
-    with tempfile.TemporaryDirectory() as build_output_dir:
-        deploy.deploy_main(
+
+    def build_deps_from_requirements(requirements, output_directory):
+        filepath = os.path.join(output_directory, deps_pex_content + ".pex")
+        with open(filepath, "w") as pex_file:
+            pex_file.write(deps_pex_content)
+        return filepath
+
+    build_deps_from_requirements_mock.side_effect = build_deps_from_requirements
+
+    def build_source_pex(code_directory, output_directory, python_version):
+        filepath = os.path.join(output_directory, source_pex_content + ".pex")
+        with open(filepath, "w") as pex_file:
+            pex_file.write(source_pex_content)
+        return filepath
+
+    build_source_pex_mock.side_effect = build_source_pex
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # 1st deploy
+        deps_pex_content = "deps-pex-a"
+        source_pex_content = "source-pex-a"
+        location_builds = deploy.deploy_main(
             str(dagster_project1_yaml),
-            build_output_dir,
+            temp_dir,
             upload_pex=True,
+            deps_cache_tag=None,
             update_code_location=False,
             python_version="3.8",
         )
         # deps-HASH.pex, source-HASH.pex and requirements-HASH.txt
         assert len(pex_registry_fixture) == 3
-        deps_pex_key = [key for key in pex_registry_fixture if key.startswith("deps-")][0]
-        requirements_key = [
-            key for key in pex_registry_fixture if key.startswith("requirements-")
-        ][0]
+        assert pex_registry_fixture["deps-pex-a.pex"] == b"deps-pex-a"
+        assert len(location_builds) == 1
+        assert location_builds[0].pex_tag == "files=deps-pex-a.pex:source-pex-a.pex"
 
-        # if we rebuild, the deps.pex should not be rebuilt or published
-        with mock.patch("builder.deps.build_deps_pex") as build_deps_pex_mock:
-            pex_registry_fixture[deps_pex_key] = "current value"
-            deploy.deploy_main(
-                str(dagster_project1_yaml),
-                build_output_dir,
-                upload_pex=True,
-                update_code_location=False,
-                python_version="3.8",
-            )
-            build_deps_pex_mock.assert_not_called()
-            assert pex_registry_fixture[deps_pex_key] == "current value"
-
-        # if the requirements-HASH is missing and we rebuild, the deps should get rebuilt
-        del pex_registry_fixture[requirements_key]
+        # 2nd deploy - deps.pex is rebuilt since we dont have a cache tag
+        deps_pex_content = "deps-pex-b"
+        build_deps_from_requirements_mock.reset()
         deploy.deploy_main(
             str(dagster_project1_yaml),
-            build_output_dir,
+            temp_dir,
             upload_pex=True,
+            deps_cache_tag=None,
             update_code_location=False,
             python_version="3.8",
         )
-        assert pex_registry_fixture[deps_pex_key] != "current value"
+        build_deps_from_requirements_mock.assert_called()
+        assert pex_registry_fixture["deps-pex-b.pex"] == b"deps-pex-b"
+
+        # 3rd deploy with cache tag - deps.pex is rebuilt for new cache tag
+        deps_pex_content = "deps-pex-c"
+        build_deps_from_requirements_mock.reset()
+        deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag="tag1",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert pex_registry_fixture["deps-pex-c.pex"] == b"deps-pex-c"
+
+        # 4th deploy with same cache tag - deps.pex is not rebuilt but reused
+        deps_pex_content = "deps-pex-d"
+        location_builds = deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag="tag1",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert "deps-pex-d.pex" not in pex_registry_fixture
+        assert location_builds[0].pex_tag == "files=deps-pex-c.pex:source-pex-a.pex"
