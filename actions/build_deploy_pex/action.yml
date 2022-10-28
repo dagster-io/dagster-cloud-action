@@ -25,16 +25,22 @@ runs:
   using: "composite"
 
   steps:
-    - name: Environment variables
+    - name: Set ACTION_REPO
       run: >
         echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV &&
-        echo "FLAG_DEPS_CACHE_TAG_WRITE=--deps-cache-tag-write=${{ github.repository }}/${{ github.ref }}" >> $GITHUB_ENV
       shell: bash
 
-    - name: Environment variables
+    - name: Set deps-cache-tag-read
+      # Don't use cached deps if instructed
       if: ${{ inputs.force_rebuild_deps != 'true' }}
-      run: >
-        echo "FLAG_DEPS_CACHE_TAG_READ=--deps-cache-tag-read=${{ github.repository }}/${{ github.ref }}" >> $GITHUB_ENV
+      # For PR commits, use the target branch name as the cache-tag, for other commits, use the branch name itself
+      run: echo "FLAG_DEPS_CACHE_TAG_READ=--deps-cache-tag-read=${{ github.repository }}/${{ github.base_ref && github.base_ref || github.ref_name }}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set deps-cache-tag-write
+      # Only write to the cache-tag for non PR commits so PR commits don't upgrade dependency versions
+      if: ${{ github.base_ref == '' }}
+      run: echo "FLAG_DEPS_CACHE_TAG_WRITE=--deps-cache-tag-write=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Python 3.8
