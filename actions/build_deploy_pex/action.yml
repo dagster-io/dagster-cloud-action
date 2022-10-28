@@ -27,7 +27,7 @@ runs:
   steps:
     - name: Set ACTION_REPO
       run: >
-        echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV &&
+        echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV
       shell: bash
 
     - name: Set deps-cache-tag-read
