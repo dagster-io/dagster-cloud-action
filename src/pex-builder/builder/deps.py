@@ -8,7 +8,7 @@ import re
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import click
 import pkg_resources
@@ -30,8 +30,8 @@ class DepsRequirements:
 
     @property
     def hash(self) -> str:
-        # The hash is used to reuse a cached deps.pex. We should only reuse if the requrements_txt,
-        # python_version and pex_flags match exactly.
+        # The hash uniqely identifies the list of requirements used to build a deps.pex.
+        # This is used as part of the cache key to reuse a cached deps.pex.
         # Note requirements_txt may have floating dependencies, so this is not perfect and may
         # reuse deps.pex even if a new PyPI package is published for a dependency.
         # An easy workaround is to pin the dependency in setup.py.
@@ -105,9 +105,6 @@ def build_deps_from_requirements(
     logging.info("Wrote deps pex: %r", final_pex_path)
 
     distribution_names = pex_info["distributions"].keys()
-    dagster_distributions = [
-        name for name in distribution_names if name.startswith("dagster-")
-    ]
     # the distribution is named something like 'dagster-1.0.14-py3-none-any.whl'
     pattern = re.compile(f"dagster-(.+?)-py")
     for name in distribution_names:

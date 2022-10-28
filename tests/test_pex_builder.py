@@ -121,81 +121,145 @@ def test_pex_deps_build(repo_root, builder_pex_path):
             assert "OK" in output
 
 
-def test_builder_deploy_with_upload(builder_module, repo_root):
+@mock.patch("builder.deps.build_deps_from_requirements")
+@mock.patch("builder.source.build_source_pex")
+def test_builder_deploy_with_upload(
+    build_source_pex_mock,
+    build_deps_from_requirements_mock,
+    builder_module,
+    repo_root,
+    pex_registry_fixture,
+):
     from builder import deploy
-
-    s3_objects = {}
-
-    def s3_urls_for_get(filenames):
-        return [
-            (filename if filename in s3_objects else None) for filename in filenames
-        ]
-
-    def s3_urls_for_put(filenames):
-        return filenames
-
-    # Consider switching to responses package
-    def requests_get(url):
-        response = requests.Response()
-        if url in s3_objects:
-            response._content = s3_objects[url]
-            response.status_code = 200
-        else:
-            response.status_code = 404
-        return response
-
-    def requests_put(url, data):
-        s3_objects[url] = data.read() if hasattr(data, "read") else data
-        response = requests.Response()
-        response.status_code = 200
-        return response
 
     dagster_project1_yaml = (
         repo_root / "tests/test-repos/dagster_project1/dagster_cloud.yaml"
     )
-    with mock.patch(
-        "builder.pex_registry.get_s3_urls_for_get", s3_urls_for_get
-    ) as _, mock.patch(
-        "builder.pex_registry.get_s3_urls_for_put", s3_urls_for_put
-    ) as _, mock.patch(
-        "requests.get", requests_get
-    ) as _, mock.patch(
-        "requests.put", requests_put
-    ) as _, tempfile.TemporaryDirectory() as build_output_dir:
-        deploy.deploy_main(
+
+    def build_deps_from_requirements(requirements, output_directory):
+        filepath = os.path.join(output_directory, deps_pex_content + ".pex")
+        with open(filepath, "w") as pex_file:
+            pex_file.write(deps_pex_content)
+        return filepath, "1.0.11"
+
+    build_deps_from_requirements_mock.side_effect = build_deps_from_requirements
+
+    def build_source_pex(code_directory, output_directory, python_version):
+        filepath = os.path.join(output_directory, source_pex_content + ".pex")
+        with open(filepath, "w") as pex_file:
+            pex_file.write(source_pex_content)
+        return filepath
+
+    build_source_pex_mock.side_effect = build_source_pex
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # 1st deploy
+        deps_pex_content = "deps-pex-1"
+        source_pex_content = "source-pex-1"
+        location_builds = deploy.deploy_main(
             str(dagster_project1_yaml),
-            build_output_dir,
+            temp_dir,
             upload_pex=True,
+            deps_cache_tag_read=None,
+            deps_cache_tag_write=None,
             update_code_location=False,
             python_version="3.8",
         )
-        # deps-HASH.pex, source-HASH.pex and requirements-HASH.txt
-        assert len(s3_objects) == 3
-        deps_pex_key = [key for key in s3_objects if key.startswith("deps-")][0]
-        requirements_key = [
-            key for key in s3_objects if key.startswith("requirements-")
-        ][0]
+        # deps-HASH.pex, source-HASH.pex
+        assert set(pex_registry_fixture.keys()) == {
+            "deps-pex-1.pex",
+            "source-pex-1.pex",
+        }
+        assert pex_registry_fixture["deps-pex-1.pex"] == b"deps-pex-1"
+        assert len(location_builds) == 1
+        assert location_builds[0].pex_tag == "files=deps-pex-1.pex:source-pex-1.pex"
 
-        # if we rebuild, the deps.pex should not be rebuilt or published
-        with mock.patch("builder.deps.build_deps_pex") as build_deps_pex_mock:
-            s3_objects[deps_pex_key] = "current value"
-            deploy.deploy_main(
-                str(dagster_project1_yaml),
-                build_output_dir,
-                upload_pex=True,
-                update_code_location=False,
-                python_version="3.8",
-            )
-            build_deps_pex_mock.assert_not_called()
-            assert s3_objects[deps_pex_key] == "current value"
-
-        # if the requirements-HASH is missing and we rebuild, the deps should get rebuilt
-        del s3_objects[requirements_key]
-        deploy.deploy_main(
+        # 2nd deploy - same requirements but deps.pex is rebuilt since we dont have a cache tag
+        deps_pex_content = "deps-pex-2"
+        build_deps_from_requirements_mock.reset()
+        location_builds = deploy.deploy_main(
             str(dagster_project1_yaml),
-            build_output_dir,
+            temp_dir,
             upload_pex=True,
+            deps_cache_tag_read=None,
+            deps_cache_tag_write=None,
             update_code_location=False,
             python_version="3.8",
         )
-        assert s3_objects[deps_pex_key] != "current value"
+        build_deps_from_requirements_mock.assert_called()
+        assert "deps-pex-2.pex" in pex_registry_fixture
+
+        # 3rd deploy with cache tag - deps.pex is rebuilt and associated with new cache tag
+        deps_pex_content = "deps-pex-3"
+        build_deps_from_requirements_mock.reset()
+        location_builds = deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag_read="tag1",
+            deps_cache_tag_write="tag1",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert "deps-pex-3.pex" in pex_registry_fixture
+        assert location_builds[0].pex_tag == "files=deps-pex-3.pex:source-pex-1.pex"
+
+        # 4th deploy with same cache tag - deps.pex is not rebuilt but reused
+        deps_pex_content = "deps-pex-4"
+        location_builds = deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag_read="tag1",
+            deps_cache_tag_write="tag1",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert "deps-pex-4.pex" not in pex_registry_fixture
+        assert location_builds[0].pex_tag == "files=deps-pex-3.pex:source-pex-1.pex"
+
+        # 5th deploy with only write tag - deps.pex is rebuilt, even though cache tag exists
+
+        deps_pex_content = "deps-pex-5"
+        location_builds = deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag_read=None,
+            deps_cache_tag_write="tag1",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert "deps-pex-5.pex" in pex_registry_fixture
+        assert location_builds[0].pex_tag == "files=deps-pex-5.pex:source-pex-1.pex"
+
+        # 6th deploy with different read and write tags - deps.pex is reused
+
+        deps_pex_content = "deps-pex-6"
+        location_builds = deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag_read="tag1",
+            deps_cache_tag_write="tag1-copy",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        assert "deps-pex-6.pex" not in pex_registry_fixture
+        assert location_builds[0].pex_tag == "files=deps-pex-5.pex:source-pex-1.pex"
+
+        # 7th deploy wth the seeded cache tag - deps.pex is reused
+
+        deps_pex_content = "deps-pex-7"
+        location_builds = deploy.deploy_main(
+            str(dagster_project1_yaml),
+            temp_dir,
+            upload_pex=True,
+            deps_cache_tag_read="tag1-copy",
+            deps_cache_tag_write="tag1-copy",
+            update_code_location=False,
+            python_version="3.8",
+        )
+        print(pex_registry_fixture)
+        assert "deps-pex-7.pex" not in pex_registry_fixture
+        assert location_builds[0].pex_tag == "files=deps-pex-5.pex:source-pex-1.pex"

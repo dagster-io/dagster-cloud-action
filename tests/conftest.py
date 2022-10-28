@@ -6,8 +6,10 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Dict
+from unittest import mock
 
 import pytest
+import requests
 
 from . import command_stub
 
@@ -222,3 +224,46 @@ def builder_module(builder_pex_path):
             yield importlib.import_module("builder")
         finally:
             sys.path.pop(0)
+
+
+@pytest.fixture(scope="function")
+def pex_registry_fixture():
+    # replaces remote registry with a python dictionary, which is returned by this fixture
+    # note this fixture only works with builder_module, not builder_pex_path
+
+    s3_objects = {}  # filename -> content
+
+    def s3_urls_for_get(filenames):
+        return [
+            (filename if filename in s3_objects else None) for filename in filenames
+        ]
+
+    def s3_urls_for_put(filenames):
+        return filenames
+
+    # Consider switching to the "responses" package
+    def requests_get(url):
+        response = requests.Response()
+        if url in s3_objects:
+            response._content = s3_objects[url]
+            response.status_code = 200
+        else:
+            response.status_code = 404
+        return response
+
+    def requests_put(url, data):
+        s3_objects[url] = data.read() if hasattr(data, "read") else data
+        response = requests.Response()
+        response.status_code = 200
+        return response
+
+    with mock.patch(
+        "builder.pex_registry.get_s3_urls_for_get", s3_urls_for_get
+    ) as _, mock.patch(
+        "builder.pex_registry.get_s3_urls_for_put", s3_urls_for_put
+    ) as _, mock.patch(
+        "requests.get", requests_get
+    ) as _, mock.patch(
+        "requests.put", requests_put
+    ):
+        yield s3_objects
