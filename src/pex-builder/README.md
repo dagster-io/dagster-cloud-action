@@ -61,6 +61,8 @@ A complete example using caching and local builds:
 builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR> --upload-pex --deps-cache-tag-read=local --deps-cache-tag-write=local --update-code-location --code-location-details deployment=prod,commit_hash=local12345
 ```
 
+## Invoking dagster commands
+
 Embedded CLIs can be directly invoked:
 
 ```
