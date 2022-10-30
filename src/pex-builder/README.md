@@ -17,7 +17,8 @@ builder.pex -m builder.source <PROJECT_DIR> <OUT_DIR>  # build the source pex fi
 builder.pex -m builder.deps <PROJECT_DIR> <OUT_DIR>    # build the deps pex file
 ```
 
-The `builder.deploy` module builds both source and deps pexes and optionally uploads the pex files and updates the code location.
+The `builder.deploy` module builds both source and deps pexes and optionally uploads the pex files
+and updates the code location.
 
 ```
 # Build both source and deps pex for a given yaml file:
@@ -42,11 +43,19 @@ export DAGSTER_CLOUD_API_TOKEN=...
 export DAGSTER_CLOUD_URL=...
 builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR> --upload-pex  --update-code-location --code-location-details deployment=prod,commit_hash=local12345
 
-# For a branch deployment, provide the deployment id (not the branch name) to the name in --code-location-details. This can be found in the URL when browsing a branch deployment.
+# For a branch deployment, provide the deployment id (not the branch name) to the name in
+--code-location-details. This can be found in the URL when browsing a branch deployment.
+
+
+By default, the `deps-HASH.pex` is not cached. To cache in the pex registry, provide any name to
+both `--deps-cache-tag-read` and `--deps-cache-tag-write`. 
 
 ```
 
-By default, the `deps-HASH.pex` is not cached. To cache in the pex registry, provide any name to both `--deps-cache-tag-read` and `--deps-cache-tag-write`. A complete example using caching and local builds:
+
+## Local execution example
+
+A complete example using caching and local builds:
 
 ```
 builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR> --upload-pex --deps-cache-tag-read=local --deps-cache-tag-write=local --update-code-location --code-location-details deployment=prod,commit_hash=local12345
