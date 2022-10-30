@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 from contextlib import contextmanager
-from typing import List
+from typing import List, Optional
 from zipfile import ZipFile
 
 import click
@@ -139,3 +139,12 @@ def python_version_option():
 
 def parse_python_version(python_version: str) -> version.Version:
     return version.Version(python_version)
+
+
+def parse_kv(ctx, param: str, value: Optional[str]):
+    if not value:
+        return {}
+    try:
+        return dict(part.split("=", 1) for part in value.split(","))
+    except ValueError as err:
+        raise ValueError(f"Value {value!r} could not be parsed: {err}")

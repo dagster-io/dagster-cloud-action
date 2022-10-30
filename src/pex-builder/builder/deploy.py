@@ -192,6 +192,12 @@ def get_base_image_for(location_build: LocationBuild):
     default=False,
     help="Update code location to use new PEX files.",
 )
+@click.option(
+    "--code-location-details",
+    callback=util.parse_kv,
+    help="Syntax: --code-location-details name=NAME,commit_hash=HASH. "
+    "When not provided, details are inferred from the github action environment.",
+)
 @util.python_version_option()
 def cli(
     dagster_cloud_file,
@@ -200,6 +206,7 @@ def cli(
     deps_cache_tag_write,
     deps_cache_tag_read,
     update_code_location,
+    code_location_details,
     python_version,
 ):
     """Build and deploy a code location based on PEX files.
@@ -237,6 +244,7 @@ def cli(
         deps_cache_tag_read=deps_cache_tag_read,
         deps_cache_tag_write=deps_cache_tag_write,
         update_code_location=update_code_location,
+        code_location_details=code_location_details,
         python_version=python_version,
     )
 
@@ -249,9 +257,10 @@ def deploy_main(
     deps_cache_tag_read: Optional[str],
     deps_cache_tag_write: Optional[str],
     update_code_location: bool,
+    code_location_details: Optional[Dict[str, str]],
     python_version: str,
 ):
-    # We don't have strict checking, but print warnings in case flags don't make sense
+    # Warnings and errors in case flags don't make sense
     if deps_cache_tag_read or deps_cache_tag_write and not upload_pex:
         logging.warn(
             "--deps-cache-tag* specified without --upload-pex. Caching is disabled."
@@ -262,6 +271,16 @@ def deploy_main(
             "--update-code-location specified without --upload-pex."
             " Code location may not work if pex files are not uploaded."
         )
+    if code_location_details:
+        if (
+            "name" not in code_location_details
+            or "commit_hash" not in code_location_details
+        ):
+            raise ValueError(
+                "--code-location-details value must include name and commit_hash, eg "
+                "'name=prod,commit_hash=1234a'",
+                code_location_details,
+            )
     deps_cache_tags = DepsCacheTags(deps_cache_tag_read, deps_cache_tag_write)
 
     # always build
@@ -310,20 +329,32 @@ def deploy_main(
 
     # update code location if enabled
     if update_code_location:
-        deployment = "prod"  # default
+        if code_location_details:
+            deployment = code_location_details["deployment"]
+            commit_hash = code_location_details["commit_hash"]
+        else:
+            logging.info(
+                "No --code-location-details, inferring from github environment."
+            )
+            deployment = "prod"  # default
+            github_event = github_context.github_event(
+                os.path.dirname(dagster_cloud_file)
+            )
 
-        github_event = github_context.github_event(os.path.dirname(dagster_cloud_file))
-        if github_event.branch_name:
-            with github_context.log_group("Updating Branch Deployment"):
-                logging.info(
-                    "Creating/updating branch deployment for %r",
-                    github_event.branch_name,
-                )
-                deployment = code_location.create_or_update_branch_deployment_from_github_context(
-                    github_event
-                )
-                if not deployment:
-                    raise ValueError("Could not create branch deployment", github_event)
+            commit_hash = github_event.github_sha
+            if github_event.branch_name:
+                with github_context.log_group("Updating Branch Deployment"):
+                    logging.info(
+                        "Creating/updating branch deployment for %r",
+                        github_event.branch_name,
+                    )
+                    deployment = code_location.create_or_update_branch_deployment_from_github_context(
+                        github_event
+                    )
+                    if not deployment:
+                        raise ValueError(
+                            "Could not create branch deployment", github_event
+                        )
 
         for location_build in location_builds:
             location_name = location_build.location.name
@@ -343,7 +374,7 @@ def deploy_main(
                     image=base_image,
                     pex_tag=location_build.pex_tag,
                     location_file=dagster_cloud_file,
-                    commit_hash=github_event.github_sha,
+                    commit_hash=commit_hash,
                 )
 
         code_location.wait_for_load(
