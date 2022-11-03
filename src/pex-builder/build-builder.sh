@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Build the builder.pex from Pexfile.lock and src/
-# Can be run locally or on GHA - modifies the python environment by
-# installing pipenv and pex.
+# Writes src/pex-builder/build/builder.pex
+# Can be run locally or on GHA
 
 set -o xtrace   # debug printing
 
@@ -13,6 +13,10 @@ echo "Running in $SCRIPT_DIR"
 
 BUILDER_PEX_PATH="${1:-build}/builder.pex"
 echo "Going to build $BUILDER_PEX_PATH"
+
+# create a venv to have a reproducible environment and not clobber the current python environment
+python3.8 -m venv build/venv
+source build/venv/activate
 
 export PIPENV_IGNORE_VIRTUALENVS=1
 pip install pipenv pex
