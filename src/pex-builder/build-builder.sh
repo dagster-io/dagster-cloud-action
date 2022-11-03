@@ -32,6 +32,7 @@ $VENV_ROOT/bin/pipenv requirements --exclude-markers > build/lib/requirements.tx
 
 # Generate a multi platform builder.pex (linux and macos)
 # Require running builder.pex under 3.8, in case multiple pythons are present on PATH
+export PEX_ROOT=build/.pex
 $VENV_ROOT/bin/pex -r build/lib/requirements.txt -D build/lib -o $BUILDER_PEX_PATH -v --include-tools \
     --python=python3.8 \
     --platform=manylinux2014_x86_64-cp-38-cp38 \
