@@ -61,13 +61,8 @@ runs:
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
-<<<<<<< HEAD
-        $FLAG_DEPS_CACHE_TAG_WRITE
-        $FLAG_DEPS_CACHE_TAG_READ
-=======
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
->>>>>>> main
       shell: bash
 
     - if: ${{ inputs.deploy != 'true' }}
@@ -76,11 +71,6 @@ runs:
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
-<<<<<<< HEAD
-        $FLAG_DEPS_CACHE_TAG_WRITE
-        $FLAG_DEPS_CACHE_TAG_READ
-=======
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
->>>>>>> main
       shell: bash
