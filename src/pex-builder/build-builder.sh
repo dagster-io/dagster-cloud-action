@@ -32,5 +32,6 @@ pipenv requirements --exclude-markers > build/lib/requirements.txt
 # Require running builder.pex under 3.8, in case multiple pythons are present on PATH
 pex -r build/lib/requirements.txt -D build/lib -o $BUILDER_PEX_PATH -v --include-tools \
     --python=python3.8 \
-    --platform=manylinux2014_x86_64-cp-38-cp38 --platform=current
+    --platform=manylinux2014_x86_64-cp-38-cp38 \
+    --platform=macosx_12_0_x86_64-cp-38-cp38
 
