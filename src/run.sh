@@ -20,4 +20,10 @@ RUN_ID=$(
     --config-json "${INPUT_CONFIG_JSON}"
 )
 
-echo "::set-output name=run_id::${RUN_ID}"
+if [ -z $RUN_ID ]; then
+    echo "Failed to launch run"
+    exit 1
+else
+    echo "Successfully launched run: ${RUN_ID}"
+    echo "::set-output name=run_id::${RUN_ID}"
+fi
