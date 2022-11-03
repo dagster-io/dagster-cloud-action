@@ -198,7 +198,7 @@ def get_base_image_for(location_build: LocationBuild):
 @click.option(
     "--code-location-details",
     callback=util.parse_kv,
-    help="Syntax: --code-location-details name=NAME,commit_hash=HASH. "
+    help="Syntax: --code-location-details deployment=NAME,commit_hash=HASH. "
     "When not provided, details are inferred from the github action environment.",
 )
 @util.python_version_option()
@@ -282,7 +282,7 @@ def deploy_main(
         ):
             raise ValueError(
                 "--code-location-details value must include name and commit_hash, eg "
-                "'name=prod,commit_hash=1234a'",
+                "'deployment=prod,commit_hash=1234a'",
                 code_location_details,
             )
     deps_cache_tags = DepsCacheTags(deps_cache_from_tag, deps_cache_to_tag)
