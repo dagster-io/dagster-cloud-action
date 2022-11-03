@@ -37,8 +37,8 @@ class LocationBuild:
 
 @dataclass
 class DepsCacheTags:
-    deps_cache_tag_read: Optional[str]
-    deps_cache_tag_write: Optional[str]
+    deps_cache_from_tag: Optional[str]
+    deps_cache_to_tag: Optional[str]
 
 
 def build_project(
@@ -94,10 +94,10 @@ def build_locations(
         builds = builds_for_requirements_hash[requirements_hash]
         deps_requirements = builds[0].deps_requirements
 
-        # if a read cache_tag is specified, don't build deps.pex files if it is already published
-        if upload_pex and deps_cache_tags.deps_cache_tag_read:
+        # if a --deps-cache-from is specified, don't build deps.pex files if it is already published
+        if upload_pex and deps_cache_tags.deps_cache_from_tag:
             published_deps_pex_info = pex_registry.get_cached_deps_details(
-                deps_requirements.hash, deps_cache_tags.deps_cache_tag_read
+                deps_requirements.hash, deps_cache_tags.deps_cache_from_tag
             )
         else:
             published_deps_pex_info = None
@@ -109,7 +109,7 @@ def build_locations(
                 "skipping rebuild.",
                 published_deps_pex,
                 deps_requirements.hash,
-                deps_cache_tags.deps_cache_tag_read,
+                deps_cache_tags.deps_cache_from_tag,
             )
 
             for location_build in builds:
@@ -121,7 +121,7 @@ def build_locations(
             logging.info(
                 "No published deps.pex found for requirements_hash %r, cache_tag %r, will rebuild.",
                 deps_requirements.hash,
-                deps_cache_tags.deps_cache_tag_read,
+                deps_cache_tags.deps_cache_from_tag,
             )
             deps_pex_path, dagster_version = deps.build_deps_from_requirements(
                 deps_requirements, output_directory
@@ -174,16 +174,19 @@ def get_base_image_for(location_build: LocationBuild):
     help="Upload PEX files to registry.",
 )
 @click.option(
-    "--deps-cache-tag-read",
+    "--deps-cache-from",
     type=str,
     required=False,
-    help="The cache_tag to read for the deps pex file. See summary for details.",
+    help="Try to reuse a pre-existing deps pex file. A deps pex file is reused if it was "
+    "built with a --deps-cache-to value that matches this flag value, AND the requirements.txt "
+    "and setup.py were identical.",
 )
 @click.option(
-    "--deps-cache-tag-write",
+    "--deps-cache-to",
     type=str,
     required=False,
-    help="The cache_tag to write for the deps pex file. See summary for details.",
+    help="Allow reusing the generated deps pex and associate with the given tag. "
+    "See --deps-cache-from for how to reuse deps pex files.",
 )
 @click.option(
     "--update-code-location",
@@ -203,8 +206,8 @@ def cli(
     dagster_cloud_file,
     build_output_dir,
     upload_pex,
-    deps_cache_tag_write,
-    deps_cache_tag_read,
+    deps_cache_to,
+    deps_cache_from,
     update_code_location,
     code_location_details,
     python_version,
@@ -223,26 +226,27 @@ def cli(
     $ builder.pex deploy --upload-pex --update-code-location path/to/dagster_cloud.yaml path/to/build_output
 
     The built code contains two files - source-HASH.pex and deps-HASH.pex. The deps-HASH.pex can be
-    reused if previously uploaded and the requirements.txt or setup.py did not change.
+    reused using the --deps-cache-* flags.
 
-    To build the deps-HASH.pex once and reuse, specify the same value in both read and write tags:
-    $ builder.pex deploy ... --deps-cache-tag-read=main --deps-cache-tag-write=main ...
+    To build the deps-HASH.pex once and reuse, specify the same value in both --deps-cache-* flags:
+    $ builder.pex deploy ... --deps-cache-from=main --deps-cache-to=main ...
 
-    To force a rebuild for a specific cache tag, specify only the write tag but not the read tag:
-    $ builder.pex deploy ... --deps-cache-tag-write=main ...
+    To force a rebuild for a specific cache tag, specify only the --deps-cache-to flag but not the
+    --deps-cache-from flag:
+    $ builder.pex deploy ... --deps-cache-to=main ...
 
-    To seed a new cache tag from an existing cache tag, specify the source tag as the read tag:
-    $ builder.pex deploy ... --deps-cache-tag-read=main --deps-cache-tag-write=branch1 ...
+    To seed a new cache from an existing cache, specify the source tag in the --deps-cache-from flag:
+    $ builder.pex deploy ... --deps-cache-from=main --deps-cache-to=branch1 ...
 
-    If the content of requirements.txt or setup.py changes, the read tag has no effect and
-    deps-HASH.pex is always rebuilt.
+    In addition to the --deps-cache-from flag, the content of setup.py and requirements.txt must also
+    match for a deps pex to be reused.
     """
     deploy_main(
         dagster_cloud_file,
         build_output_dir,
         upload_pex=upload_pex,
-        deps_cache_tag_read=deps_cache_tag_read,
-        deps_cache_tag_write=deps_cache_tag_write,
+        deps_cache_from_tag=deps_cache_from,
+        deps_cache_to_tag=deps_cache_to,
         update_code_location=update_code_location,
         code_location_details=code_location_details,
         python_version=python_version,
@@ -254,20 +258,20 @@ def deploy_main(
     build_output_dir: str,
     *,
     upload_pex: bool,
-    deps_cache_tag_read: Optional[str],
-    deps_cache_tag_write: Optional[str],
+    deps_cache_from_tag: Optional[str],
+    deps_cache_to_tag: Optional[str],
     update_code_location: bool,
     code_location_details: Optional[Dict[str, str]],
     python_version: str,
 ):
-    # Warnings and errors in case flags don't make sense
-    if deps_cache_tag_read or deps_cache_tag_write and not upload_pex:
-        logging.warn(
+    # We don't have strict checking, but print warnings in case flags don't make sense
+    if deps_cache_from_tag or deps_cache_to_tag and not upload_pex:
+        logging.warning(
             "--deps-cache-tag* specified without --upload-pex. Caching is disabled."
         )
 
     if update_code_location and not upload_pex:
-        logging.warn(
+        logging.warning(
             "--update-code-location specified without --upload-pex."
             " Code location may not work if pex files are not uploaded."
         )
@@ -281,7 +285,7 @@ def deploy_main(
                 "'name=prod,commit_hash=1234a'",
                 code_location_details,
             )
-    deps_cache_tags = DepsCacheTags(deps_cache_tag_read, deps_cache_tag_write)
+    deps_cache_tags = DepsCacheTags(deps_cache_from_tag, deps_cache_to_tag)
 
     # always build
     with github_context.log_group("Building PEX Files"):
@@ -309,8 +313,8 @@ def deploy_main(
                     logging.error("No built files for %s", location_build.location.name)
                 pex_registry.upload_files(paths)
 
-                # if a write cache_tag is specified, set or update the deps details
-                if deps_cache_tags.deps_cache_tag_write:
+                # if a --deps-cache-to cache_tag is specified, set or update the deps details
+                if deps_cache_tags.deps_cache_to_tag:
                     # could be either a newly built pex or an published pex name copied from another tag
                     deps_pex_name = (
                         os.path.basename(location_build.deps_pex_path)
@@ -320,7 +324,7 @@ def deploy_main(
 
                     pex_registry.set_cached_deps_details(
                         location_build.deps_requirements.hash,
-                        deps_cache_tags.deps_cache_tag_write,
+                        deps_cache_tags.deps_cache_to_tag,
                         deps_pex_name,
                         dagster_version=location_build.dagster_version,
                     )

@@ -30,7 +30,7 @@ class DepsRequirements:
 
     @property
     def hash(self) -> str:
-        # The hash uniqely identifies the list of requirements used to build a deps.pex.
+        # The hash uniquely identifies the list of requirements used to build a deps.pex.
         # This is used as part of the cache key to reuse a cached deps.pex.
         # Note requirements_txt may have floating dependencies, so this is not perfect and may
         # reuse deps.pex even if a new PyPI package is published for a dependency.
