@@ -277,7 +277,7 @@ def deploy_main(
         )
     if code_location_details:
         if (
-            "name" not in code_location_details
+            "deployment" not in code_location_details
             or "commit_hash" not in code_location_details
         ):
             raise ValueError(
