@@ -17,7 +17,9 @@ jobs:
       - name: Launch a job on Dagster Cloud serverless
         uses: ./actions/utils/run
         with:
-          location_name: from_gh_action
+          # differently named location (manually deployed), so that this launch integration test
+          # does not have race-y collisions with the deployment integration tests
+          location_name: from_gh_action_for_launch
           repository_name: repo
           job_name: simple_job
         env:
