@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -51,18 +52,29 @@ def get_s3_urls_for_get(filenames: List[str]) -> Optional[List[str]]:
             return None
 
 
-def requirements_hash_filename(requirements_hash: str):
-    return f"requirements-{requirements_hash}.txt"
+def requirements_hash_filename(requirements_hash: str, cache_tag: Optional[str]):
+    # encode cache_tag as a filesystem safe string
+    if cache_tag:
+        cache_tag_suffix = "-" + base64.urlsafe_b64encode(
+            cache_tag.encode("utf-8")
+        ).decode("utf-8")
+    else:
+        cache_tag_suffix = ""
+
+    return f"requirements-{requirements_hash}{cache_tag_suffix}.txt"
 
 
-def get_requirements_hash_values(
-    requirements_hash: str,
+def get_cached_deps_details(
+    requirements_hash: str, cache_tag: Optional[str]
 ) -> Optional[Dict[str, Any]]:
-    """Returns a metadata dict for the requirements_hash. The dict contains:
+    """Returns a metadata dict for the requirements_hash and cache_tag.
+    The dict contains:
     'deps_pex_name': filename for the deps pex, eg 'deps-123234334.pex'
     'dagster_version': dagster package version included in the deps, eg '1.0.14'
     """
-    urls = get_s3_urls_for_get([requirements_hash_filename(requirements_hash)])
+    urls = get_s3_urls_for_get(
+        [requirements_hash_filename(requirements_hash, cache_tag)]
+    )
     if not urls:
         return None
 
@@ -79,11 +91,14 @@ def get_requirements_hash_values(
     return None
 
 
-def set_requirements_hash_values(
-    requirements_hash: str, deps_pex_name: str, dagster_version: str
+def set_cached_deps_details(
+    requirements_hash: str,
+    cache_tag: Optional[str],
+    deps_pex_name: str,
+    dagster_version: str,
 ):
     """Saves the deps_pex_name and dagster_version into the requirements hash file."""
-    filename = requirements_hash_filename(requirements_hash)
+    filename = requirements_hash_filename(requirements_hash, cache_tag)
     content = json.dumps(
         {"deps_pex_name": deps_pex_name, "dagster_version": dagster_version}
     )

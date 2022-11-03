@@ -16,13 +16,31 @@ inputs:
     description: 'Directory for built artifacts'
     required: false
     default: '/tmp/build'
-
+  force_rebuild_deps:
+    description: 'Whether to rebuild the dependencies, even if requirements.txt and setup.py did not change'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
 
   steps:
-    - run: echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV
+    - name: Set ACTION_REPO
+      run: >
+        echo "ACTION_REPO=$GITHUB_ACTION_PATH/../../" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set deps-cache-from
+      # Don't use cached deps if instructed
+      if: ${{ inputs.force_rebuild_deps != 'true' }}
+      # For PR commits, use the target branch name as the cache-tag, for other commits, use the branch name itself
+      run: echo "FLAG_DEPS_CACHE_FROM=--deps-cache-from=${{ github.repository }}/${{ github.base_ref && github.base_ref || github.ref_name }}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Set deps-cache-to
+      # Only write to the cache-tag for non PR commits so PR commits don't upgrade dependency versions
+      if: ${{ github.base_ref == '' }}
+      run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Python 3.8
@@ -43,6 +61,8 @@ runs:
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
+        $FLAG_DEPS_CACHE_TO
+        $FLAG_DEPS_CACHE_FROM
       shell: bash
 
     - if: ${{ inputs.deploy != 'true' }}
@@ -51,4 +71,6 @@ runs:
         generated/gha/builder.pex -m builder.deploy 
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
+        $FLAG_DEPS_CACHE_TO
+        $FLAG_DEPS_CACHE_FROM
       shell: bash
