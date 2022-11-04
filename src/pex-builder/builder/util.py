@@ -24,7 +24,7 @@ def run_python_subprocess(args: List[str], env=None):
     cmd = os.getenv("PEX", sys.executable)
 
     args = [cmd] + args
-    logging.info("Running %r", args)
+    logging.info("Running %r in %r", args, os.curdir)
     proc = subprocess.run(args, capture_output=True, env=env)
     return proc
 
