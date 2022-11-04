@@ -104,7 +104,7 @@ def update_pr_comment(
 
     script_path = (
         github_event.github_action_path.parent.parent
-        / "src/create_or_update_pr_comment.py"
+        / "src/create_or_update_comment.py"
     )
     if not script_path.exists:
         logging.warning("Did not find %r, not adding PR comment.", script_path)
