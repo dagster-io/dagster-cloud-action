@@ -17,16 +17,21 @@ TARGET_PYTHON_VERSIONS = [
 ]
 
 
-def run_self_module(module_name, args: List[str]):
-    "Invoke this executable again with -m {module}"
+def run_python_subprocess(args: List[str], env=None):
+    """Invoke python with given args, using an environment identical to current environment."""
     # If running a pex file directly, we invoke the executable pex file again.
     # Otherwise we assume we're running in a pex generated venv and use the python executable.
     cmd = os.getenv("PEX", sys.executable)
 
-    args = [cmd, "-m", module_name] + args
-    logging.info("Running %r", args)
-    proc = subprocess.run(args, capture_output=True)
+    args = [cmd] + args
+    logging.info("Running %r in %r", args, os.path.abspath(os.curdir))
+    proc = subprocess.run(args, capture_output=True, env=env)
     return proc
+
+
+def run_self_module(module_name, args: List[str]):
+    "Invoke this executable again with -m {module}"
+    return run_python_subprocess(["-m", module_name, *args])
 
 
 def get_pex_flags(python_version: version.Version) -> List[str]:

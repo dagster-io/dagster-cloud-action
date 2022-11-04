@@ -9,6 +9,7 @@ dagster-cloud-cli = ">=1.0.14"  # with pex related changes
 dagster = "*"
 click = "*"
 packaging = "*"
+PyGithub = "*"
 
 [dev-packages]
 

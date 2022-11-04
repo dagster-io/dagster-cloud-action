@@ -3,6 +3,7 @@
 import dataclasses
 import logging
 import os
+import threading
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -34,6 +35,8 @@ class LocationBuild:
     source_pex_path: Optional[str] = None
     pex_tag: Optional[str] = None  # composite tag used to identify the set of pex files
 
+    code_location_update_error: Optional[Exception] = None
+
 
 @dataclass
 class DepsCacheTags:
@@ -47,10 +50,15 @@ def build_project(
     upload_pex: bool,
     deps_cache_tags: DepsCacheTags,
     python_version: version.Version,
+    should_notify: bool = False,
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
 
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
+
+    if should_notify:
+        for location in locations:
+            notify(None, location.name, "pending")
 
     location_builds = build_locations(
         locations, output_directory, upload_pex, deps_cache_tags, python_version
@@ -163,6 +171,24 @@ def get_base_image_for(location_build: LocationBuild):
     )
 
 
+def notify(deployment_name: Optional[str], location_name: str, action: str):
+    if github_event:
+        github_context.update_pr_comment(
+            github_event,
+            action=action,
+            deployment_name=deployment_name,
+            location_name=location_name,
+        )
+
+
+github_event: Optional[github_context.GithubEvent] = None
+
+
+def load_github_event(project_dir):
+    global github_event
+    github_event = github_context.get_github_event(project_dir)
+
+
 @click.command()
 @click.argument("dagster_cloud_file", type=click.Path(exists=True))
 @click.argument("build_output_dir", type=click.Path(exists=False))
@@ -265,7 +291,7 @@ def deploy_main(
     python_version: str,
 ):
     # We don't have strict checking, but print warnings in case flags don't make sense
-    if deps_cache_from_tag or deps_cache_to_tag and not upload_pex:
+    if (deps_cache_from_tag or deps_cache_to_tag) and not upload_pex:
         logging.warning(
             "--deps-cache-tag* specified without --upload-pex. Caching is disabled."
         )
@@ -275,16 +301,20 @@ def deploy_main(
             "--update-code-location specified without --upload-pex."
             " Code location may not work if pex files are not uploaded."
         )
-    if code_location_details:
-        if (
-            "deployment" not in code_location_details
-            or "commit_hash" not in code_location_details
-        ):
-            raise ValueError(
-                "--code-location-details value must include name and commit_hash, eg "
-                "'deployment=prod,commit_hash=1234a'",
-                code_location_details,
-            )
+    if update_code_location:
+        if code_location_details:
+            if (
+                "deployment" not in code_location_details
+                or "commit_hash" not in code_location_details
+            ):
+                raise ValueError(
+                    "--code-location-details value must include name and commit_hash, eg "
+                    "'deployment=prod,commit_hash=1234a'",
+                    code_location_details,
+                )
+        else:
+            load_github_event(os.path.dirname(dagster_cloud_file))
+
     deps_cache_tags = DepsCacheTags(deps_cache_from_tag, deps_cache_to_tag)
 
     # always build
@@ -295,6 +325,7 @@ def deploy_main(
             upload_pex=upload_pex,
             deps_cache_tags=deps_cache_tags,
             python_version=util.parse_python_version(python_version),
+            should_notify=update_code_location,
         )
 
     # upload to registry if enabled
@@ -336,14 +367,11 @@ def deploy_main(
         if code_location_details:
             deployment = code_location_details["deployment"]
             commit_hash = code_location_details["commit_hash"]
-        else:
+        elif github_event:
             logging.info(
                 "No --code-location-details, inferring from github environment."
             )
             deployment = "prod"  # default
-            github_event = github_context.github_event(
-                os.path.dirname(dagster_cloud_file)
-            )
 
             commit_hash = github_event.github_sha
             if github_event.branch_name:
@@ -359,40 +387,79 @@ def deploy_main(
                         raise ValueError(
                             "Could not create branch deployment", github_event
                         )
+        else:
+            raise ValueError(
+                "No --code-location-details provided and not running in Github, "
+                "cannot update code location."
+            )
 
-        for location_build in location_builds:
-            location_name = location_build.location.name
-            with github_context.log_group(f"Updating code location: {location_name}"):
-                logging.info(
-                    "Updating code location %r for deployment %r with pex_tag %r",
-                    location_name,
-                    deployment,
-                    location_build.pex_tag,
+        with github_context.log_group(f"Updating code locations"):
+            # do updates in independent threads so we can isolate errors
+            threads = [
+                threading.Thread(
+                    target=run_code_location_update,
+                    name=location_build.location.name,
+                    args=(deployment, commit_hash, dagster_cloud_file, location_build),
                 )
-                base_image = os.getenv("CUSTOM_BASE_IMAGE")
-                if not base_image:
-                    base_image = get_base_image_for(location_build)
-                code_location.add_or_update_code_location(
-                    deployment,
-                    location_name,
-                    image=base_image,
-                    pex_tag=location_build.pex_tag,
-                    location_file=dagster_cloud_file,
-                    commit_hash=commit_hash,
-                )
+                for location_build in location_builds
+            ]
+            for thread in threads:
+                thread.start()
 
-        code_location.wait_for_load(
-            deployment_name=deployment,
-            location_names=[
-                location_build.location.name for location_build in location_builds
-            ],
-        )
+            for thread in threads:
+                thread.join()
+
+            # once all locations updates are done, fail if any failed
+            for location_build in location_builds:
+                if location_build.code_location_update_error:
+                    raise location_build.code_location_update_error
+
     else:
         logging.info("Skipping code location update: no --update-code-location")
 
     logging.info("All done")
 
     return location_builds
+
+
+def run_code_location_update(
+    deployment: str,
+    commit_hash: str,
+    dagster_cloud_file: str,
+    location_build: LocationBuild,
+):
+    location_name = location_build.location.name
+    try:
+        logging.info(
+            "Updating code location %r for deployment %r with pex_tag %r",
+            location_name,
+            deployment,
+            location_build.pex_tag,
+        )
+        base_image = os.getenv("CUSTOM_BASE_IMAGE")
+        if not base_image:
+            base_image = get_base_image_for(location_build)
+        code_location.add_or_update_code_location(
+            deployment,
+            location_name,
+            image=base_image,
+            pex_tag=location_build.pex_tag,
+            location_file=dagster_cloud_file,
+            commit_hash=commit_hash,
+        )
+
+        code_location.wait_for_load(
+            deployment_name=deployment,
+            location_names=[location_build.location.name],
+        )
+        notify(
+            deployment_name=deployment, location_name=location_name, action="success"
+        )
+    except Exception as err:
+        location_build.code_location_update_error = err
+
+        logging.exception("Error updating code location %r", location_name)
+        notify(deployment_name=deployment, location_name=location_name, action="failed")
 
 
 if __name__ == "__main__":
