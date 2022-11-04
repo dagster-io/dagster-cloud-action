@@ -64,6 +64,9 @@ runs:
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
     - if: ${{ inputs.deploy != 'true' }}
       run: >

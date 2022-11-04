@@ -50,13 +50,15 @@ def build_project(
     upload_pex: bool,
     deps_cache_tags: DepsCacheTags,
     python_version: version.Version,
+    should_notify: bool = False,
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
 
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
 
-    for location in locations:
-        notify(None, location.name, "pending")
+    if should_notify:
+        for location in locations:
+            notify(None, location.name, "pending")
 
     location_builds = build_locations(
         locations, output_directory, upload_pex, deps_cache_tags, python_version
@@ -320,6 +322,7 @@ def deploy_main(
             upload_pex=upload_pex,
             deps_cache_tags=deps_cache_tags,
             python_version=util.parse_python_version(python_version),
+            should_notify=update_code_location,
         )
 
     # upload to registry if enabled
