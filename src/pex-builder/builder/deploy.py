@@ -174,7 +174,10 @@ def get_base_image_for(location_build: LocationBuild):
 def notify(deployment_name: Optional[str], location_name: str, action: str):
     if github_event:
         github_context.update_pr_comment(
-            github_event, deployment_name, location_name, action
+            github_event,
+            action=action,
+            deployment_name=deployment_name,
+            location_name=location_name,
         )
 
 
