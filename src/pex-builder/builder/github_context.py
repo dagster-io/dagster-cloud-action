@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import pathlib
 import pprint
 import subprocess
 from contextlib import contextmanager
@@ -18,7 +19,8 @@ class GithubEvent:
         self.github_repository = os.getenv("GITHUB_REPOSITORY")
         self.github_run_id = os.getenv("GITHUB_RUN_ID")
         self.github_run_url = f"{self.github_server_url}/{self.github_repository}/actions/runs/{self.github_run_id}"
-
+        action_path = os.getenv("GITHUB_ACTION_PATH")
+        self.github_action_path = pathlib.Path(action_path) if action_path else None
         event_path = os.getenv("GITHUB_EVENT_PATH")
         if not event_path:
             raise ValueError("GITHUB_EVENT_PATH not set")
@@ -92,13 +94,24 @@ def update_pr_comment(
     # We can't reuse actions/utils/notify here because we need to run this once for every location.
     # To repeat an action github provides a matrix strategy but we don't use matrix due to latency
     # concerns (it would launch a new container for every location)
-    script = os.path.join(os.path.abspath(os.curdir), "src/create_or_update_comment.py")
-    if not os.path.exists(script):
-        raise ValueError("File not found", script)
+    if not github_event.pull_request_id:
+        logging.info("Not within a PR, not adding PR comment.")
+        return
+
+    if not github_event.github_action_path:
+        logging.warning("Unable to locate notification script, not adding PR comment.")
+        return
+
+    script_path = (
+        github_event.github_action_path.parent.parent
+        / "src/create_or_update_pr_comment.py"
+    )
+    if not script_path.exists:
+        logging.warning("Did not find %r, not adding PR comment.", script_path)
+
     env = {
         name: value for name, value in os.environ.items() if not name.startswith("PEX_")
     }
-    # export GITHUB_RUN_URL=
     pr_id = str(github_event.pull_request_id)
 
     env.update(
@@ -111,7 +124,7 @@ def update_pr_comment(
         }
     )
     env = {name: value for name, value in env.items() if value is not None}
-    proc = util.run_python_subprocess([script], env=env)
+    proc = util.run_python_subprocess([str(script_path)], env=env)
     if proc.returncode:
         logging.error("Could not update PR comment: %s\n%s", proc.stdout, proc.stderr)
 
