@@ -30,7 +30,7 @@ def add_or_update_code_location(deployment_name, location_name, **location_kwarg
             f"Added or updated location %r for deployment %r with %r",
             location_name,
             deployment_name,
-            location_kwargs,
+            location_document,
         )
 
 
