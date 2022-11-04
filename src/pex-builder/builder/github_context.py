@@ -92,6 +92,9 @@ def update_pr_comment(
     # We can't reuse actions/utils/notify here because we need to run this once for every location.
     # To repeat an action github provides a matrix strategy but we don't use matrix due to latency
     # concerns (it would launch a new container for every location)
+    script = os.path.join(os.path.abspath(os.curdir), "src/create_or_update_comment.py")
+    if not os.path.exists(script):
+        raise ValueError("File not found", script)
     env = {
         name: value for name, value in os.environ.items() if not name.startswith("PEX_")
     }
@@ -107,7 +110,7 @@ def update_pr_comment(
             "GITHUB_RUN_URL": github_event.github_run_url,
         }
     )
-    proc = util.run_python_subprocess(["src/create_or_update_comment.py"], env=env)
+    proc = util.run_python_subprocess([script], env=env)
     if proc.returncode:
         logging.error("Could not update PR comment: %s\n%s", proc.stdout, proc.stderr)
 
