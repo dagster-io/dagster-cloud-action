@@ -3,8 +3,8 @@
 import dataclasses
 import logging
 import os
-from dataclasses import dataclass
 import threading
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 import click

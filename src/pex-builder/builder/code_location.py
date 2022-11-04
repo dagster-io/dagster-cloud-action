@@ -92,7 +92,7 @@ def create_or_update_branch_deployment_from_github_context(
             author_name=event.author_name,
             author_email=event.author_email,
             commit_message=event.commit_msg,
-            # TODO: add avatar url
+            author_avatar_url=github_event.get_github_avatar_url(),
         )
         logging.info(
             "Got branch deployment %r for branch %r",
