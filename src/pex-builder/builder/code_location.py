@@ -109,5 +109,5 @@ if __name__ == "__main__":
         kwargs = dict(arg.split("=", 1) for arg in args.split(","))
         add_or_update_code_location(deployment_name, location_name, **kwargs)
     elif sys.argv[1] == "create_or_update_branch_deployment":
-        github_event = github_context.github_event(sys.argv[2])
+        github_event = github_context.get_github_event(sys.argv[2])
         create_or_update_branch_deployment_from_github_context(github_event)

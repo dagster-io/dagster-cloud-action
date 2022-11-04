@@ -3,17 +3,22 @@ import logging
 import os
 import pprint
 import subprocess
-import time
 from contextlib import contextmanager
 from typing import Dict
 
-# Loads event details from within a gihub action
+from . import util
+
+# Loads event details from within a github action
 
 
 class GithubEvent:
     def __init__(self, project_dir: str):
         self.github_server_url = os.getenv("GITHUB_SERVER_URL")
         self.github_sha = os.getenv("GITHUB_SHA")
+        self.github_repository = os.getenv("GITHUB_REPOSITORY")
+        self.github_run_id = os.getenv("GITHUB_RUN_ID")
+        self.github_run_url = f"{self.github_server_url}/{self.github_repository}/actions/runs/{self.github_run_id}"
+
         event_path = os.getenv("GITHUB_EVENT_PATH")
         if not event_path:
             raise ValueError("GITHUB_EVENT_PATH not set")
@@ -75,8 +80,36 @@ def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]
     return metadata
 
 
-def github_event(project_dir) -> GithubEvent:
+def get_github_event(project_dir) -> GithubEvent:
     return GithubEvent(project_dir)
+
+
+def update_pr_comment(
+    github_event: GithubEvent, action, deployment_name, location_name
+):
+    "Add or update the status comment on a github PR"
+    # This reuses the src/create_or_update_comment.py script.
+    # We can't reuse actions/utils/notify here because we need to run this once for every location.
+    # To repeat an action github provides a matrix strategy but we don't use matrix due to latency
+    # concerns (it would launch a new container for every location)
+    env = {
+        name: value for name, value in os.environ.items() if not name.startswith("PEX_")
+    }
+    # export GITHUB_RUN_URL=
+    pr_id = str(github_event.pull_request_id)
+
+    env.update(
+        {
+            "INPUT_PR": pr_id,
+            "INPUT_ACTION": action,
+            "INPUT_DEPLOYMENT": deployment_name,
+            "INPUT_LOCATION_NAME": location_name,
+            "GITHUB_RUN_URL": github_event.github_run_url,
+        }
+    )
+    proc = util.run_python_subprocess(["src/create_or_update_comment.py"], env=env)
+    if proc.returncode:
+        logging.error("Could not update PR comment: %s\n%s", proc.stdout, proc.stderr)
 
 
 @contextmanager
