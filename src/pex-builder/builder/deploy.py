@@ -286,7 +286,7 @@ def deploy_main(
     python_version: str,
 ):
     # We don't have strict checking, but print warnings in case flags don't make sense
-    if deps_cache_from_tag or deps_cache_to_tag and not upload_pex:
+    if (deps_cache_from_tag or deps_cache_to_tag) and not upload_pex:
         logging.warning(
             "--deps-cache-tag* specified without --upload-pex. Caching is disabled."
         )

@@ -110,6 +110,7 @@ def update_pr_comment(
             "GITHUB_RUN_URL": github_event.github_run_url,
         }
     )
+    env = {name: value for name, value in env.items() if value is not None}
     proc = util.run_python_subprocess([script], env=env)
     if proc.returncode:
         logging.error("Could not update PR comment: %s\n%s", proc.stdout, proc.stderr)
