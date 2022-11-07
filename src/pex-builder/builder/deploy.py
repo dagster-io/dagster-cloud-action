@@ -167,7 +167,7 @@ def get_base_image_for(location_build: LocationBuild):
     py_tag = f"py{python_version.major}.{python_version.minor}"  # eg 'py3.8'
     # TODO: switch to private released versions
     return (
-        f"public.ecr.aws/dagster/dagster-cloud-serverless-base-py{py_tag}:1.0.15-pex-execute-run"
+        f"public.ecr.aws/dagster/dagster-cloud-serverless-base-{py_tag}:1.0.15-pex-execute-run"
     )
 
 
