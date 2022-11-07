@@ -44,7 +44,6 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
     python_interpreter = python_interpreter_for(python_version)
     return [
         f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
-        f"--platform=macosx_12_0_x86_64-cp-{version_tag}-cp{version_tag}",
         f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
     ]
 
