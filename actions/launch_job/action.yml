@@ -1,0 +1,52 @@
+name: "Dagster Job Launch"
+description: |
+  Launches a run of the specified job on the provided deployment. Can be used to
+  run smoketests or test setup on a branch deployment.
+inputs:
+  organization_id:
+    description: "Dagster Cloud organization ID"
+    required: true
+  dagster_cloud_api_token:
+    description: "Dagster Cloud API token"
+    required: true
+  location_name:
+    required: true
+    description: "The name of the deployed location to launch a job from."
+  repository_name:
+    required: true
+    description: "The name of the repository to launch a job from."
+  job_name:
+    required: true
+    description: "The name of the job to launch."
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout target repo
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Checkout action repo
+      uses: actions/checkout@v3
+      with:
+        repository: dagster-io/dagster-cloud-action
+        ref: ${{ env.DAGSTER_ACTION_REF }}
+        path: ./action-repo/
+      env:
+        # We need to make sure we are grabbing the right ref for both external invocation of the
+        # actions (std) as well as internal invocations of the actions (internal tests).
+        # We need to get the local action ref, but this is available in the evaluation of `env`, not
+        # during the run time evaluation or the parameter evaluation:
+        # https://github.com/orgs/community/discussions/25283
+        DAGSTER_ACTION_REF: ${{ github.repository != 'dagster-io/dagster-cloud-action' && github.action_ref || github.head_ref }}
+
+    - name: Launch a job
+      uses: ./action-repo/actions/utils/run
+      with:
+        organization_id: ${{ inputs.organization_id }}
+        deployment: prod
+        location: ${{ inputs.location_name }}
+        repository: ${{ inputs.repository_name }}
+        job: ${{ inputs.job_name }}
+      env:
+        DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
