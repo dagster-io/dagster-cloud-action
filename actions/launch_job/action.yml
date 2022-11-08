@@ -1,5 +1,7 @@
-name: "Dagster Serverless Job Launch"
-description: "Pushes code locations to Dagster Cloud serverless branch deployments"
+name: "Dagster Job Launch"
+description: |
+  Launches a run of the specified job on the provided deployment. Can be used to
+  run smoketests or test setup on a branch deployment.
 inputs:
   organization_id:
     description: "Dagster Cloud organization ID"
