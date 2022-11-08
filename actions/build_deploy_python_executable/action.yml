@@ -1,5 +1,5 @@
 name: 'Build and deploy dagster code locations'
-description: 'Build project code overlay, publish to dagster cloud, and update the code location'
+description: 'Build project python executable, publish to dagster cloud, and update the code location'
 inputs:
   dagster_cloud_file:
     description: 'Path to dagster_cloud.yaml'
