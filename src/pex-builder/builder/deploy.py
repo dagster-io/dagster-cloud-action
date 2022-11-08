@@ -463,4 +463,5 @@ def run_code_location_update(
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     cli()

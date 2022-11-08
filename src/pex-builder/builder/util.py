@@ -11,7 +11,6 @@ import click
 from dagster_cloud_cli import gql
 from packaging import version
 
-logging.basicConfig(level=logging.INFO)
 TARGET_PYTHON_VERSIONS = [
     version.Version(python_version) for python_version in ["3.8", "3.9", "3.10"]
 ]
