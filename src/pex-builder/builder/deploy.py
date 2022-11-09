@@ -161,14 +161,16 @@ def build_locations(
     return location_builds
 
 
-def get_base_image_for(location_build: LocationBuild):
+def get_base_image_for(location_build: LocationBuild) -> str:
+    # TODO: switch to private released versions
+    image_prefix = os.getenv(
+        "SERVERLESS_BASE_IMAGE_PREFIX",
+        "public.ecr.aws/dagster/dagster-cloud-serverless-base-",
+    )
     python_version = location_build.deps_requirements.python_version
     dagster_version = location_build.dagster_version
     py_tag = f"py{python_version.major}.{python_version.minor}"  # eg 'py3.8'
-    # TODO: switch to private released versions
-    return (
-        f"public.ecr.aws/dagster/dagster-cloud-serverless-base-{py_tag}:1.0.15-pex-execute-run"
-    )
+    return f"{image_prefix}{py_tag}:{dagster_version}"
 
 
 def notify(deployment_name: Optional[str], location_name: str, action: str):
