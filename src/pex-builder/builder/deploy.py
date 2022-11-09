@@ -10,15 +10,7 @@ from typing import Dict, List, Optional
 import click
 from packaging import version
 
-from . import (
-    code_location,
-    deps,
-    github_context,
-    parse_workspace,
-    pex_registry,
-    source,
-    util,
-)
+from . import code_location, deps, github_context, parse_workspace, pex_registry, source, util
 
 
 @dataclass
@@ -64,7 +56,7 @@ def build_project(
         locations, output_directory, upload_pex, deps_cache_tags, python_version
     )
 
-    logging.info(f"Built locations (%s):", len(location_builds))
+    logging.info("Built locations (%s):", len(location_builds))
     for build in location_builds:
         logging.info(str(dataclasses.asdict(build)))
 
@@ -93,9 +85,7 @@ def build_locations(
     builds_for_requirements_hash: Dict[str, List[LocationBuild]] = {}
     for location_build in location_builds:
         requirements_hash = location_build.deps_requirements.hash
-        builds_for_requirements_hash.setdefault(requirements_hash, []).append(
-            location_build
-        )
+        builds_for_requirements_hash.setdefault(requirements_hash, []).append(location_build)
 
     # build each deps pex once and assign to all related builds
     for requirements_hash in builds_for_requirements_hash:
@@ -122,9 +112,7 @@ def build_locations(
 
             for location_build in builds:
                 location_build.published_deps_pex = published_deps_pex
-                location_build.dagster_version = published_deps_pex_info[
-                    "dagster_version"
-                ]
+                location_build.dagster_version = published_deps_pex_info["dagster_version"]
         else:
             logging.info(
                 "No published deps.pex found for requirements_hash %r, cache_tag %r, will rebuild.",
@@ -155,9 +143,7 @@ def build_locations(
         if not deps_pex or not location_build.source_pex_path:
             raise ValueError("No deps.pex or source.pex")
 
-        location_build.pex_tag = util.build_pex_tag(
-            [deps_pex, location_build.source_pex_path]
-        )
+        location_build.pex_tag = util.build_pex_tag([deps_pex, location_build.source_pex_path])
     return location_builds
 
 
@@ -191,7 +177,7 @@ github_event: Optional[github_context.GithubEvent] = None
 
 
 def load_github_event(project_dir):
-    global github_event
+    global github_event  # pylint: disable=global-statement
     github_event = github_context.get_github_event(project_dir)
 
 
@@ -298,9 +284,7 @@ def deploy_main(
 ):
     # We don't have strict checking, but print warnings in case flags don't make sense
     if (deps_cache_from_tag or deps_cache_to_tag) and not upload_pex:
-        logging.warning(
-            "--deps-cache-tag* specified without --upload-pex. Caching is disabled."
-        )
+        logging.warning("--deps-cache-tag* specified without --upload-pex. Caching is disabled.")
 
     if update_code_location and not upload_pex:
         logging.warning(
@@ -358,6 +342,8 @@ def deploy_main(
                         if location_build.deps_pex_path
                         else location_build.published_deps_pex
                     )
+                    if not deps_pex_name or not location_build.dagster_version:
+                        raise ValueError("No deps pex file or deps pex file is missing dagster.")
 
                     pex_registry.set_cached_deps_details(
                         location_build.deps_requirements.hash,
@@ -374,9 +360,7 @@ def deploy_main(
             deployment = code_location_details["deployment"]
             commit_hash = code_location_details["commit_hash"]
         elif github_event:
-            logging.info(
-                "No --code-location-details, inferring from github environment."
-            )
+            logging.info("No --code-location-details, inferring from github environment.")
             deployment = "prod"  # default
 
             commit_hash = github_event.github_sha
@@ -386,20 +370,21 @@ def deploy_main(
                         "Creating/updating branch deployment for %r",
                         github_event.branch_name,
                     )
-                    deployment = code_location.create_or_update_branch_deployment_from_github_context(
-                        github_event
-                    )
-                    if not deployment:
-                        raise ValueError(
-                            "Could not create branch deployment", github_event
+                    branch_deployment = (
+                        code_location.create_or_update_branch_deployment_from_github_context(
+                            github_event
                         )
+                    )
+                    if not branch_deployment:
+                        raise ValueError("Could not create branch deployment", github_event)
+                    deployment = branch_deployment
         else:
             raise ValueError(
                 "No --code-location-details provided and not running in Github, "
                 "cannot update code location."
             )
 
-        with github_context.log_group(f"Updating code locations"):
+        with github_context.log_group("Updating code locations"):
             # do updates in independent threads so we can isolate errors
             threads = [
                 threading.Thread(
@@ -456,9 +441,7 @@ def run_code_location_update(
             deployment_name=deployment,
             location_names=[location_build.location.name],
         )
-        notify(
-            deployment_name=deployment, location_name=location_name, action="success"
-        )
+        notify(deployment_name=deployment, location_name=location_name, action="success")
     except Exception as err:
         location_build.code_location_update_error = err
 

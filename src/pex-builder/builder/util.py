@@ -24,7 +24,7 @@ def run_python_subprocess(args: List[str], env=None):
 
     args = [cmd] + args
     logging.info("Running %r in %r", args, os.path.abspath(os.curdir))
-    proc = subprocess.run(args, capture_output=True, env=env)
+    proc = subprocess.run(args, capture_output=True, env=env, check=False)
     return proc
 
 
@@ -72,9 +72,7 @@ def build_pex(
     """
     flags = pex_flags.copy()
     if not sources_directories and not requirements_filepaths:
-        raise ValueError(
-            "At least one of sources_directories or requirements_filepath required."
-        )
+        raise ValueError("At least one of sources_directories or requirements_filepath required.")
     for src_dir in sources_directories:
         flags.extend(["-D", src_dir])
     for req_file in requirements_filepaths:
@@ -100,9 +98,7 @@ def get_pex_info(pex_filepath):
 
 
 def build_pex_tag(filepaths: List[str]) -> str:
-    return "files=" + ":".join(
-        sorted(os.path.basename(filepath) for filepath in filepaths)
-    )
+    return "files=" + ":".join(sorted(os.path.basename(filepath) for filepath in filepaths))
 
 
 @contextmanager
@@ -144,7 +140,7 @@ def parse_python_version(python_version: str) -> version.Version:
     return version.Version(python_version)
 
 
-def parse_kv(ctx, param: str, value: Optional[str]):
+def parse_kv(ctx, param: str, value: Optional[str]):  # pylint: disable=unused-argument
     if not value:
         return {}
     try:

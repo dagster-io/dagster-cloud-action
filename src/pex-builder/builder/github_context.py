@@ -5,7 +5,7 @@ import pathlib
 import pprint
 import subprocess
 from contextlib import contextmanager
-from typing import Dict
+from typing import Dict, Optional
 
 import github
 
@@ -16,11 +16,13 @@ from . import util
 
 class GithubEvent:
     def __init__(self, project_dir: str):
-        self.github_server_url = os.getenv("GITHUB_SERVER_URL")
-        self.github_sha = os.getenv("GITHUB_SHA")
-        self.github_repository = os.getenv("GITHUB_REPOSITORY")
-        self.github_run_id = os.getenv("GITHUB_RUN_ID")
-        self.github_run_url = f"{self.github_server_url}/{self.github_repository}/actions/runs/{self.github_run_id}"
+        self.github_server_url = os.environ["GITHUB_SERVER_URL"]
+        self.github_sha = os.environ["GITHUB_SHA"]
+        self.github_repository = os.environ["GITHUB_REPOSITORY"]
+        self.github_run_id = os.environ["GITHUB_RUN_ID"]
+        self.github_run_url = (
+            f"{self.github_server_url}/{self.github_repository}/actions/runs/{self.github_run_id}"
+        )
         action_path = os.getenv("GITHUB_ACTION_PATH")
         self.github_action_path = pathlib.Path(action_path) if action_path else None
         event_path = os.getenv("GITHUB_EVENT_PATH")
@@ -28,36 +30,32 @@ class GithubEvent:
             raise ValueError("GITHUB_EVENT_PATH not set")
 
         # json details: https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads
-        self.event = event = json.load(open(event_path))
+        self.event = event = json.load(open(event_path, encoding="utf-8"))
 
         # get some commonly used fields
         # not all events have "action", eg https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
         self.action = event.get("action")
         self.repo_name = event["repository"]["full_name"]
 
+        self.branch_name: Optional[str] = None
+        self.branch_url: Optional[str] = None
+        self.pull_request_url: Optional[str] = None
+        self.pull_request_id: Optional[str] = None
+        self.pull_request_status: Optional[str] = None
+
         if "pull_request" in self.event:
             pull_request = self.event["pull_request"]
             # For PRs GITHUB_SHA is not the last commit in the branch, but head sha is
             self.github_sha = pull_request["head"]["sha"]
             self.branch_name = pull_request["head"]["ref"]
-            self.branch_url = (
-                f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
-            )
+            self.branch_url = f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
             self.pull_request_url = pull_request["html_url"]
             self.pull_request_id = pull_request["number"]
             self.pull_request_status = (
                 "merged" if pull_request.get("merged") else pull_request["state"]
-            )
-        else:
-            self.branch_name = None
-            self.branch_url = None
-            self.pull_request_url = None
-            self.pull_request_id = None
-            self.pull_request_status = None
+            ).upper()
 
-        self.commit_url = (
-            f"{self.github_server_url}/{self.repo_name}/tree/{self.github_sha}"
-        )
+        self.commit_url = f"{self.github_server_url}/{self.repo_name}/tree/{self.github_sha}"
 
         git_metadata = get_git_commit_metadata(self.github_sha, project_dir)
         self.timestamp = float(git_metadata["timestamp"])
@@ -82,7 +80,7 @@ def get_git_commit_metadata(github_sha: str, project_dir: str) -> Dict[str, str]
     metadata = {}
     for key, command in commands.items():
         logging.debug("Running %r", command + [github_sha])
-        proc = subprocess.run(command + [github_sha], capture_output=True)
+        proc = subprocess.run(command + [github_sha], capture_output=True, check=False)
         if proc.returncode:
             logging.error("git command failed: %s\n%s", proc.stdout, proc.stderr)
         metadata[key] = proc.stdout.decode("utf-8").strip()
@@ -94,9 +92,7 @@ def get_github_event(project_dir) -> GithubEvent:
     return GithubEvent(project_dir)
 
 
-def update_pr_comment(
-    github_event: GithubEvent, action, deployment_name, location_name
-):
+def update_pr_comment(github_event: GithubEvent, action, deployment_name, location_name):
     "Add or update the status comment on a github PR"
     # This reuses the src/create_or_update_comment.py script.
     # We can't reuse actions/utils/notify here because we need to run this once for every location.
@@ -110,16 +106,11 @@ def update_pr_comment(
         logging.warning("Unable to locate notification script, not adding PR comment.")
         return
 
-    script_path = (
-        github_event.github_action_path.parent.parent
-        / "src/create_or_update_comment.py"
-    )
+    script_path = github_event.github_action_path.parent.parent / "src/create_or_update_comment.py"
     if not script_path.exists:
         logging.warning("Did not find %r, not adding PR comment.", script_path)
 
-    env = {
-        name: value for name, value in os.environ.items() if not name.startswith("PEX_")
-    }
+    env = {name: value for name, value in os.environ.items() if not name.startswith("PEX_")}
     pr_id = str(github_event.pull_request_id)
 
     env.update(
