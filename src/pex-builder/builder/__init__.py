@@ -1,1 +1,1 @@
-from . import deps, source, util
+from . import deploy, deps, parse_workspace, source, util
