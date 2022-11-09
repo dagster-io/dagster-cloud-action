@@ -162,6 +162,10 @@ def build_locations(
 
 
 def get_base_image_for(location_build: LocationBuild) -> str:
+    base_image = os.getenv("SERVERLESS_BASE_IMAGE")
+    if base_image:
+        return base_image
+
     # TODO: switch to private released versions
     image_prefix = os.getenv(
         "SERVERLESS_BASE_IMAGE_PREFIX",
@@ -438,9 +442,7 @@ def run_code_location_update(
             deployment,
             location_build.pex_tag,
         )
-        base_image = os.getenv("CUSTOM_BASE_IMAGE")
-        if not base_image:
-            base_image = get_base_image_for(location_build)
+        base_image = get_base_image_for(location_build)
         code_location.add_or_update_code_location(
             deployment,
             location_name,
