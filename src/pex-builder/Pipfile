@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pex = "*"
+pex = "<=2.1.112"  # 113 had issues on github
 dagster-cloud-cli = ">=1.0.14"  # with pex related changes
 dagster = "*"
 click = "*"
