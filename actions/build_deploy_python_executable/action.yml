@@ -21,6 +21,9 @@ inputs:
     required: false
     default: 'false'
 
+env:
+  PEX_ROOT: '/tmp/.pex'
+
 runs:
   using: "composite"
 
