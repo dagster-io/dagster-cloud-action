@@ -160,13 +160,17 @@ def get_base_image_for(location_build: LocationBuild) -> str:
     if base_image:
         return base_image
 
-    # TODO: switch to private released versions
+    # TODO: Read from cloud API or another config?
+    registry_subdomain = '878483074102' if '.dogfood.' in os.getenv('DAGSTER_CLOUD_URL', '') else '657821118200'
+    default_image_prefix = registry_subdomain + '.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-'
     image_prefix = os.getenv(
         "SERVERLESS_BASE_IMAGE_PREFIX",
-        "public.ecr.aws/dagster/dagster-cloud-serverless-base-",
+        default_image_prefix,
     )
     python_version = location_build.deps_requirements.python_version
-    dagster_version = location_build.dagster_version
+    # We only build base image for 1.0.17 and beyond.
+    dagster_version = location_build.dagster_version if location_build.dagster_version else '1.0.17'
+    dagster_version = str(max(version.Version('1.0.17'), version.Version(dagster_version)))
     py_tag = f"py{python_version.major}.{python_version.minor}"  # eg 'py3.8'
     return f"{image_prefix}{py_tag}:{dagster_version}"
 
