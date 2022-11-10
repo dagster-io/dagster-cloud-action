@@ -10,7 +10,15 @@ from typing import Dict, List, Optional
 import click
 from packaging import version
 
-from . import code_location, deps, github_context, parse_workspace, pex_registry, source, util
+from . import (
+    code_location,
+    deps,
+    github_context,
+    parse_workspace,
+    pex_registry,
+    source,
+    util,
+)
 
 
 @dataclass

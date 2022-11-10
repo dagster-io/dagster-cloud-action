@@ -88,6 +88,9 @@ def build_deps_from_requirements(
         requirements_filepaths=[deps_requirements_path],
         pex_flags=requirements.pex_flags,
         output_pex_path=tmp_pex_path,
+        # isolate this pex root from others on same machine. particularly useful in github action
+        # environment where pex_root for builder.pex may get shared with this pex_root
+        pex_root=os.path.join(output_directory, ".pex"),
     )
     if proc.returncode:
         logging.error("Failed to build deps.pex")

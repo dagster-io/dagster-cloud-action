@@ -52,6 +52,7 @@ def build_pex(
     requirements_filepaths: List[str],
     pex_flags: List[str],
     output_pex_path: str,
+    pex_root: Optional[str] = None,
 ):
     """Invoke pex with common build flags and pass parameters through to specific pex flags
 
@@ -77,7 +78,10 @@ def build_pex(
         flags.extend(["-D", src_dir])
     for req_file in requirements_filepaths:
         flags.extend(["-r", req_file])
-    return run_pex_command([*flags, "-o", output_pex_path])
+    pex_args = [*flags, "-o", output_pex_path]
+    if pex_root:
+        pex_args.extend(["--pex-root", pex_root])
+    return run_pex_command(pex_args)
 
 
 def run_pex_command(args: List[str]):

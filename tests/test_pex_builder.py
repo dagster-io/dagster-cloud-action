@@ -29,7 +29,11 @@ def run_builder(builder_pex_path, builder_args: List[str]):
             )
 
         all_files = os.listdir(build_output_dir)
-        pex_files = {filename for filename in all_files if filename.endswith(".pex")}
+        pex_files = {
+            filename
+            for filename in all_files
+            if filename.endswith(".pex") and filename != ".pex"
+        }
         yield (build_output_dir, list(pex_files), list(set(all_files) - pex_files))
 
 
