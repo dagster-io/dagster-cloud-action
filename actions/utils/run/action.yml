@@ -9,19 +9,14 @@ inputs:
   deployment:
     required: false
     description: "The deployment to run a job on."
-
-  location:
+  location_name:
     required: true
     description: "The code location in which the job repo lives."
-  location_name:
-    required: false
-    description: 'The name of the location to deploy, needed if not providing "location" input.'
-
-  repository:
-    required: false
+  repository_name:
+    required: true
     description: "The repository in which the job lives."
-  job:
-    required: false
+  job_name:
+    required: true
     description: "The job to run."
   tags_json:
     required: false
@@ -39,7 +34,7 @@ outputs:
     description: "The ID of the launched run."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.9"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.10"
   entrypoint: "/run.sh"
   args:
     - ${{ inputs.pr }}

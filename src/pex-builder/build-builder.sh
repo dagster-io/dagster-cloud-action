@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Build the builder.pex from Pexfile.lock and src/
-# Can be run locally or on GHA - modifies the python environment by
-# installing pipenv and pex.
+# Writes src/pex-builder/build/builder.pex
+# Can be run locally or on GHA
 
 set -o xtrace   # debug printing
 
@@ -14,20 +14,28 @@ echo "Running in $SCRIPT_DIR"
 BUILDER_PEX_PATH="${1:-build}/builder.pex"
 echo "Going to build $BUILDER_PEX_PATH"
 
+# create a venv to have a reproducible environment and not clobber the current python environment
+VENV_ROOT=build/venv
+python3.8 -m venv $VENV_ROOT
+
+source $VENV_ROOT/bin/activate
+
 export PIPENV_IGNORE_VIRTUALENVS=1
-pip install pipenv pex
+$VENV_ROOT/bin/pip install pipenv pex
 
 # Build this python project. This will create the build/lib directory.
-python setup.py build
+$VENV_ROOT/bin/python3.8 setup.py build
 
 # Generate a requirements.txt from Pipfile.lock
 # Put it in build/lib so it also gets copied into the builder.pex for reference
-pipenv requirements --exclude-markers > build/lib/requirements.txt
+$VENV_ROOT/bin/pipenv requirements --exclude-markers > build/lib/requirements.txt
 
 # Generate a multi platform builder.pex (linux and macos)
 # Require running builder.pex under 3.8, in case multiple pythons are present on PATH
-pex -r build/lib/requirements.txt -D build/lib -o $BUILDER_PEX_PATH -v --include-tools \
+# Use a PEX_ROOT to completely isolate this build from others that may be on this machine
+export PEX_ROOT=build/.pex
+$VENV_ROOT/bin/pex -r build/lib/requirements.txt -D build/lib -o $BUILDER_PEX_PATH -v --include-tools \
     --python=python3.8 \
-    --platform=manylinux2014_x86_64-cp-38-cp38 --platform=current \
-    --runtime-pex-root=/tmp/.pex
+    --platform=manylinux2014_x86_64-cp-38-cp38 \
+    --platform=macosx_12_0_x86_64-cp-38-cp38
 
