@@ -7,8 +7,6 @@ import subprocess
 from contextlib import contextmanager
 from typing import Dict, Optional
 
-import github
-
 from . import util
 
 # Loads event details from within a github action
@@ -64,6 +62,8 @@ class GithubEvent:
         self.author_email = git_metadata["email"]
 
     def get_github_avatar_url(self) -> str:
+        import github
+
         g = github.Github(os.getenv("GITHUB_TOKEN"))
         repo = g.get_repo(self.github_repository)
         commit = repo.get_commit(self.github_sha)
