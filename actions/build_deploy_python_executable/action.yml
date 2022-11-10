@@ -21,9 +21,6 @@ inputs:
     required: false
     default: 'false'
 
-env:
-  PEX_ROOT: '/tmp/.pex'
-
 runs:
   using: "composite"
 
@@ -67,8 +64,6 @@ runs:
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
       shell: bash
-      env:
-        PEX_ROOT: /tmp/.pex
 
     - if: ${{ inputs.deploy != 'true' }}
       run: >
@@ -79,5 +74,3 @@ runs:
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
       shell: bash
-      env:
-        PEX_ROOT: /tmp/.pex
