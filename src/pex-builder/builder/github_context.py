@@ -137,6 +137,10 @@ def log_group(title: str):
         print("::endgroup::", flush=True)
 
 
+def log_error(title: str, msg: str):
+    print(f"::error Title={title}::{msg}")
+
+
 if __name__ == "__main__":
     import sys
 
