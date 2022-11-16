@@ -476,7 +476,7 @@ def run_code_location_update(
         github_context.log_error(
             title="Deploy failed",
             msg="Deploy failed. To view status of your code locations, visit "
-            f"${os.getenv('DAGSTER_CLOUD_URL', 'DAGSTER_CLOUD_URL')}/${deployment}/instance/code-locations",
+            f"{os.getenv('DAGSTER_CLOUD_URL', 'DAGSTER_CLOUD_URL')}/{deployment}/instance/code-locations",
         )
 
 
