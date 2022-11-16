@@ -371,11 +371,13 @@ def deploy_main(
         if code_location_details:
             deployment = code_location_details["deployment"]
             commit_hash = code_location_details["commit_hash"]
+            git_url = None
         elif github_event:
             logging.info("No --code-location-details, inferring from github environment.")
             deployment = "prod"  # default
 
             commit_hash = github_event.github_sha
+            git_url = github_event.commit_url
             if github_event.branch_name:
                 with github_context.log_group("Updating Branch Deployment"):
                     logging.info(
@@ -402,7 +404,7 @@ def deploy_main(
                 threading.Thread(
                     target=run_code_location_update,
                     name=location_build.location.name,
-                    args=(deployment, commit_hash, dagster_cloud_file, location_build),
+                    args=(deployment, commit_hash, git_url, dagster_cloud_file, location_build),
                 )
                 for location_build in location_builds
             ]
@@ -428,6 +430,7 @@ def deploy_main(
 def run_code_location_update(
     deployment: str,
     commit_hash: str,
+    git_url: Optional[str],
     dagster_cloud_file: str,
     location_build: LocationBuild,
 ):
@@ -447,6 +450,7 @@ def run_code_location_update(
             pex_tag=location_build.pex_tag,
             location_file=dagster_cloud_file,
             commit_hash=commit_hash,
+            git_url=git_url,
         )
 
         code_location.wait_for_load(

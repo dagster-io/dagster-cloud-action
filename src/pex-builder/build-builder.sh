@@ -21,7 +21,7 @@ python3.8 -m venv $VENV_ROOT
 source $VENV_ROOT/bin/activate
 
 export PIPENV_IGNORE_VIRTUALENVS=1
-$VENV_ROOT/bin/pip install pipenv pex<=2.1.111
+$VENV_ROOT/bin/pip install pipenv "pex<=2.1.111"
 
 # Build this python project. This will create the build/lib directory.
 $VENV_ROOT/bin/python3.8 setup.py build
