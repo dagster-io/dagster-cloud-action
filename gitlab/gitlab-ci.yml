@@ -1,0 +1,6 @@
+dagster-deploy:
+    stage: build
+    image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+    script:
+      - /gitlab_action/deploy.py ./dagster_cloud.yaml
+  
