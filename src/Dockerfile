@@ -5,7 +5,8 @@ RUN apt update && apt install git -y
 RUN pip install --upgrade pip
 RUN pip install dagster \
                 dagster-cloud-cli \
-                PyGithub
+                PyGithub \
+                pex
 
 # for setting the org-specific registry info
 COPY registry_info.sh /registry_info.sh
@@ -24,3 +25,6 @@ COPY fetch_github_avatar.py /fetch_github_avatar.py
 COPY notify.sh /notify.sh
 COPY deploy.sh /deploy.sh
 COPY run.sh /run.sh
+
+# Gitlab scripts
+COPY gitlab_action gitlab_action
