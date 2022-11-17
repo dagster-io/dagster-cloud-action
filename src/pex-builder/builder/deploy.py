@@ -463,9 +463,12 @@ def run_code_location_update(
             git_url=git_url,
         )
 
+        # give first deploy extra time to spin up agent
+        agent_heartbeat_timeout = 600 if (os.getenv("GITHUB_RUN_NUMBER") == "1") else 90
         code_location.wait_for_load(
             deployment_name=deployment,
             location_names=[location_build.location.name],
+            agent_heartbeat_timeout=agent_heartbeat_timeout,
         )
         notify(deployment_name=deployment, location_name=location_name, action="success")
     except Exception as err:

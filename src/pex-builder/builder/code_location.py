@@ -28,13 +28,18 @@ def add_or_update_code_location(deployment_name, location_name, **location_kwarg
         )
 
 
-def wait_for_load(deployment_name: str, location_names: List[str]):
+def wait_for_load(
+    deployment_name: str,
+    location_names: List[str],
+    location_load_timeout=600,
+    agent_heartbeat_timeout=90,
+):
     with util.graphql_client(deployment_name) as client:
         workspace.wait_for_load(
             client,
             locations=location_names,
-            location_load_timeout=600,
-            agent_heartbeat_timeout=90,
+            location_load_timeout=location_load_timeout,
+            agent_heartbeat_timeout=agent_heartbeat_timeout,
             # url=util.url_for_deployment(deployment_name=deployment_name),
         )
 
