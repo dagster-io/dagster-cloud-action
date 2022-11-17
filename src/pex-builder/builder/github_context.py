@@ -48,7 +48,7 @@ class GithubEvent:
             self.branch_name = pull_request["head"]["ref"]
             self.branch_url = f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
             self.pull_request_url = pull_request["html_url"]
-            self.pull_request_id = pull_request["number"]
+            self.pull_request_id = str(pull_request["number"])
             self.pull_request_status = (
                 "merged" if pull_request.get("merged") else pull_request["state"]
             ).upper()
