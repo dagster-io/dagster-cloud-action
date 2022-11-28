@@ -9,6 +9,10 @@ inputs:
   dagster_cloud_api_token:
     description: "Dagster Cloud API token"
     required: true
+  deployment_name:
+    description: "The Dagster deployment to launch the job in."
+    default: "prod"
+    required: false
   location_name:
     required: true
     description: "The name of the deployed location to launch a job from."
@@ -44,7 +48,7 @@ runs:
       uses: ./action-repo/actions/utils/run
       with:
         organization_id: ${{ inputs.organization_id }}
-        deployment: prod
+        deployment: ${{ inputs.deployment_name }}
         location: ${{ inputs.location_name }}
         repository: ${{ inputs.repository_name }}
         job: ${{ inputs.job_name }}
