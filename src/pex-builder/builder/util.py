@@ -42,8 +42,14 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
     version_tag = f"{python_version.major}{python_version.minor}"  # eg '38'
     python_interpreter = python_interpreter_for(python_version)
     return [
-        f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
+        # extra check to ensure run environment matches built version
+        f"--python={python_interpreter}",
+        # use the dependency for the general linux distribution for the major/minor python version
         f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
+        # resolves dependencies using the local interpreter, effectively allowing source distributions
+        # to work (since they can be build by the local interpreter)
+        # see also https://linear.app/elementl/issue/CLOUD-2023/pex-builds-fail-for-dbt-core-dependency
+        f"--resolve-local-platforms",
     ]
 
 
