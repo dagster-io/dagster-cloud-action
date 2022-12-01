@@ -13,8 +13,9 @@ inputs:
     required: true
     description: "The name of the deployed location to launch a job from."
   repository_name:
-    required: true
-    description: "The name of the repository to launch a job from."
+    required: false
+    default: "__repository__"
+    description: "The name of the repository to launch a job from, if any."
   job_name:
     required: true
     description: "The name of the job to launch."
