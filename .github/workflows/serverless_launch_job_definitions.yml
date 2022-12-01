@@ -19,8 +19,8 @@ jobs:
         with:
           # differently named location (manually deployed), so that this launch integration test
           # does not have race-y collisions with the deployment integration tests
-          location_name: from_gh_action_for_launch
-          repository_name: repo
+          # no repository name, since it uses Definitions
+          location_name: from_gh_action_for_launch_definitions
           job_name: simple_job
         env:
           DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
