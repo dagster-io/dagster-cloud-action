@@ -1,5 +1,5 @@
 locations:
-  - location_name: from_gh_action
+  - location_name: from_gh_action_for_launch_definitions
     code_source:
       python_file: repo.py
     build:
