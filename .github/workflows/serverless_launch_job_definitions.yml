@@ -1,4 +1,4 @@
-name: Serverless Job Launch
+name: Serverless Job Launch (Definitions)
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
