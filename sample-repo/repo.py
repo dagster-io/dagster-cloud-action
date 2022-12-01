@@ -2,7 +2,7 @@ import csv
 import os
 
 import requests
-from dagster import Definitions, asset, define_asset_job, job, op
+from dagster import asset, define_asset_job, job, op, repository
 
 
 @asset
@@ -39,6 +39,18 @@ def simple_job():
     simple_op()
 
 
-defs = Definitions(
-    assets=[cereals + nabisco_cereals + prha_asset], jobs=[all_cereals_job, simple_job]
-)
+# TODO: When Definitions merged, use this
+# defs = Definitions(
+#     assets=[cereals + nabisco_cereals + prha_asset], jobs=[all_cereals_job, simple_job]
+# )
+
+
+@repository
+def __repository__():
+    return [
+        cereals,
+        nabisco_cereals,
+        prha_asset,
+        all_cereals_job,
+        simple_job,
+    ]
