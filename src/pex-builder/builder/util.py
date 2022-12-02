@@ -53,7 +53,9 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
         # this ensures PEX_PATH is not cleared and any subprocess invoked can also use this.
         # this is important for running console scripts that use the pex environment (eg dbt)
         "--no-strip-pex-env",
-
+        # use a newer version of pip since it is more reliable
+        # see https://github.com/pantsbuild/pex/issues/2003
+        "--pip-version=22.2.2",
     ]
 
 
