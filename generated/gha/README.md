@@ -1,3 +1,35 @@
-The builder.pex is checked into this directory and used by the build_deploy_pex action.
+# builder.pex
 
-We should switch to using released binaries that get downloaded in the action.
+The builder.pex is checked into this directory and used by the `build_deploy_python_executable`
+GitHub action.
+
+## Updating
+
+To build and publish new version of builder.pex:
+
+```
+cd dagster-cloud-action
+
+# make sure the code is good - note this builds a builder.pex and tests it
+pytest tests
+
+# Build a new builder.pex, written to src/pexbuilder/build/builder.pex
+./src/pex-builder/build-builder.sh
+
+# Copy to this directory
+cp src/pex-builder/build/builder.pex generated/gha
+
+# Commit it
+git add generate/gha
+git commit -m "Updated builder.pex"
+```
+
+Note the new builder.pex is at HEAD but not live since the GitHub workflow uses the `pex-v0.1` tag.
+The new version can be tested by any workflow by removing the `@pex-v0.1` suffix in the workflow.
+
+To make the new version live, update the tag:
+
+```
+git tag -f pex-v0.1 <git-sha-of-commit>
+git push -f origin pex-v0.1
+```
