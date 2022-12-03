@@ -29,7 +29,11 @@ def run_builder(builder_pex_path, builder_args: List[str]):
             )
 
         all_files = os.listdir(build_output_dir)
-        pex_files = {filename for filename in all_files if filename.endswith(".pex")}
+        pex_files = {
+            filename
+            for filename in all_files
+            if filename.endswith(".pex") and filename != ".pex"
+        }
         yield (build_output_dir, list(pex_files), list(set(all_files) - pex_files))
 
 
@@ -163,6 +167,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag=None,
             deps_cache_to_tag=None,
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         # deps-HASH.pex, source-HASH.pex
@@ -184,6 +189,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag=None,
             deps_cache_to_tag=None,
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         build_deps_from_requirements_mock.assert_called()
@@ -199,6 +205,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag="tag1",
             deps_cache_to_tag="tag1",
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         assert "deps-pex-3.pex" in pex_registry_fixture
@@ -213,6 +220,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag="tag1",
             deps_cache_to_tag="tag1",
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         assert "deps-pex-4.pex" not in pex_registry_fixture
@@ -228,6 +236,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag=None,
             deps_cache_to_tag="tag1",
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         assert "deps-pex-5.pex" in pex_registry_fixture
@@ -243,6 +252,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag="tag1",
             deps_cache_to_tag="tag1-copy",
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         assert "deps-pex-6.pex" not in pex_registry_fixture
@@ -258,6 +268,7 @@ def test_builder_deploy_with_upload(
             deps_cache_from_tag="tag1-copy",
             deps_cache_to_tag="tag1-copy",
             update_code_location=False,
+            code_location_details=None,
             python_version="3.8",
         )
         print(pex_registry_fixture)

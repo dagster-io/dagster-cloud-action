@@ -8,7 +8,7 @@ import re
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import click
 import pkg_resources
@@ -36,17 +36,13 @@ class DepsRequirements:
         # reuse deps.pex even if a new PyPI package is published for a dependency.
         # An easy workaround is to pin the dependency in setup.py.
         return hashlib.sha1(
-            (
-                repr(self.requirements_txt)
-                + str(self.python_version)
-                + repr(self.pex_flags)
-            ).encode("utf-8")
+            (repr(self.requirements_txt) + str(self.python_version) + repr(self.pex_flags)).encode(
+                "utf-8"
+            )
         ).hexdigest()
 
 
-def get_deps_requirements(
-    code_directory, python_version: version.Version
-) -> DepsRequirements:
+def get_deps_requirements(code_directory, python_version: version.Version) -> DepsRequirements:
 
     # Combine dependencies specified in requirements.txt and setup.py
     lines = get_requirements_txt_deps(code_directory)
@@ -83,7 +79,7 @@ def build_deps_from_requirements(
     )
     tmp_pex_path = os.path.join(output_directory, f"deps-from-{requirements.hash}.pex")
 
-    with open(deps_requirements_path, "w") as deps_requirements_file:
+    with open(deps_requirements_path, "w", encoding="utf-8") as deps_requirements_file:
         deps_requirements_file.write(requirements.requirements_txt)
 
     logging.info(f"Building deps pex for Python version {requirements.python_version}")
@@ -92,6 +88,9 @@ def build_deps_from_requirements(
         requirements_filepaths=[deps_requirements_path],
         pex_flags=requirements.pex_flags,
         output_pex_path=tmp_pex_path,
+        # isolate this pex root from others on same machine. particularly useful in github action
+        # environment where pex_root for builder.pex may get shared with this pex_root
+        pex_root=os.path.join(output_directory, ".pex"),
     )
     if proc.returncode:
         logging.error("Failed to build deps.pex")
@@ -106,7 +105,7 @@ def build_deps_from_requirements(
 
     distribution_names = pex_info["distributions"].keys()
     # the distribution is named something like 'dagster-1.0.14-py3-none-any.whl'
-    pattern = re.compile(f"dagster-(.+?)-py")
+    pattern = re.compile("dagster-(.+?)-py")
     for name in distribution_names:
         match = pattern.match(name)
         if match:
@@ -125,7 +124,7 @@ def get_requirements_txt_deps(code_directory: str) -> List[str]:
     # remove current dir from the deps
     return [
         line
-        for line in open(requirements_path).read().splitlines()
+        for line in open(requirements_path, encoding="utf-8").read().splitlines()
         if line not in {"", "."}
     ]
 
@@ -141,6 +140,7 @@ def get_setup_py_deps(code_directory: str) -> List[str]:
         proc = subprocess.run(
             ["python", setup_py_path, "egg_info", f"--egg-base={temp_dir}"],
             capture_output=True,
+            check=False,
         )
         if proc.returncode:
             raise ValueError(

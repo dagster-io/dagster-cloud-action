@@ -1,5 +1,4 @@
 import logging
-import sys
 from typing import List, Optional
 
 from dagster_cloud_cli import config_utils, gql
@@ -15,32 +14,32 @@ def add_or_update_code_location(deployment_name, location_name, **location_kwarg
     with util.graphql_client(deployment_name) as client:
         # config_utils can't validate a location with pex_tag (yet). once dagster-cloud-cli is
         # published with the pex_tag changes, we don't need to hack inject the 'pex_tag'.
-        pex_tag = (
-            location_kwargs.pop("pex_tag") if "pex_tag" in location_kwargs else None
-        )
-        location_document = config_utils.get_location_document(
-            location_name, location_kwargs
-        )
+        pex_tag = location_kwargs.pop("pex_tag") if "pex_tag" in location_kwargs else None
+        location_document = config_utils.get_location_document(location_name, location_kwargs)
         if pex_tag:
             location_document["pex_metadata"] = {"pex_tag": pex_tag}  # hack inject
 
         gql.add_or_update_code_location(client, location_document)
-        name = location_document["location_name"]
         logging.info(
-            f"Added or updated location %r for deployment %r with %r",
+            "Added or updated location %r for deployment %r with %r",
             location_name,
             deployment_name,
-            location_kwargs,
+            location_document,
         )
 
 
-def wait_for_load(deployment_name: str, location_names: List[str]):
+def wait_for_load(
+    deployment_name: str,
+    location_names: List[str],
+    location_load_timeout=600,
+    agent_heartbeat_timeout=90,
+):
     with util.graphql_client(deployment_name) as client:
         workspace.wait_for_load(
             client,
             locations=location_names,
-            location_load_timeout=600,
-            agent_heartbeat_timeout=90,
+            location_load_timeout=location_load_timeout,
+            agent_heartbeat_timeout=agent_heartbeat_timeout,
             # url=util.url_for_deployment(deployment_name=deployment_name),
         )
 
@@ -87,12 +86,12 @@ def create_or_update_branch_deployment_from_github_context(
             event.timestamp,
             branch_url=event.branch_url,
             pull_request_url=event.pull_request_url,
-            pull_request_status=event.pull_request_status.upper(),
+            pull_request_status=event.pull_request_status,
             pull_request_number=event.pull_request_id,
             author_name=event.author_name,
             author_email=event.author_email,
             commit_message=event.commit_msg,
-            # TODO: add avatar url
+            author_avatar_url=github_event.get_github_avatar_url(),
         )
         logging.info(
             "Got branch deployment %r for branch %r",
@@ -100,14 +99,3 @@ def create_or_update_branch_deployment_from_github_context(
             event.branch_name,
         )
         return deployment_name
-
-
-if __name__ == "__main__":
-    # # simple test entry points
-    if sys.argv[1] == "add_or_update_code_location":
-        deployment_name, location_name, args = sys.argv[2:5]
-        kwargs = dict(arg.split("=", 1) for arg in args.split(","))
-        add_or_update_code_location(deployment_name, location_name, **kwargs)
-    elif sys.argv[1] == "create_or_update_branch_deployment":
-        github_event = github_context.github_event(sys.argv[2])
-        create_or_update_branch_deployment_from_github_context(github_event)

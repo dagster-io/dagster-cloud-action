@@ -1,5 +1,5 @@
 name: 'Build and deploy dagster code locations'
-description: 'Build project as source.pex and deps.pex, publish to dagster cloud, and update the code location'
+description: 'Build project python executable, publish to dagster cloud, and update the code location'
 inputs:
   dagster_cloud_file:
     description: 'Path to dagster_cloud.yaml'
@@ -9,7 +9,7 @@ inputs:
     required: false
     default: '3.8'
   deploy:
-    description: 'Whether to upload the pex files and update the code location'
+    description: 'Whether to upload the code files and update the code location'
     required: false
     default: 'true'
   build_output_dir:

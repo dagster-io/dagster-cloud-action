@@ -17,25 +17,51 @@ builder.pex -m builder.source <PROJECT_DIR> <OUT_DIR>  # build the source pex fi
 builder.pex -m builder.deps <PROJECT_DIR> <OUT_DIR>    # build the deps pex file
 ```
 
-The `builder.deploy` module builds both source and deps pexes and optionally uploads the pex files and updates the code location.
+The `builder.deploy` module builds both source and deps pexes and optionally uploads the pex files
+and updates the code location.
 
 ```
 # Build both source and deps pex for a given yaml file:
 builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR>   
 
 # Build both pex files and upload to the pex registry.
-# First run `elementl cloud run local-host-cloud` so this can use the s3 presigned URL generator API.
 
-export DAGSTER_CLOUD_API_TOKEN=user:test:shalabh
-export DAGSTER_CLOUD_URL=http://localhost:3000/test
-builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR>  --enable-pex-registry
-
-# Build both pex files, upload to the pex registry and update the dagster code location.
-# NOTE: does not work locally because it reads some environment vars and files from the github action context.
 export DAGSTER_CLOUD_API_TOKEN=...
 export DAGSTER_CLOUD_URL=...
-builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR>  --enable-pex-registry --deploy
+builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR>  --upload-pex
+
+# Build both pex files, upload to the pex registry and update the dagster code location.
+# NOTE: by default this infers code location details from the github action context. It also
+# creates a branch deployment if needed.
+export DAGSTER_CLOUD_API_TOKEN=...
+export DAGSTER_CLOUD_URL=...
+builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR>  --upload-pex --update-code-location
+
+
+# To run outside a github action context, eg locally, provide the --code-location-details
+export DAGSTER_CLOUD_API_TOKEN=...
+export DAGSTER_CLOUD_URL=...
+builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR> --upload-pex  --update-code-location --code-location-details deployment=prod,commit_hash=local12345
+
+# For a branch deployment, provide the deployment id (not the branch name) to the name in
+--code-location-details. This can be found in the URL when browsing a branch deployment.
+
+
+By default, the `deps-HASH.pex` is not cached. To cache in the pex registry, provide any name to
+both `--deps-cache-tag-read` and `--deps-cache-tag-write`. 
+
 ```
+
+
+## Local execution example
+
+A complete example using caching and local builds:
+
+```
+builder.pex -m builder.deploy <PROJECT_DIR>/dagster_cloud.yaml <OUT_DIR> --upload-pex --deps-cache-tag-read=local --deps-cache-tag-write=local --update-code-location --code-location-details deployment=prod,commit_hash=local12345
+```
+
+## Invoking dagster commands
 
 Embedded CLIs can be directly invoked:
 
