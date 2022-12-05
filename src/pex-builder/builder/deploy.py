@@ -3,6 +3,7 @@
 import dataclasses
 import logging
 import os
+import sys
 import threading
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -53,8 +54,12 @@ def build_project(
     should_notify: bool = False,
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
-
-    locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
+    try:
+        locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
+    except ValueError as err:
+        logging.error(f"Could not load {dagster_cloud_yaml_file}:")
+        logging.error(err)
+        sys.exit(1)
 
     if should_notify:
         for location in locations:
