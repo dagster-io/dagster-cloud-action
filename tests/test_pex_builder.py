@@ -77,7 +77,7 @@ def test_pex_deploy_python_file_error(repo_root, builder_pex_path):
             builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
         ) as _:
             pass
-    assert "code_source.python_file" in str(build_err)
+    assert build_err.match("code_source.python_file")
 
 
 def test_pex_deps_build(repo_root, builder_pex_path):
