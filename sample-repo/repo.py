@@ -39,7 +39,7 @@ def simple_job():
     simple_op()
 
 
-# TODO: When Definitions merged, use this
+# TODO: When https://github.com/dagster-io/dagster/pull/10890 merged, use this
 # defs = Definitions(
 #     assets=[cereals + nabisco_cereals + prha_asset], jobs=[all_cereals_job, simple_job]
 # )
