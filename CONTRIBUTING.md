@@ -29,7 +29,7 @@ Most users point at a dot version tag for the GitHub Action, e.g. `@v0.1`. If yo
 
 To update the tag, on the main branch, run e.g.
 ```
-git tag -fa v0.1 
+git tag -fa v0.1
 git tag -fa pex-v0.1
 git push --tags -f
 ```
