@@ -11,10 +11,11 @@ inputs:
     description: "The deployment to run a job on."
   location_name:
     required: true
-    description: "The code location in which the job repo lives."
+    description: "The code location in which the job lives."
   repository_name:
-    required: true
-    description: "The repository in which the job lives."
+    required: false
+    default: "__repository__"
+    description: "The repository in which the job lives, if any."
   job_name:
     required: true
     description: "The job to run."
