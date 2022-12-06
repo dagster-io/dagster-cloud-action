@@ -161,10 +161,19 @@ def build_locations(
 
 
 def get_base_image_for(location_build: LocationBuild) -> str:
+    # Full path to base image is supplied
     base_image = os.getenv("SERVERLESS_BASE_IMAGE")
     if base_image:
         return base_image
 
+    # Tag suffix for base image is supplied - uses custom uploaded image
+    base_image_tag = os.getenv("SERVERLESS_BASE_IMAGE_TAG")
+    if base_image_tag:
+        # Point to user's registry info with this tag suffix
+        registry_info = util.get_registry_info()
+        return f"{registry_info['registry_url']}:{base_image_tag}"
+
+    # Use the default base image in dagster cloud
     # TODO: Read from cloud API or another config?
     registry_subdomain = (
         "878483074102" if ".dogfood." in os.getenv("DAGSTER_CLOUD_URL", "") else "657821118200"

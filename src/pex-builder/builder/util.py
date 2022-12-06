@@ -129,6 +129,11 @@ def graphql_client(deployment_name: str):
         yield client
 
 
+def get_registry_info():
+    with graphql_client("prod") as client:
+        return gql.get_ecr_info(client)
+
+
 def url_for_deployment(deployment_name):
     dagster_cloud_url = os.getenv("DAGSTER_CLOUD_URL")
     if not dagster_cloud_url:
