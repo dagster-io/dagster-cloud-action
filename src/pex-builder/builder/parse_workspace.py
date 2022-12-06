@@ -27,6 +27,12 @@ def get_locations(dagster_cloud_yaml_file) -> List[Location]:
             location_dir = os.path.join(
                 base_dir, location.get("build", {"directory": "."}).get("directory")
             )
+            python_file = location.get("code_source", {}).get("python_file")
+            if python_file:
+                raise ValueError(
+                    f"code_source.python_file {python_file!r} is not supported for Serverless fast deploys. "
+                    "Please use code_source.package_name, or set ENABLE_FAST_DEPLOYS to false."
+                )
             locations.append(
                 Location(
                     name=location["location_name"],

@@ -1,0 +1,4 @@
+locations:
+  - location_name: dagster_project_python_file_location
+    code_source:
+      python_file: repository.py
