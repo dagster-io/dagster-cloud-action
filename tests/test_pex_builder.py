@@ -68,16 +68,15 @@ def test_pex_deploy_build_only(repo_root, builder_pex_path):
         assert "RUN_SUCCESS" in output
 
 
-def test_pex_deploy_python_file_error(repo_root, builder_pex_path):
+def test_pex_deploy_python_file(repo_root, builder_pex_path):
     dagster_project_yaml = (
         repo_root / "tests/test-repos/dagster_project_python_file/dagster_cloud.yaml"
     )
-    with pytest.raises(ValueError) as build_err:
-        with run_builder(
-            builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
-        ) as _:
-            pass
-    assert build_err.match("code_source.python_file")
+    with run_builder(
+        builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
+    ) as _:
+        # just make sure the build worked
+        pass
 
 
 def test_pex_deps_build(repo_root, builder_pex_path):
