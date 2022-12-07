@@ -68,16 +68,35 @@ def test_pex_deploy_build_only(repo_root, builder_pex_path):
         assert "RUN_SUCCESS" in output
 
 
-def test_pex_deploy_python_file_error(repo_root, builder_pex_path):
+def test_pex_deploy_python_file(repo_root, builder_pex_path):
     dagster_project_yaml = (
         repo_root / "tests/test-repos/dagster_project_python_file/dagster_cloud.yaml"
     )
-    with pytest.raises(ValueError) as build_err:
-        with run_builder(
-            builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
-        ) as _:
-            pass
-    assert build_err.match("code_source.python_file")
+    with run_builder(
+        builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
+    ) as (build_output_dir, pex_files, other_files):
+        pex_file_by_alias = {
+            filename.split("-", 1)[0]: filename for filename in pex_files
+        }
+
+        # make sure the working_directory was included with the file
+        output = subprocess.check_output(
+            [
+                "./" + pex_file_by_alias["source"],
+                "-c",
+                "import working_directory; print(working_directory.__file__);",
+            ],
+            env={**os.environ, "PEX_PATH": pex_file_by_alias["deps"]},
+            cwd=build_output_dir,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8",
+        )
+
+        assert "working_directory" in output
+        repo_contents = open(
+            output.strip().replace("__init__.py", "root/repository.py")
+        ).read()
+        assert "dagster_project_python_file" in repo_contents
 
 
 def test_pex_deps_build(repo_root, builder_pex_path):
