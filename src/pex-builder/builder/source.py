@@ -13,6 +13,7 @@ import click
 from . import util
 
 # inspired by https://github.com/github/gitignore/blob/main/Python.gitignore
+# would be nice to just read the gitignore and use that
 IGNORED_PATTERNS = [".git", "__pycache__", ".pytest_cache", ".tox", ".nox", "*.pyc", ".mypy_cache"]
 
 
