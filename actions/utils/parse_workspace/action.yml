@@ -33,11 +33,13 @@ runs:
             workspace_contents = f.read()
         workspace_contents_yaml = yaml.safe_load(workspace_contents)
 
+        base_dir = os.path.abspath(os.path.dirname(dagster_cloud_yaml_file))
+
         output_obj = [
             {
                 'name': location['location_name'],
-                'directory': location.get('build', {'directory': '.'}).get('directory'),
-                'build_folder': location.get('build', {'directory': '.'}).get('directory'),
+                'directory': os.path.join(base_dir, location.get('build', {'directory': '.'}).get('directory')),
+                'build_folder': os.path.join(base_dir, location.get('build', {'directory': '.'}).get('directory')),
                 'registry': location.get('build', {'directory': '.'}).get('registry'),
                 'location_file': str(workspace),
             }
