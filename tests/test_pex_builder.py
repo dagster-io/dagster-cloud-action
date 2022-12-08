@@ -69,34 +69,44 @@ def test_pex_deploy_build_only(repo_root, builder_pex_path):
 
 
 def test_pex_deploy_python_file(repo_root, builder_pex_path):
-    dagster_project_yaml = (
-        repo_root / "tests/test-repos/dagster_project_python_file/dagster_cloud.yaml"
-    )
-    with run_builder(
-        builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
-    ) as (build_output_dir, pex_files, other_files):
-        pex_file_by_alias = {
-            filename.split("-", 1)[0]: filename for filename in pex_files
-        }
 
-        # make sure the working_directory was included with the file
-        output = subprocess.check_output(
-            [
-                "./" + pex_file_by_alias["source"],
-                "-c",
-                "import working_directory; print(working_directory.__file__);",
-            ],
-            env={**os.environ, "PEX_PATH": pex_file_by_alias["deps"]},
-            cwd=build_output_dir,
-            stderr=subprocess.STDOUT,
-            encoding="utf-8",
+    with tempfile.TemporaryDirectory() as temp_dir:
+        shutil.copytree(
+            repo_root / "tests/test-repos/dagster_project_python_file",
+            Path(temp_dir) / "dagster_project_python_file",
         )
+        dagster_project_yaml = (
+            Path(temp_dir) / "dagster_project_python_file/dagster_cloud.yaml"
+        )
+        os.mkdir(Path(temp_dir) / "dagster_project_python_file/.git")
+        (Path(temp_dir) / "dagster_project_python_file/.git/some-file").touch()
 
-        assert "working_directory" in output
-        repo_contents = open(
-            output.strip().replace("__init__.py", "root/repository.py")
-        ).read()
-        assert "dagster_project_python_file" in repo_contents
+        with run_builder(
+            builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
+        ) as (build_output_dir, pex_files, other_files):
+            pex_file_by_alias = {
+                filename.split("-", 1)[0]: filename for filename in pex_files
+            }
+
+            # make sure the working_directory was included with the file
+            output = subprocess.check_output(
+                [
+                    "./" + pex_file_by_alias["source"],
+                    "-c",
+                    "import working_directory; print(working_directory.__file__);",
+                ],
+                env={**os.environ, "PEX_PATH": pex_file_by_alias["deps"]},
+                cwd=build_output_dir,
+                stderr=subprocess.STDOUT,
+                encoding="utf-8",
+            )
+
+            assert "working_directory" in output
+            working_dir = output.strip().replace("__init__.py", "root")
+            repo_contents = open(os.path.join(working_dir, "repository.py")).read()
+
+            assert not os.path.exists(os.path.join(working_dir, ".git"))
+            assert "dagster_project_python_file" in repo_contents
 
 
 def test_pex_deps_build(repo_root, builder_pex_path):

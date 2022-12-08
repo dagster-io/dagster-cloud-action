@@ -83,7 +83,11 @@ def _prepare_working_directory(code_directory, sources_directory):
         init_file.write("# Auto generated package containing the original source at root/")
 
     shutil.copytree(
-        code_directory, os.path.join(package_dir, "root"), copy_function=os.link, dirs_exist_ok=True
+        code_directory,
+        os.path.join(package_dir, "root"),
+        copy_function=os.link,
+        dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns(".git"),
     )
 
 
