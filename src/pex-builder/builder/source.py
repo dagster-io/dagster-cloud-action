@@ -12,6 +12,9 @@ import click
 
 from . import util
 
+# inspired by https://github.com/github/gitignore/blob/main/Python.gitignore
+IGNORED_PATTERNS = [".git", "__pycache__", ".pytest_cache", ".tox", ".nox", "*.pyc", ".mypy_cache"]
+
 
 def build_source_pex(code_directory, output_directory, python_version):
     output_directory = os.path.abspath(output_directory)
@@ -87,7 +90,7 @@ def _prepare_working_directory(code_directory, sources_directory):
         os.path.join(package_dir, "root"),
         copy_function=os.link,
         dirs_exist_ok=True,
-        ignore=shutil.ignore_patterns(".git"),
+        ignore=shutil.ignore_patterns(*IGNORED_PATTERNS),
     )
 
 
