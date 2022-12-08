@@ -42,7 +42,7 @@ git push origin v0.1.12
 # to test, change the reference in a github workflow yaml file
 
 # now we can move the user referenced tags to this patch tag
-# use -f to force move the tag, since these tags already exist
+# use '-f' to force move the tag, since these tags already exist
 git tag -f v0.1 v0.1.12
 git tag -f pex-v0.1 v0.1.12
 
