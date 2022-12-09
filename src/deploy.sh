@@ -105,7 +105,7 @@ if [[ -z $INPUT_PR_STATUS || "$INPUT_PR_STATUS" == "open" ]]; then
         --location-file "${INPUT_LOCATION_FILE}" \
         --location-name "${INPUT_LOCATION_NAME}" \
         --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
-        --location-load-timeout 600 \
+        --location-load-timeout $INPUT_LOCATION_LOAD_TIMEOUT \
         --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
         --git-url $COMMIT_URL \
         --commit-hash $GITHUB_SHA
