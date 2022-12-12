@@ -89,7 +89,6 @@ def _prepare_working_directory(code_directory, sources_directory):
     shutil.copytree(
         code_directory,
         os.path.join(package_dir, "root"),
-        copy_function=os.link,
         dirs_exist_ok=True,
         ignore=shutil.ignore_patterns(*IGNORED_PATTERNS),
     )
