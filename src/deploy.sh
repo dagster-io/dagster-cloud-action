@@ -111,7 +111,7 @@ if [[ -z $INPUT_PR_STATUS || "$INPUT_PR_STATUS" == "open" ]]; then
         --commit-hash $GITHUB_SHA
 
     if [ $? -ne 0 ]; then
-        echo "::error title=Deploy failed::Deploy failed. To view status of your code locations, visit ${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}/workspace"
+        echo "::error title=Deploy failed::Deploy failed. To view the status of your code locations, visit ${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}/instance/code-locations"
         exit 1
     fi
 fi

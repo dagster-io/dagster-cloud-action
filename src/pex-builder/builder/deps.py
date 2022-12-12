@@ -132,7 +132,7 @@ def get_requirements_txt_deps(code_directory: str) -> List[str]:
 def get_setup_py_deps(code_directory: str) -> List[str]:
     setup_py_path = os.path.join(code_directory, "setup.py")
     if not os.path.exists(setup_py_path):
-        raise ValueError("setup.py not found", setup_py_path)
+        return []
 
     lines = []
     # write out egg_info files and load as distribution

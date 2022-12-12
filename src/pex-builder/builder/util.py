@@ -42,8 +42,20 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
     version_tag = f"{python_version.major}{python_version.minor}"  # eg '38'
     python_interpreter = python_interpreter_for(python_version)
     return [
-        f"--python={python_interpreter}",  # extra check to ensure run environment matches built version
+        # extra check to ensure run environment matches built version
+        f"--python={python_interpreter}",
+        # use the dependency for the general linux distribution for the major/minor python version
         f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
+        # resolves dependencies using the local interpreter, effectively allowing source distributions
+        # to work (since they can be build by the local interpreter)
+        # see also https://linear.app/elementl/issue/CLOUD-2023/pex-builds-fail-for-dbt-core-dependency
+        "--resolve-local-platforms",
+        # this ensures PEX_PATH is not cleared and any subprocess invoked can also use this.
+        # this is important for running console scripts that use the pex environment (eg dbt)
+        "--no-strip-pex-env",
+        # use a newer version of pip since it is more reliable
+        # see https://github.com/pantsbuild/pex/issues/2003
+        "--pip-version=22.2.2",
     ]
 
 
@@ -115,6 +127,11 @@ def graphql_client(deployment_name: str):
 
     with gql.graphql_client_from_url(url, dagster_cloud_api_token) as client:
         yield client
+
+
+def get_registry_info():
+    with graphql_client("prod") as client:
+        return gql.get_ecr_info(client)
 
 
 def url_for_deployment(deployment_name):

@@ -48,7 +48,7 @@ class GithubEvent:
             self.branch_name = pull_request["head"]["ref"]
             self.branch_url = f"{self.github_server_url}/{self.repo_name}/tree/{self.branch_name}"
             self.pull_request_url = pull_request["html_url"]
-            self.pull_request_id = pull_request["number"]
+            self.pull_request_id = str(pull_request["number"])
             self.pull_request_status = (
                 "merged" if pull_request.get("merged") else pull_request["state"]
             ).upper()
@@ -107,7 +107,7 @@ def update_pr_comment(github_event: GithubEvent, action, deployment_name, locati
         return
 
     script_path = github_event.github_action_path.parent.parent / "src/create_or_update_comment.py"
-    if not script_path.exists:
+    if not script_path.exists():
         logging.warning("Did not find %r, not adding PR comment.", script_path)
 
     env = {name: value for name, value in os.environ.items() if not name.startswith("PEX_")}
