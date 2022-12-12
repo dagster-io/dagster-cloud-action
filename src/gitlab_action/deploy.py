@@ -28,6 +28,8 @@ def deploy(dagster_cloud_yaml_file):
                     f"--location-file={dagster_cloud_yaml_file}",
                     "--deps-cache-from=gitlab",
                     "--deps-cache-to=gitlab",
+                    f"--commit-hash={os.getenv('CI_COMMIT_SHORT_SHA')}",
+                    f"--git-url={os.getenv('CI_PROJECT_URL')}",
                 ],
                 stderr=subprocess.STDOUT
             )
