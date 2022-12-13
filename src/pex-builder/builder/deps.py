@@ -6,6 +6,7 @@ import os
 import os.path
 import re
 import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -68,6 +69,15 @@ def build_deps_pex(code_directory, output_directory, python_version) -> Tuple[st
     return build_deps_from_requirements(requirements, output_directory)
 
 
+# Resolving dependencies can be flaky - depends on the version of pip and the resolver algorithm.
+# These flags allow trying multiple ways of building the deps.
+# This also allows us to try new flags safely, by having automatic fallback.
+TRY_FLAGS = [
+    [],  # default set of flags defined in util.py
+    ["--resolver-version=pip-2020-resolver"],  # new resolver as recommended by pex team
+]
+
+
 def build_deps_from_requirements(
     requirements: DepsRequirements,
     output_directory: str,
@@ -82,20 +92,35 @@ def build_deps_from_requirements(
     with open(deps_requirements_path, "w", encoding="utf-8") as deps_requirements_file:
         deps_requirements_file.write(requirements.requirements_txt)
 
-    logging.info(f"Building deps pex for Python version {requirements.python_version}")
-    proc = util.build_pex(
-        sources_directories=[],
-        requirements_filepaths=[deps_requirements_path],
-        pex_flags=requirements.pex_flags,
-        output_pex_path=tmp_pex_path,
-        # isolate this pex root from others on same machine. particularly useful in github action
-        # environment where pex_root for builder.pex may get shared with this pex_root
-        pex_root=os.path.join(output_directory, ".pex"),
-    )
-    if proc.returncode:
-        logging.error("Failed to build deps.pex")
-        logging.error(proc.stdout)
-        logging.error(proc.stderr)
+    logging.info("Building deps pex for Python version %r", requirements.python_version)
+
+    # We try different sets of build flags and use the first one that works
+    try_flags = TRY_FLAGS.copy()
+    while try_flags:
+        add_on_flags = try_flags.pop(0)
+        pex_flags = requirements.pex_flags + add_on_flags
+        logging.info("Running pex with %r", " ".join(pex_flags))
+        proc = util.build_pex(
+            sources_directories=[],
+            requirements_filepaths=[deps_requirements_path],
+            pex_flags=pex_flags,
+            output_pex_path=tmp_pex_path,
+            # isolate this pex root from others on same machine. particularly useful in github action
+            # environment where pex_root for builder.pex may get shared with this pex_root
+            pex_root=os.path.join(output_directory, ".pex"),
+        )
+        if proc.returncode:
+            if try_flags:
+                logging.warn(proc.stderr.decode("utf-8"))
+                logging.warn("Will retry building deps with a different resolution mechanism")
+            else:
+                logging.error("Failed to build deps.pex")
+                logging.error(proc.stdout.decode("utf-8"))
+                logging.error(proc.stderr.decode("utf-8"))
+                # exit early for better debugging
+                sys.exit(1)
+        else:
+            break
 
     pex_info = util.get_pex_info(tmp_pex_path)
     pex_hash = pex_info["pex_hash"]
