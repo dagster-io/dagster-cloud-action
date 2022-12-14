@@ -8,16 +8,18 @@ source $(python /expand_json_env.py)
 # This maps CI provider (Github) env vars onto a
 # standardized set of env vars:
 # AVATAR_URL BRANCH_NAME BRANCH_URL CI_RUN_NUMBER COMMIT_HASH COMMIT_URL GIT_REPO PR_ID PR_STATUS PR_URL
-AVATAR_URL=$(python /fetch_github_avatar.py)
-BRANCH_NAME="$GITHUB_HEAD_REF"
-BRANCH_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}"
-CI_RUN_NUMBER="$GITHUB_RUN_NUMBER"
-COMMIT_HASH="$GITHUB_SHA"
-COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}"
-GIT_REPO="$GITHUB_REPOSITORY"
-PR_ID="$INPUT_PR"
-PR_STATUS=`echo $INPUT_PR_STATUS | tr '[a-z]' '[A-Z]'`
-PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${INPUT_PR}"
+if [ ! -z $GITHUB_ACTIONS ]; then
+  AVATAR_URL=$(python /fetch_github_avatar.py)
+  BRANCH_NAME="$GITHUB_HEAD_REF"
+  BRANCH_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}"
+  CI_RUN_NUMBER="$GITHUB_RUN_NUMBER"
+  COMMIT_HASH="$GITHUB_SHA"
+  COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}"
+  GIT_REPO="$GITHUB_REPOSITORY"
+  PR_ID="$INPUT_PR"
+  PR_STATUS=`echo $INPUT_PR_STATUS | tr '[a-z]' '[A-Z]'`
+  PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${INPUT_PR}"
+fi
 
 # The env var we get out of the `location` input is just `INPUT_NAME`
 # the env var we get out of the `location_name` input is `INPUT_LOCATION_NAME`

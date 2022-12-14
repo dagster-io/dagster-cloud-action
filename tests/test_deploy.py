@@ -4,6 +4,7 @@ import json
 def test_deploy_full_deployment(exec_context, action_docker_image_id):
     exec_context.set_env(
         {
+            "GITHUB_ACTIONS": "true",
             "DAGSTER_CLOUD_URL": "http://dagster.cloud/test",
             "INPUT_DEPLOYMENT": "prod",
             "DAGSTER_CLOUD_API_TOKEN": "api-token",
