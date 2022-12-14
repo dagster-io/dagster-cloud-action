@@ -15,8 +15,8 @@ from . import command_stub
 
 
 class ExecContext:
-    def __init__(self):
-        self.tmp_dir = tempfile.mkdtemp()
+    def __init__(self, tmp_dir):
+        self.tmp_dir = tmp_dir
         self.environ = {}
         self.proc = None
 
@@ -147,17 +147,10 @@ class ExecContext:
     def get_command_log(self, cmdname: str):
         return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
 
-    def cleanup(self):
-        shutil.rmtree(self.tmp_dir)
-
 
 @pytest.fixture(scope="function")
-def exec_context():
-    ec = ExecContext()
-    try:
-        yield ec
-    finally:
-        ec.cleanup()
+def exec_context(tmp_path):
+    yield ExecContext(tmp_dir=tmp_path)
 
 
 @pytest.fixture(scope="session")
