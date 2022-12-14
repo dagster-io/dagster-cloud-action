@@ -30,6 +30,9 @@ elif [ ! -z $GITLAB_CI ]; then
   PR_ID="$CI_MERGE_REQUEST_ID"
   # PR_STATUS="TODO"
   PR_URL="${CI_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_ID}"
+else
+  echo "::error title=Running in an unsupported CI environment. Use Github Actions, Gitlab Pipelines, or script against the dagster-cloud CLI directly."
+  exit 1
 fi
 
 # The env var we get out of the `location` input is just `INPUT_NAME`

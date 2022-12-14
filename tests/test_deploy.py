@@ -1,3 +1,4 @@
+import pytest
 import json
 
 
@@ -72,3 +73,8 @@ def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id):
     )
     exec_context.run_docker_command(action_docker_image_id, "/deploy.sh")
     assert "Deploying location some-location" in exec_context.get_stdout()
+
+
+def test_deploy_full_deployment_unsupported_ci(exec_context, action_docker_image_id):
+    with pytest.raises(Exception, match="Running in an unsupported CI environment"):
+        exec_context.run_docker_command(action_docker_image_id, "/deploy.sh")
