@@ -43,7 +43,11 @@ def test_pex_deploy_build_only(repo_root, builder_pex_path):
     )
     with run_builder(
         builder_pex_path, ["-m", "builder.deploy", str(dagster_project1_yaml)]
-    ) as (build_output_dir, pex_files, other_files):
+    ) as (
+        build_output_dir,
+        pex_files,
+        other_files,
+    ):
         # one source-HASH.pex and one deps-HASH.pex file are expected
         assert 2 == len(pex_files)
         pex_file_by_alias = {
@@ -83,7 +87,11 @@ def test_pex_deploy_python_file(repo_root, builder_pex_path):
 
         with run_builder(
             builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
-        ) as (build_output_dir, pex_files, other_files):
+        ) as (
+            build_output_dir,
+            pex_files,
+            other_files,
+        ):
             pex_file_by_alias = {
                 filename.split("-", 1)[0]: filename for filename in pex_files
             }
@@ -125,7 +133,11 @@ def test_pex_deps_build(repo_root, builder_pex_path):
         # build with original deps
         with run_builder(
             builder_pex_path,
-            ["-m", "builder.deps", str(tempdir_path / "dagster_project1")],
+            [
+                "-m",
+                "dagster_cloud_cli.core.pex_builder.deps",
+                str(tempdir_path / "dagster_project1"),
+            ],
         ) as (build_output_dir, pex_files, other_files):
             # one deps-HASH.pex is expected
             assert 1 == len(pex_files)
@@ -153,7 +165,11 @@ def test_pex_deps_build(repo_root, builder_pex_path):
         (tempdir_path / "dagster_project1/requirements.txt").write_text("pandas\n")
         with run_builder(
             builder_pex_path,
-            ["-m", "builder.deps", str(tempdir_path / "dagster_project1")],
+            [
+                "-m",
+                "dagster_cloud_cli.core.pex_builder.deps",
+                str(tempdir_path / "dagster_project1"),
+            ],
         ) as (build_output_dir, pex_files, other_files):
 
             deps_file = pex_files[0]
@@ -166,8 +182,8 @@ def test_pex_deps_build(repo_root, builder_pex_path):
             assert "OK" in output
 
 
-@mock.patch("builder.deps.build_deps_from_requirements")
-@mock.patch("builder.source.build_source_pex")
+@mock.patch("dagster_cloud_cli.core.pex_builder.deps.build_deps_from_requirements")
+@mock.patch("dagster_cloud_cli.core.pex_builder.source.build_source_pex")
 def test_builder_deploy_with_upload(
     build_source_pex_mock,
     build_deps_from_requirements_mock,
@@ -175,7 +191,7 @@ def test_builder_deploy_with_upload(
     repo_root,
     pex_registry_fixture,
 ):
-    from builder import deploy
+    from dagster_cloud_cli.core.pex_builder import deploy
 
     dagster_project1_yaml = (
         repo_root / "tests/test-repos/dagster_project1/dagster_cloud.yaml"

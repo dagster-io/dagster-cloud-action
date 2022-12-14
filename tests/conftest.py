@@ -221,7 +221,7 @@ def builder_module(builder_pex_path):
             raise ValueError("Could not unpack builder:" + exc.output)
         sys.path.insert(0, os.path.join(venv_dir, "lib/python3.8/site-packages"))
         try:
-            yield importlib.import_module("builder")
+            yield importlib.import_module("dagster_cloud_cli.core.pex_builder")
         finally:
             sys.path.pop(0)
 
@@ -258,9 +258,11 @@ def pex_registry_fixture():
         return response
 
     with mock.patch(
-        "builder.pex_registry.get_s3_urls_for_get", s3_urls_for_get
+        "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_get",
+        s3_urls_for_get,
     ) as _, mock.patch(
-        "builder.pex_registry.get_s3_urls_for_put", s3_urls_for_put
+        "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_put",
+        s3_urls_for_put,
     ) as _, mock.patch(
         "requests.get", requests_get
     ) as _, mock.patch(
