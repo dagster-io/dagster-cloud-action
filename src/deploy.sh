@@ -5,7 +5,7 @@
 # INPUT_NAME, INPUT_LOCATION_FILE, INPUT_REGISTRY
 source $(python /expand_json_env.py)
 
-# This maps CI provider (Github) env vars onto a
+# This maps CI provider (Github, Gitlab) env vars onto a
 # standardized set of env vars:
 # AVATAR_URL BRANCH_NAME BRANCH_URL CI_RUN_NUMBER COMMIT_HASH COMMIT_URL GIT_REPO PR_ID PR_STATUS PR_URL
 if [ ! -z $GITHUB_ACTIONS ]; then
@@ -19,6 +19,17 @@ if [ ! -z $GITHUB_ACTIONS ]; then
   PR_ID="$INPUT_PR"
   PR_STATUS=`echo $INPUT_PR_STATUS | tr '[a-z]' '[A-Z]'`
   PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${INPUT_PR}"
+elif [ ! -z $GITLAB_CI ]; then
+  #AVATAR_URL="TODO"
+  BRANCH_NAME="$CI_COMMIT_BRANCH"
+  BRANCH_URL="${CI_PROJECT_URL}/-/tree/${CI_COMMIT_BRANCH}"
+  # CI_RUN_NUMBER="$GITHUB_RUN_NUMBER"
+  COMMIT_HASH="$CI_COMMIT_SHORT_SHA"
+  COMMIT_URL="${CI_PROJECT_URL}/-/commit/${CI_COMMIT_SHORT_SHA}"
+  GIT_REPO="$CI_PROJECT_NAME"
+  PR_ID="$CI_MERGE_REQUEST_ID"
+  # PR_STATUS="TODO"
+  PR_URL="${CI_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_ID}"
 fi
 
 # The env var we get out of the `location` input is just `INPUT_NAME`
