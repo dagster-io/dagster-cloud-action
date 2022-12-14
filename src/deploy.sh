@@ -5,6 +5,20 @@
 # INPUT_NAME, INPUT_LOCATION_FILE, INPUT_REGISTRY
 source $(python /expand_json_env.py)
 
+# This maps CI provider (Github) env vars onto a
+# standardized set of env vars:
+# AVATAR_URL BRANCH_NAME BRANCH_URL CI_RUN_NUMBER COMMIT_HASH COMMIT_URL GIT_REPO PR_ID PR_STATUS PR_URL
+AVATAR_URL=$(python /fetch_github_avatar.py)
+BRANCH_NAME="$GITHUB_HEAD_REF"
+BRANCH_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}"
+CI_RUN_NUMBER="$GITHUB_RUN_NUMBER"
+COMMIT_HASH="$GITHUB_SHA"
+COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}"
+GIT_REPO="$GITHUB_REPOSITORY"
+PR_ID="$INPUT_PR"
+PR_STATUS=`echo $INPUT_PR_STATUS | tr '[a-z]' '[A-Z]'`
+PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${INPUT_PR}"
+
 # The env var we get out of the `location` input is just `INPUT_NAME`
 # the env var we get out of the `location_name` input is `INPUT_LOCATION_NAME`
 # this just ensures we use whichever one is set
@@ -35,26 +49,18 @@ if [ -z $INPUT_DEPLOYMENT ]; then
     export EMAIL=$(git log -1 --format='%ae')
     export NAME=$(git log -1 --format='%an')
 
-    STATUS_CAPS=`echo $INPUT_PR_STATUS | tr '[a-z]' '[A-Z]'`
-
-    # Assemble github URLs
-    PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${INPUT_PR}"
-    BRANCH_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}"
-
-    AVATAR_URL=$(python /fetch_github_avatar.py)
-
     # Create or update branch deployment
     if [ -z $AVATAR_URL ]; then
         export DEPLOYMENT_NAME=$(dagster-cloud branch-deployment create-or-update \
             --url "${DAGSTER_CLOUD_URL}" \
             --api-token "$DAGSTER_CLOUD_API_TOKEN" \
-            --git-repo-name "$GITHUB_REPOSITORY" \
-            --branch-name "$GITHUB_HEAD_REF" \
+            --git-repo-name "$GIT_REPO" \
+            --branch-name "$BRANCH_NAME" \
             --branch-url "$BRANCH_URL" \
             --pull-request-url "$PR_URL" \
-            --pull-request-id "$INPUT_PR" \
-            --pull-request-status "$STATUS_CAPS" \
-            --commit-hash "$GITHUB_SHA" \
+            --pull-request-id "$PR_ID" \
+            --pull-request-status "$PR_STATUS" \
+            --commit-hash "$COMMIT_HASH" \
             --timestamp "$TIMESTAMP" \
             --commit-message "$MESSAGE" \
             --author-name "$NAME" \
@@ -63,13 +69,13 @@ if [ -z $INPUT_DEPLOYMENT ]; then
         export DEPLOYMENT_NAME=$(dagster-cloud branch-deployment create-or-update \
             --url "${DAGSTER_CLOUD_URL}" \
             --api-token "$DAGSTER_CLOUD_API_TOKEN" \
-            --git-repo-name "$GITHUB_REPOSITORY" \
-            --branch-name "$GITHUB_HEAD_REF" \
+            --git-repo-name "$GIT_REPO" \
+            --branch-name "$BRANCH_NAME" \
             --branch-url "$BRANCH_URL" \
             --pull-request-url "$PR_URL" \
-            --pull-request-id "$INPUT_PR" \
-            --pull-request-status "$STATUS_CAPS" \
-            --commit-hash "$GITHUB_SHA" \
+            --pull-request-id "$PR_ID" \
+            --pull-request-status "$PR_STATUS" \
+            --commit-hash "$COMMIT_HASH" \
             --timestamp "$TIMESTAMP" \
             --commit-message "$MESSAGE" \
             --author-name "$NAME" \
@@ -79,21 +85,19 @@ if [ -z $INPUT_DEPLOYMENT ]; then
 else
     export DEPLOYMENT_NAME=$INPUT_DEPLOYMENT
 fi
-COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${GITHUB_SHA}"
-
 
 if [ -z $DEPLOYMENT_NAME ]; then
     echo "::error title=Failed to update branch deployment::Failed to update branch deployment"
     exit 1
 fi
 
-if [[ -z $INPUT_PR_STATUS || "$INPUT_PR_STATUS" == "open" ]]; then
+if [[ -z $PR_STATUS || "$PR_STATUS" == "OPEN" ]]; then
     echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}..."
 
     echo "::set-output name=deployment::${DEPLOYMENT_NAME}"
 
     # Extend timeout in case the agent is still spinning up
-    if [ $GITHUB_RUN_NUMBER -eq 1 ]; then
+    if [[ $CI_RUN_NUMBER -eq 1 ]]; then
         AGENT_HEARTBEAT_TIMEOUT=600
     else
         AGENT_HEARTBEAT_TIMEOUT=90
@@ -107,8 +111,8 @@ if [[ -z $INPUT_PR_STATUS || "$INPUT_PR_STATUS" == "open" ]]; then
         --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
         --location-load-timeout 600 \
         --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
-        --git-url $COMMIT_URL \
-        --commit-hash $GITHUB_SHA
+        --git-url "$COMMIT_URL" \
+        --commit-hash "$COMMIT_HASH"
 
     if [ $? -ne 0 ]; then
         echo "::error title=Deploy failed::Deploy failed. To view the status of your code locations, visit ${DAGSTER_CLOUD_URL}/${DEPLOYMENT_NAME}/instance/code-locations"
