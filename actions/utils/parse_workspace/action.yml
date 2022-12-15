@@ -21,4 +21,4 @@ runs:
 
     - id: load_workspace_file
       shell: bash
-      run: "python /parse_workspace.py ${{ inputs.dagster_cloud_file }}"
+      run: "python $GITHUB_ACTION_PATH/../../../src/parse_workspace.py ${{ inputs.dagster_cloud_file }}"
