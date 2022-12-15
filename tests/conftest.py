@@ -17,8 +17,7 @@ from . import command_stub
 class ExecContext:
     def __init__(self, tmp_dir):
         self.tmp_dir = tmp_dir
-        self.environ = {}
-        self.proc = None
+        self.reset()
 
     def tmp_file_path(self, filename) -> Path:
         "Return a Path object pointing to named file in tmp_dir."
@@ -146,6 +145,10 @@ class ExecContext:
 
     def get_command_log(self, cmdname: str):
         return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
+
+    def reset(self):
+        self.environ = {}
+        self.proc = None
 
 
 @pytest.fixture(scope="function")
