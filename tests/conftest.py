@@ -99,7 +99,14 @@ class ExecContext:
 
         script_path = self.prepare_run_script(command)
         print("Running:", script_path)
-        self.proc = subprocess.run([script_path], shell=True, check=True)
+        self.proc = subprocess.run(
+            [script_path],
+            shell=True,
+            check=True,
+            env={
+                "PATH": os.getenv("PATH"),
+            },
+        )
         self.post_run(command)
 
     def run_docker_command(self, docker_image_tag, command):
