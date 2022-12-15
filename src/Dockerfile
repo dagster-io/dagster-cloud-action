@@ -19,6 +19,7 @@ COPY expand_env_vars.py /expand_env_vars.py
 COPY create_or_update_comment.py /create_or_update_comment.py
 COPY expand_json_env.py /expand_json_env.py
 COPY fetch_github_avatar.py /fetch_github_avatar.py
+COPY parse_workspace.py parse_workspace.py
 
 
 COPY notify.sh /notify.sh
