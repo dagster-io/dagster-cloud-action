@@ -4,7 +4,7 @@ import os
 import pprint
 import sys
 
-from . import util
+from dagster_cloud_cli.core.pex_builder import util
 
 if __name__ == "__main__":
     print("hello from selftest.py")
