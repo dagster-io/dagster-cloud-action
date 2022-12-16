@@ -2,7 +2,10 @@ import pytest
 import json
 
 
-def test_deploy_full_deployment_github(exec_context, action_docker_image_id):
+def test_deploy_full_deployment_github(tmp_path, exec_context, action_docker_image_id):
+    output_file = tmp_path / "output.txt"
+    output_file.touch()
+
     exec_context.set_env(
         {
             "GITHUB_ACTIONS": "true",
@@ -21,6 +24,7 @@ def test_deploy_full_deployment_github(exec_context, action_docker_image_id):
             "GITHUB_REPOSITORY": "some-org/some-project",
             "GITHUB_SHA": "sha12345",
             "INPUT_IMAGE_TAG": "prod-some-location-sha",
+            "OUTPUT_FILE": output_file.name,
         }
     )
 
@@ -37,9 +41,13 @@ def test_deploy_full_deployment_github(exec_context, action_docker_image_id):
     )
     exec_context.run_docker_command(action_docker_image_id, "/deploy.sh")
     assert "Deploying location some-location" in exec_context.get_stdout()
+    assert "deployment=prod" in output_file.read_text()
 
 
-def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id):
+def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id, tmp_path):
+    output_file = tmp_path / "output.txt"
+    output_file.touch()
+
     exec_context.set_env(
         {
             "GITLAB_CI": "true",
@@ -57,6 +65,7 @@ def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id):
             "CI_PROJECT_URL": "https://gitlab.com/some-org/some-project/",
             "CI_COMMIT_SHORT_SHA": "sha12345",
             "INPUT_IMAGE_TAG": "prod-some-location-sha",
+            "OUTPUT_FILE": output_file.name,
         }
     )
 
@@ -73,6 +82,7 @@ def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id):
     )
     exec_context.run_docker_command(action_docker_image_id, "/deploy.sh")
     assert "Deploying location some-location" in exec_context.get_stdout()
+    assert "deployment=prod" in output_file.read_text()
 
 
 def test_deploy_full_deployment_unsupported_ci(exec_context, action_docker_image_id):
