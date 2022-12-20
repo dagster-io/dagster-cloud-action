@@ -15,10 +15,9 @@ from . import command_stub
 
 
 class ExecContext:
-    def __init__(self):
-        self.tmp_dir = tempfile.mkdtemp()
-        self.environ = {}
-        self.proc = None
+    def __init__(self, tmp_dir):
+        self.tmp_dir = tmp_dir
+        self.reset()
 
     def tmp_file_path(self, filename) -> Path:
         "Return a Path object pointing to named file in tmp_dir."
@@ -100,7 +99,14 @@ class ExecContext:
 
         script_path = self.prepare_run_script(command)
         print("Running:", script_path)
-        self.proc = subprocess.run([script_path], shell=True, check=True)
+        self.proc = subprocess.run(
+            [script_path],
+            shell=True,
+            check=True,
+            env={
+                "PATH": os.getenv("PATH"),
+            },
+        )
         self.post_run(command)
 
     def run_docker_command(self, docker_image_tag, command):
@@ -147,17 +153,14 @@ class ExecContext:
     def get_command_log(self, cmdname: str):
         return self.tmp_file_content(cmdname + ".log").splitlines(keepends=False)
 
-    def cleanup(self):
-        shutil.rmtree(self.tmp_dir)
+    def reset(self):
+        self.environ = {}
+        self.proc = None
 
 
 @pytest.fixture(scope="function")
-def exec_context():
-    ec = ExecContext()
-    try:
-        yield ec
-    finally:
-        ec.cleanup()
+def exec_context(tmp_path):
+    yield ExecContext(tmp_dir=tmp_path)
 
 
 @pytest.fixture(scope="session")
