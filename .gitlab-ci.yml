@@ -1,4 +1,22 @@
 dagster-cloud-parse-workspace:
-  stage: build
+  stage: parse
   image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
-  script: python /parse_workspace.py dagster_cloud.yaml
+  script: python /parse_workspace.py dagster_cloud.yaml >> build.env
+  artifacts:
+  reports:
+    dotenv: build.env
+
+dagster-cloud-build:
+  stage: build
+  dependencies:
+    - parse
+  script: echo $build_info
+  # docker build
+  # parallel:
+  #     matrix:
+  #       location: ${{ fromJSON(needs.parse_workspace.outputs.build_info) }}
+#   
+# dagster-cloud-deploy:
+#   stage: deploy
+#   image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+#   script: python /parse_workspace.py dagster_cloud.yaml
