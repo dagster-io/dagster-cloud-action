@@ -1,0 +1,4 @@
+dagster-cloud-parse-workspace:
+  stage: build
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+  script: python /parse_workspace.py
