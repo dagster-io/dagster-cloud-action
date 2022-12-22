@@ -35,14 +35,14 @@ def test_parse_workspace(repo_root, exec_context, tmp_path):
         }
     ]
     assert (
-        f"::set-output name=build_info::{json.dumps(expected)}"
+        f"build_info={json.dumps(expected)}"
         in exec_context.get_stdout()
     )
 
     # secrets_set
-    assert "::set-output name=secrets_set::false" in exec_context.get_stdout()
+    assert "secrets_set=false" in exec_context.get_stdout()
 
     exec_context.reset()
     exec_context.set_env({"DAGSTER_CLOUD_API_TOKEN": "true"})
     exec_context.run_local_command(command)
-    assert "::set-output name=secrets_set::true" in exec_context.get_stdout()
+    assert "secrets_set=true" in exec_context.get_stdout()
