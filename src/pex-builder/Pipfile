@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pex = "<=2.1.111"  # 112+ had issues on github with atomic directory
+pex = "*" 
 dagster-cloud-cli = ">=1.0.14"  # with pex related changes
 dagster = "*"
 click = "*"
