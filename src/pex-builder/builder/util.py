@@ -44,6 +44,7 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
     return [
         # extra check to ensure run environment matches built version
         f"--python={python_interpreter}",
+        f"--interpreter-constraint=CPython>={python_version}",
         # use the dependency for the general linux distribution for the major/minor python version
         f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
         # resolves dependencies using the local interpreter, effectively allowing source distributions
