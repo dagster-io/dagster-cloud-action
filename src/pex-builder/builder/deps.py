@@ -73,8 +73,8 @@ def build_deps_pex(code_directory, output_directory, python_version) -> Tuple[st
 # These flags allow trying multiple ways of building the deps.
 # This also allows us to try new flags safely, by having automatic fallback.
 TRY_FLAGS = [
-    [],  # default set of flags defined in util.py
     ["--resolver-version=pip-2020-resolver"],  # new resolver as recommended by pex team
+    [],  # default set of flags defined in util.py
 ]
 
 
