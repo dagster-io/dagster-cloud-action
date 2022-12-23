@@ -50,7 +50,7 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
         # resolves dependencies using the local interpreter, effectively allowing source distributions
         # to work (since they can be build by the local interpreter)
         # see also https://linear.app/elementl/issue/CLOUD-2023/pex-builds-fail-for-dbt-core-dependency
-        # "--resolve-local-platforms",
+        "--resolve-local-platforms",
         # this ensures PEX_PATH is not cleared and any subprocess invoked can also use this.
         # this is important for running console scripts that use the pex environment (eg dbt)
         "--no-strip-pex-env",
