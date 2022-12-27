@@ -11,15 +11,7 @@ inputs:
 runs:
   using: 'docker'
   image: 'docker://ghcr.io/dagster-io/dagster-manylinux:dev'
-  entrypoint: "sh -c"
+  entrypoint: /usr/bin/bash
   args:
-    - echo
-    - -m
-    - builder.deploy
-    - --python-version=${{ inputs.python_version }}
-    - --upload-pex
-    - --update-code-location
-    - $FLAG_DEPS_CACHE_TO
-    - $FLAG_DEPS_CACHE_FROM
-    - ${{ inputs.dagster_cloud_file }}
-    - /tmp/build
+    - -c
+    - echo /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file }} /tmp/build
