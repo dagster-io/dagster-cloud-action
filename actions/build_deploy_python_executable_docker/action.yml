@@ -14,4 +14,4 @@ runs:
   entrypoint: /usr/bin/bash
   args:
     - -c
-    - /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file }} /tmp/build
+    - git config --global --add safe.directory /github/workspace; /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file }} /tmp/build
