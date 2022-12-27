@@ -13,7 +13,8 @@ runs:
   image: 'docker://ghcr.io/dagster-io/dagster-manylinux:dev'
   entrypoint: /builder.pex
   args:
-    - -mbuilder.deploy
+    - -m
+    - builder.deploy
     - ${{ inputs.dagster_cloud_file }}
     - /tmp/build
     - --python-version=${{ inputs.python_version }}
