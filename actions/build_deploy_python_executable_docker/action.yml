@@ -15,10 +15,10 @@ runs:
   args:
     - -m
     - builder.deploy
-    - ${{ inputs.dagster_cloud_file }}
-    - /tmp/build
     - --python-version=${{ inputs.python_version }}
     - --upload-pex
     - --update-code-location
     - $FLAG_DEPS_CACHE_TO
     - $FLAG_DEPS_CACHE_FROM
+    - ${{ inputs.dagster_cloud_file }}
+    - /tmp/build
