@@ -11,7 +11,7 @@ inputs:
 runs:
   using: 'docker'
   image: 'docker://ghcr.io/dagster-io/dagster-manylinux:dev'
-  entrypoint: /builder.pex
+  entrypoint: /usr/bin/echo
   args:
     - -m
     - builder.deploy
