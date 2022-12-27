@@ -43,34 +43,18 @@ runs:
       run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
       shell: bash
 
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.8"
+    # - name: Set up Python 3.8
+    #   uses: actions/setup-python@v3
+    #   with:
+    #     python-version: "3.8"
 
-    - if: ${{ inputs.python_version != '3.8' }}
-      name: Set up Python ${{ inputs.python_version }} for target
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ inputs.python_version }}
+    # - if: ${{ inputs.python_version != '3.8' }}
+    #   name: Set up Python ${{ inputs.python_version }} for target
+    #   uses: actions/setup-python@v3
+    #   with:
+    #     python-version: ${{ inputs.python_version }}
 
-    - if: ${{ inputs.deploy == 'true' }}
-      run: >
-        cd $ACTION_REPO &&
-        generated/gha/builder.pex -m builder.deploy 
-        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
-        --python-version=${{ inputs.python_version }}
-        --upload-pex --update-code-location
-        $FLAG_DEPS_CACHE_TO
-        $FLAG_DEPS_CACHE_FROM
-      shell: bash
-
-    - if: ${{ inputs.deploy != 'true' }}
-      run: >
-        cd $ACTION_REPO &&
-        generated/gha/builder.pex -m builder.deploy 
-        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
-        --python-version=${{ inputs.python_version }}
-        $FLAG_DEPS_CACHE_TO
-        $FLAG_DEPS_CACHE_FROM
-      shell: bash
+    - uses: ./action-repo/actions/build_deploy_python_executable_docker
+      with: 
+        dagster_cloud_file: ${{ inputs.dagster_cloud_file }}
+        python_version: ${{ inputs.python_version }}
