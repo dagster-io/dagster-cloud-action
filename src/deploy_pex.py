@@ -16,18 +16,12 @@ def main():
     if returncode:
         dep_failures = dependency_failure_lines(output)
         if dep_failures:
-            print("Failed to find binary packages for the following:")
-            for line in dep_failures:
-                print(f"- {line}")
-            print(
-                "Will rebuild the Python Executable within Docker to build source only packages (sdists)."
-            )
             try:
                 print(
-                    "::group::Build and deploy Python Executable using a Docker build environment",
+                    "::group::Preparing a Docker build environment to build the PEX files",
                     flush=True,
                 )
-                print("Bulding dependencies within a Docker build environment to resolve missing binary packages for the following:")
+                print("Going to build dependencies within a Docker build environment to resolve missing binary packages for the following:")
                 for line in dep_failures:
                     print(f"- {line}")
 
@@ -37,8 +31,8 @@ def main():
 
         if returncode:
             print(
-                "::error Title=Deploy failed::Failed to deploy Python Executable, "
-                "try removing `ENABLE_FAST_DEPLOYS: 'true' from .github/workflows/*yml."
+                "::error Title=Deploy failed::Failed to deploy Python Executable. "
+                "Try removing `ENABLE_FAST_DEPLOYS: 'true'` from your .github/workflows/*yml."
             )
             # TODO: fallback to docker deploy here
             sys.exit(1)
