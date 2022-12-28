@@ -10,17 +10,19 @@ DOCKER_IMAGE = "ghcr.io/dagster-io/dagster-manylinux-builder:dev"
 
 def main():
     args = sys.argv[1:]
-    returncode, output = deploy_from_current_environment(args)
-    if returncode:
-        dep_failures = dependency_failure_lines(output)
-        if dep_failures:
-            print("Failed to find binary packages for the following:")
-            for line in dep_failures:
-                print(f"- {line}")
-            print(
-                "Will rebuild the Python Executable within Docker to build source only packages (sdists)."
-            )
-            deploy_from_docker(args)
+    deploy_from_docker(args)
+
+    # returncode, output = deploy_from_current_environment(args)
+    # if returncode:
+    #     dep_failures = dependency_failure_lines(output)
+    #     if dep_failures:
+    #         print("Failed to find binary packages for the following:")
+    #         for line in dep_failures:
+    #             print(f"- {line}")
+    #         print(
+    #             "Will rebuild the Python Executable within Docker to build source only packages (sdists)."
+    #         )
+    #         deploy_from_docker(args)
 
 
 def run(args):
@@ -131,7 +133,7 @@ def deploy_from_docker(args):
     docker_run_args.extend(
         [
             "ghcr.io/dagster-io/dagster-manylinux-builder:dev", "-c",
-            f"git config --global --add safe.directory /github/workspace/project-repo; /builder.pex {builder_pex_args}",
+            f"git config --global --add safe.directory /github/workspace/project-repo; echo /builder.pex {builder_pex_args}",
         ]
     )
     return run(["/usr/bin/docker", "run", *docker_run_args])
