@@ -56,8 +56,10 @@ runs:
 
     - run: >
         cd $ACTION_REPO &&
-        python -c 'import yaml' &&
-        python3.8 src/deploy_pex.py -m builder.deploy
+        /usr/bin/python --version &&
+        which python &&
+        /usr/bin/python -c 'import yaml' &&
+        /usr/bin/python src/deploy_pex.py -m builder.deploy
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
