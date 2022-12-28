@@ -71,7 +71,7 @@ runs:
         --workdir /github/workspace --rm
         -e "DAGSTER_CLOUD_URL" -e "DAGSTER_CLOUD_API_TOKEN" -e "ENABLE_FAST_DEPLOYS"
         -e "ACTION_REPO" -e "FLAG_DEPS_CACHE_FROM" -e "FLAG_DEPS_CACHE_TO" -e "pythonLocation"
-        -e "LD_LIBRARY_PATH" -e "GITHUB_TOKEN" -e "INPUT_ENTRYPOINT" -e "INPUT_ARGS" -e "HOME"
+        -e "LD_LIBRARY_PATH" -e "GITHUB_TOKEN" -e "INPUT_ENTRYPOINT" -e "INPUT_ARGS" -e "HOME=/github/home"
         -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY"
         -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER"
         -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_ACTOR"
