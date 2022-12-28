@@ -148,7 +148,6 @@ def deploy_pex_from_docker(args):
 
 
 def fallback_to_docker_deploy():
-    subprocess.run(["echo ENABLE_FAST_DEPLOYS=false >> $GITHUB_ENV"], shell=True)
     import yaml, json
     import os
 
