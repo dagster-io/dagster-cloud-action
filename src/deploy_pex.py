@@ -167,8 +167,8 @@ def fallback_to_docker_deploy():
         }
         for location in workspace_contents_yaml["locations"]
     ]
-    print(f"::set-output name=build_info::{json.dumps(output_obj)}")
-    print(f"::set-output name=secrets_set::{json.dumps(secrets_set)}")
+    print(f"set-output name=build_info::{json.dumps(output_obj)}")
+    print(f"set-output name=secrets_set::{json.dumps(secrets_set)}")
 
 
 if __name__ == "__main__":
