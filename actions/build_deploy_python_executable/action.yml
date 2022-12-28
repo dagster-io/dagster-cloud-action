@@ -92,7 +92,7 @@ runs:
         -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands"
         -v "/home/runner/work/demo-1/demo-1":"/github/workspace"
         ghcr.io/dagster-io/dagster-manylinux-builder:dev 
-        -c "git config --global --add safe.directory /github/workspace/project-repo; /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location --build-sdists $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file } /tmp/build"
+        -c "git config --global --add safe.directory /github/workspace/project-repo; /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location --build-sdists $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file }} /tmp/build"
       shell: bash
       # uses: 'docker://ghcr.io/dagster-io/dagster-manylinux-builder:dev'
       # with:
