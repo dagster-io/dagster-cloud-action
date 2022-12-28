@@ -22,10 +22,19 @@ def main():
             print(
                 "Will rebuild the Python Executable within Docker to build source only packages (sdists)."
             )
-            returncode, output = deploy_pex_from_docker(args)
-            if returncode:
-                print("Failed to deploy Python Executable.")
-                sys.exit(1)
+            try:
+                print(
+                    f"\n::group::Build and deploy Python Executable using a Docker build environment",
+                    flush=True,
+                )
+                returncode, output = deploy_pex_from_docker(args)
+            finally:
+                print("::endgroup::", flush=True)
+
+        if returncode:
+            print("::error Title=Deploy failed::Failed to deploy Python Executable")
+            # TODO: fallback to docker deploy here
+            sys.exit(1)
 
 
 def run(args):
