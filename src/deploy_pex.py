@@ -141,7 +141,7 @@ def deploy_from_docker(args):
         [
             "ghcr.io/dagster-io/dagster-manylinux-builder:dev",
             "-c",
-            f"git config --global --add safe.directory /github/workspace/project-repo; echo /builder.pex {builder_pex_args}",
+            f"git config --global --add safe.directory /github/workspace/project-repo; /builder.pex {builder_pex_args}",
         ]
     )
     import pprint
