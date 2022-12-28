@@ -54,19 +54,19 @@ runs:
       with:
         python-version: ${{ inputs.python_version }}
 
-    # - run: >
-    #     cd $ACTION_REPO &&
-    #     generated/gha/builder.pex -m builder.deploy 
-    #     ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
-    #     --python-version=${{ inputs.python_version }}
-    #     --upload-pex --update-code-location
-    #     $FLAG_DEPS_CACHE_TO
-    #     $FLAG_DEPS_CACHE_FROM
-    #   continue-on-error: true
-    #   shell: bash
+    - run: >
+        cd $ACTION_REPO &&
+        generated/gha/builder.pex -m builder.deploy 
+        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        --python-version=${{ inputs.python_version }}
+        --upload-pex --update-code-location
+        $FLAG_DEPS_CACHE_TO
+        $FLAG_DEPS_CACHE_FROM
+      continue-on-error: true
+      shell: bash
 
     - name: Build with a Docker image
-      # if: ${{ failure() }}
+      if: ${{ failure() }}
       uses: 'docker://ghcr.io/dagster-io/dagster-manylinux-builder:dev'
       with:
         entrypoint: /usr/bin/bash
