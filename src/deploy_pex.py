@@ -11,23 +11,24 @@ DOCKER_IMAGE = "ghcr.io/dagster-io/dagster-manylinux-builder:dev"
 
 def main():
     args = sys.argv[1:]
-    deploy_from_docker(args)
 
-    # returncode, output = deploy_from_current_environment(args)
-    # if returncode:
-    #     dep_failures = dependency_failure_lines(output)
-    #     if dep_failures:
-    #         print("Failed to find binary packages for the following:")
-    #         for line in dep_failures:
-    #             print(f"- {line}")
-    #         print(
-    #             "Will rebuild the Python Executable within Docker to build source only packages (sdists)."
-    #         )
-    #         deploy_from_docker(args)
+    returncode, output = deploy_pex_from_current_environment(args)
+    if returncode:
+        dep_failures = dependency_failure_lines(output)
+        if dep_failures:
+            print("Failed to find binary packages for the following:")
+            for line in dep_failures:
+                print(f"- {line}")
+            print(
+                "Will rebuild the Python Executable within Docker to build source only packages (sdists)."
+            )
+            returncode, output = deploy_pex_from_docker(args)
+
 
 
 def run(args):
     # Prints streaming output and also captures and returns it
+    print("Running", args)
     popen = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf-8"
     )
@@ -44,7 +45,7 @@ def dependency_failure_lines(lines):
     return [line for line in lines if "No matching distribution" in line]
 
 
-def deploy_from_current_environment(args):
+def deploy_pex_from_current_environment(args):
     return run(
         [
             BUILDER_PEX_PATH,
@@ -53,9 +54,8 @@ def deploy_from_current_environment(args):
     )
 
 
-def deploy_from_docker(args):
+def deploy_pex_from_docker(args):
     local_github_workspace_path = os.environ["GITHUB_WORKSPACE"]
-    local_github_workflow_path = os.environ["GITHUB_WORKFLOW"]
     github_docker_envs = [
         "GITHUB_WORKSPACE=/github/workspace",
         "GITHUB_EVENT_PATH=/github/workflow/event.json",
@@ -144,11 +144,12 @@ def deploy_from_docker(args):
             f"git config --global --add safe.directory /github/workspace/project-repo; /builder.pex {builder_pex_args}",
         ]
     )
-    import pprint
-    pprint.pprint(dict(os.environ))
-    print(docker_run_args)
     return run(["/usr/bin/docker", "run", *docker_run_args])
 
 
+def fallback_to_docker_deploy():
+    subprocess.run(["echo ENABLE_FAST_DEPLOYS=false >> $GITHUB_ENV"], shell=True)
+
 if __name__ == "__main__":
-    main()
+    fallback_to_docker_deploy()
+    # main()
