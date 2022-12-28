@@ -58,8 +58,8 @@ def deploy_from_docker(args):
     local_github_workflow_path = os.environ["GITHUB_WORKFLOW"]
     github_docker_envs = [
         "GITHUB_WORKSPACE=/github/workspace",
-        "GITHUB_WORKFLOW=/github/workflow",
         "GITHUB_EVENT_PATH=/github/workflow/event.json",
+        "GITHUB_WORKFLOW",
         "DAGSTER_CLOUD_URL",
         "DAGSTER_CLOUD_API_TOKEN",
         "ENABLE_FAST_DEPLOYS",
@@ -114,11 +114,11 @@ def deploy_from_docker(args):
         "CI=true",
     ]
     github_docker_mounts = [
-        f"{local_github_workflow_path}:/github/workflow",
         f"{local_github_workspace_path}:/github/workspace",
+        "/home/runner/work/_temp/_github_workflow:/github/workflow",
         "/var/run/docker.sock:/var/run/docker.sock",
-        f"/home/runner/work/_temp/_github_home:/github/home",
-        f"/home/runner/work/_temp/_runner_file_commands:/github/file_commands",
+        "/home/runner/work/_temp/_github_home:/github/home",
+        "/home/runner/work/_temp/_runner_file_commands:/github/file_commands",
     ]
 
     docker_run_args = [
@@ -147,7 +147,7 @@ def deploy_from_docker(args):
     import pprint
     pprint.pprint(dict(os.environ))
     print(docker_run_args)
-    #return run(["/usr/bin/docker", "run", *docker_run_args])
+    return run(["/usr/bin/docker", "run", *docker_run_args])
 
 
 if __name__ == "__main__":
