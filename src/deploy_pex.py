@@ -27,6 +27,9 @@ def main():
                     "::group::Build and deploy Python Executable using a Docker build environment",
                     flush=True,
                 )
+                print("Bulding dependencies within a Docker build environment to resolve missing binary packages for the following:")
+                for line in dep_failures:
+                    print(f"- {line}")
 
                 returncode, output = deploy_pex_from_docker(args)
             finally:
