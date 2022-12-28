@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -53,7 +54,12 @@ def deploy_from_current_environment(args):
 
 
 def deploy_from_docker(args):
+    local_github_workspace_path = os.environ["GITHUB_WORKSPACE"]
+    local_github_workflow_path = os.environ["GITHUB_WORKFLOW"]
     github_docker_envs = [
+        "GITHUB_WORKSPACE=/github/workspace",
+        "GITHUB_WORKFLOW=/github/workflow",
+        "GITHUB_EVENT_PATH=/github/workflow/event.json",
         "DAGSTER_CLOUD_URL",
         "DAGSTER_CLOUD_API_TOKEN",
         "ENABLE_FAST_DEPLOYS",
@@ -77,7 +83,6 @@ def deploy_from_docker(args):
         "GITHUB_RUN_ATTEMPT",
         "GITHUB_ACTOR",
         "GITHUB_TRIGGERING_ACTOR",
-        "GITHUB_WORKFLOW=/github/workflow",
         "GITHUB_HEAD_REF",
         "GITHUB_BASE_REF",
         "GITHUB_EVENT_NAME",
@@ -87,9 +92,7 @@ def deploy_from_docker(args):
         "GITHUB_REF_NAME",
         "GITHUB_REF_PROTECTED",
         "GITHUB_REF_TYPE",
-        "GITHUB_WORKSPACE=/github/workspace",
         "GITHUB_ACTION",
-        "GITHUB_EVENT_PATH=/github/workflow/event.json",
         "GITHUB_ACTION_REPOSITORY",
         "GITHUB_ACTION_REF",
         "GITHUB_PATH",
@@ -111,11 +114,11 @@ def deploy_from_docker(args):
         "CI=true",
     ]
     github_docker_mounts = [
+        f"{local_github_workflow_path}:/github/workflow",
+        f"{local_github_workspace_path}:/github/workspace",
         "/var/run/docker.sock:/var/run/docker.sock",
-        "/home/runner/work/_temp/_github_home:/github/home",
-        "/home/runner/work/_temp/_github_workflow:/github/workflow",
-        "/home/runner/work/_temp/_runner_file_commands:/github/file_commands",
-        "/home/runner/work/demo-1/demo-1:/github/workspace",
+        f"/home/runner/work/_temp/_github_home:/github/home",
+        f"/home/runner/work/_temp/_runner_file_commands:/github/file_commands",
     ]
 
     docker_run_args = [
@@ -130,9 +133,14 @@ def deploy_from_docker(args):
     for mnt in github_docker_mounts:
         docker_run_args.extend(["-v", mnt])
     builder_pex_args = " ".join(args) + " --build-sdists"
+    # map local paths to mounted paths
+    builder_pex_args = builder_pex_args.replace(
+        local_github_workspace_path, "/github/workspace"
+    )
     docker_run_args.extend(
         [
-            "ghcr.io/dagster-io/dagster-manylinux-builder:dev", "-c",
+            "ghcr.io/dagster-io/dagster-manylinux-builder:dev",
+            "-c",
             f"git config --global --add safe.directory /github/workspace/project-repo; echo /builder.pex {builder_pex_args}",
         ]
     )
