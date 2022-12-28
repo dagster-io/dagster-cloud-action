@@ -36,10 +36,11 @@ class DepsRequirements:
         # Note requirements_txt may have floating dependencies, so this is not perfect and may
         # reuse deps.pex even if a new PyPI package is published for a dependency.
         # An easy workaround is to pin the dependency in setup.py.
+        normalized_pex_flags = sorted(set(self.pex_flags) - {"--resolve-local-platforms"})
         return hashlib.sha1(
-            (repr(self.requirements_txt) + str(self.python_version) + repr(self.pex_flags)).encode(
-                "utf-8"
-            )
+            (
+                repr(self.requirements_txt) + str(self.python_version) + repr(normalized_pex_flags)
+            ).encode("utf-8")
         ).hexdigest()
 
 
