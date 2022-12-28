@@ -21,7 +21,10 @@ def main():
                     "::group::Preparing a Docker build environment to build the PEX files",
                     flush=True,
                 )
-                print("Going to build dependencies within a Docker build environment to resolve missing binary packages for the following:")
+                print(
+                    "Going to build dependencies within a Docker build environment"
+                    "to resolve missing binary packages for the following:"
+                )
                 for line in dep_failures:
                     print(f"- {line}")
 
