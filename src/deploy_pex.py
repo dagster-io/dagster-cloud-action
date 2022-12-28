@@ -116,7 +116,7 @@ def deploy_from_docker(args):
         "/home/runner/work/demo-1/demo-1:/github/workspace",
     ]
 
-    github_args = [
+    docker_run_args = [
         "--workdir",
         "/github/workspace",
         "--rm",
@@ -124,17 +124,17 @@ def deploy_from_docker(args):
         "/usr/bin/bash",
     ]
     for env in github_docker_envs:
-        github_args.extend(["-e", env])
+        docker_run_args.extend(["-e", env])
     for mnt in github_docker_mounts:
-        github_args.extend(["-v", mnt])
+        docker_run_args.extend(["-v", mnt])
     builder_pex_args = " ".join(args) + " --build-sdists"
-    github_args.extend(
+    docker_run_args.extend(
         [
             "ghcr.io/dagster-io/dagster-manylinux-builder:dev" "-c",
             f"git config --global --add safe.directory /github/workspace/project-repo; /builder.pex {builder_pex_args}",
         ]
     )
-    return run(["/usr/bin/docker", *github_args])
+    return run(["/usr/bin/docker", "run", *docker_run_args])
 
 
 if __name__ == "__main__":
