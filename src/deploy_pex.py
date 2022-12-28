@@ -144,7 +144,8 @@ def deploy_from_docker(args):
             f"git config --global --add safe.directory /github/workspace/project-repo; echo /builder.pex {builder_pex_args}",
         ]
     )
-    return run(["/usr/bin/docker", "run", *docker_run_args])
+    print(docker_run_args)
+    #return run(["/usr/bin/docker", "run", *docker_run_args])
 
 
 if __name__ == "__main__":
