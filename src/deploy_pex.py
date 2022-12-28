@@ -149,7 +149,7 @@ def fallback_to_docker_deploy():
     import os
 
     workspace = os.path.join(
-        os.environ["GITHUB_WORKSPACE"], "project-repo/dagster-cloud.yaml"
+        os.environ["GITHUB_WORKSPACE"], "project-repo/dagster_cloud.yaml"
     )
     secrets_set = bool(os.getenv("DAGSTER_CLOUD_API_TOKEN"))
 
