@@ -148,9 +148,8 @@ def deploy_pex_from_docker(args):
 def fallback_to_docker_deploy():
     import yaml, json
     import os
-    import pprint
-    pprint.pprint(dict(os.environ))
-    workspace = os.environ['INPUT_DAGSTER_CLOUD_FILE']
+    
+    workspace = os.environ['DAGSTER_CLOUD_FILE']
     secrets_set = bool(os.getenv('DAGSTER_CLOUD_API_TOKEN'))
 
     with open(workspace) as f:

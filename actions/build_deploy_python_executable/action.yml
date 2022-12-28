@@ -66,6 +66,8 @@ runs:
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
       shell: bash
+      env:
+        DAGSTER_CLOUD_FILE: ${{ inputs.dagster_cloud_file }}
 
     # - run: >
     #     cd $ACTION_REPO &&
