@@ -130,7 +130,7 @@ def deploy_from_docker(args):
     builder_pex_args = " ".join(args) + " --build-sdists"
     docker_run_args.extend(
         [
-            "ghcr.io/dagster-io/dagster-manylinux-builder:dev" "-c",
+            "ghcr.io/dagster-io/dagster-manylinux-builder:dev", "-c",
             f"git config --global --add safe.directory /github/workspace/project-repo; /builder.pex {builder_pex_args}",
         ]
     )
