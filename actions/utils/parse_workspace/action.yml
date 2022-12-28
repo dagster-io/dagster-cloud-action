@@ -19,6 +19,10 @@ runs:
       with:
         ref: ${{ github.sha }}
 
+    - id: debug
+      shell: bash
+      run: 'python --version && which python'
+
     - id: load_workspace_file
       shell: bash
       run: |
