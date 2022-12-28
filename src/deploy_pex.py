@@ -22,7 +22,7 @@ def main():
                     flush=True,
                 )
                 print(
-                    "Going to build dependencies within a Docker build environment"
+                    "Going to build dependencies within a Docker build environment "
                     "to resolve missing binary packages for the following:"
                 )
                 for line in dep_failures:
