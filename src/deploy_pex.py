@@ -24,15 +24,19 @@ def main():
             )
             try:
                 print(
-                    f"\n::group::Build and deploy Python Executable using a Docker build environment",
+                    "::group::Build and deploy Python Executable using a Docker build environment",
                     flush=True,
                 )
+
                 returncode, output = deploy_pex_from_docker(args)
             finally:
                 print("::endgroup::", flush=True)
 
         if returncode:
-            print("::error Title=Deploy failed::Failed to deploy Python Executable")
+            print(
+                "::error Title=Deploy failed::Failed to deploy Python Executable, "
+                "try removing `ENABLE_FAST_DEPLOYS: 'true' from .github/workflows/*yml."
+            )
             # TODO: fallback to docker deploy here
             sys.exit(1)
 
