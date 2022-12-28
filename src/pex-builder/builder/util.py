@@ -33,7 +33,7 @@ def run_self_module(module_name, args: List[str]):
     return run_python_subprocess(["-m", module_name, *args])
 
 
-def get_pex_flags(python_version: version.Version) -> List[str]:
+def get_pex_flags(python_version: version.Version, build_sdists: bool = False) -> List[str]:
     "python_version should includes the major and minor version only, eg Version('3.8')"
     if python_version not in TARGET_PYTHON_VERSIONS:
         raise ValueError(
@@ -41,22 +41,23 @@ def get_pex_flags(python_version: version.Version) -> List[str]:
         )
     version_tag = f"{python_version.major}{python_version.minor}"  # eg '38'
     python_interpreter = python_interpreter_for(python_version)
+    # resolves dependencies using the local interpreter, effectively allowing source distributions
+    # to work (since they can be build by the local interpreter)
+    # see also https://linear.app/elementl/issue/CLOUD-2023/pex-builds-fail-for-dbt-core-dependency
+    resolve_local = ["--resolve-local-platforms"] if build_sdists else []
     return [
         # extra check to ensure run environment matches built version
         f"--python={python_interpreter}",
-        f"--interpreter-constraint=CPython>={python_version}",
+        #       f"--interpreter-constraint=CPython>={python_version}",
         # use the dependency for the general linux distribution for the major/minor python version
-        f"--platform=manylinux_2_31_x86_64-cp-{version_tag}-cp{version_tag}",
-        # resolves dependencies using the local interpreter, effectively allowing source distributions
-        # to work (since they can be build by the local interpreter)
-        # see also https://linear.app/elementl/issue/CLOUD-2023/pex-builds-fail-for-dbt-core-dependency
-        "--resolve-local-platforms",
+        f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
         # this ensures PEX_PATH is not cleared and any subprocess invoked can also use this.
         # this is important for running console scripts that use the pex environment (eg dbt)
         "--no-strip-pex-env",
         # use a newer version of pip since it is more reliable
         # see https://github.com/pantsbuild/pex/issues/2003
         "--pip-version=22.2.2",
+        *resolve_local,
     ]
 
 

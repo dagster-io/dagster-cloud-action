@@ -43,7 +43,9 @@ class DepsRequirements:
         ).hexdigest()
 
 
-def get_deps_requirements(code_directory, python_version: version.Version) -> DepsRequirements:
+def get_deps_requirements(
+    code_directory, python_version: version.Version, build_sdists: bool = False
+) -> DepsRequirements:
 
     # Combine dependencies specified in requirements.txt and setup.py
     lines = get_requirements_txt_deps(code_directory)
@@ -58,7 +60,7 @@ def get_deps_requirements(code_directory, python_version: version.Version) -> De
     deps_requirements = DepsRequirements(
         requirements_txt=deps_requirements_text,
         python_version=python_version,
-        pex_flags=util.get_pex_flags(python_version),
+        pex_flags=util.get_pex_flags(python_version, build_sdists),
     )
     logging.info("deps_requirements_hash: %r", deps_requirements.hash)
     return deps_requirements
@@ -74,7 +76,8 @@ def build_deps_pex(code_directory, output_directory, python_version) -> Tuple[st
 # This also allows us to try new flags safely, by having automatic fallback.
 TRY_FLAGS = [
     ["--resolver-version=pip-2020-resolver"],  # new resolver as recommended by pex team
-    [],  # default set of flags defined in util.py
+    # disabled but left here for easy revert
+    # [],  # default set of flags defined in util.py
 ]
 
 

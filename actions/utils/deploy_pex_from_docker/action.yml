@@ -1,0 +1,27 @@
+name: 'Deploy PEX from Docker'
+description: 'Builds and deploys the source and deps PEX from within a Docker image that can build source dependencies (sdists)'
+inputs:
+  dagster_cloud_file:
+    description: 'Path to dagster_cloud.yaml'
+    required: true
+  python_version:
+    description: 'Python version string, major.minor only, eg "3.8"'
+    required: false
+    default: '3.8'
+
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/dagster-io/dagster-manylinux-builder:dev'
+  entrypoint: /usr/bin/bash
+  args:
+    - -c
+    - >-
+      git config --global --add safe.directory /github/workspace/*;
+      /builder.pex -m builder.deploy
+        --python-version=${{ inputs.python_version }}
+        --upload-pex
+        --update-code-location
+        --build-sdists
+        $FLAG_DEPS_CACHE_TO
+        $FLAG_DEPS_CACHE_FROM
+        ${{ inputs.dagster_cloud_file }} /tmp/build

@@ -51,6 +51,7 @@ def build_project(
     upload_pex: bool,
     deps_cache_tags: DepsCacheTags,
     python_version: version.Version,
+    build_sdists: bool = False,
     should_notify: bool = False,
 ) -> List[LocationBuild]:
     """Rebuild pexes for code locations in a project."""
@@ -66,7 +67,7 @@ def build_project(
             notify(None, location.name, "pending")
 
     location_builds = build_locations(
-        locations, output_directory, upload_pex, deps_cache_tags, python_version
+        locations, output_directory, upload_pex, deps_cache_tags, python_version, build_sdists
     )
 
     logging.info("Built locations (%s):", len(location_builds))
@@ -82,6 +83,7 @@ def build_locations(
     upload_pex: bool,
     deps_cache_tags: DepsCacheTags,
     python_version: version.Version,
+    build_sdists: bool,
 ) -> List[LocationBuild]:
     location_builds = [
         LocationBuild(
@@ -89,6 +91,7 @@ def build_locations(
             deps_requirements=deps.get_deps_requirements(
                 location.directory,
                 python_version=python_version,
+                build_sdists=build_sdists,
             ),
         )
         for location in locations
@@ -250,6 +253,12 @@ def load_github_event(project_dir):
     "When not provided, details are inferred from the github action environment.",
 )
 @util.python_version_option()
+@click.option(
+    "--build-sdists",
+    is_flag=True,
+    default=False,
+    help="Whether to build source only Python dependencies (sdists).",
+)
 def cli(
     dagster_cloud_file,
     build_output_dir,
@@ -259,6 +268,7 @@ def cli(
     update_code_location,
     code_location_details,
     python_version,
+    build_sdists,
 ):
     """Build and deploy a code location based on PEX files.
 
@@ -298,6 +308,7 @@ def cli(
         update_code_location=update_code_location,
         code_location_details=code_location_details,
         python_version=python_version,
+        build_sdists=build_sdists,
     )
 
 
@@ -311,6 +322,7 @@ def deploy_main(
     update_code_location: bool,
     code_location_details: Optional[Dict[str, str]],
     python_version: str,
+    build_sdists: bool,
 ):
     # We don't have strict checking, but print warnings in case flags don't make sense
     if (deps_cache_from_tag or deps_cache_to_tag) and not upload_pex:
@@ -345,6 +357,7 @@ def deploy_main(
             upload_pex=upload_pex,
             deps_cache_tags=deps_cache_tags,
             python_version=util.parse_python_version(python_version),
+            build_sdists=build_sdists,
             should_notify=update_code_location,
         )
 
