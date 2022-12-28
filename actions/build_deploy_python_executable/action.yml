@@ -78,7 +78,7 @@ runs:
         -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF"
         -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL"
         -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME"
-        -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKSPACE"
+        -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKSPACE=/github/workspace"
         -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY"
         -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY"
         -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "GITHUB_ACTION_PATH" -e "RUNNER_OS"
@@ -92,7 +92,7 @@ runs:
         -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands"
         -v "/home/runner/work/demo-1/demo-1":"/github/workspace"
         ghcr.io/dagster-io/dagster-manylinux-builder:dev 
-        -c "git config --global --add safe.directory /github/workspace/project-repo; /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location --build-sdists $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file }} /tmp/build"
+        -c "env; git config --global --add safe.directory /github/workspace/project-repo; /builder.pex -m builder.deploy --python-version=${{ inputs.python_version }} --upload-pex --update-code-location --build-sdists $FLAG_DEPS_CACHE_TO $FLAG_DEPS_CACHE_FROM ${{ inputs.dagster_cloud_file }} /tmp/build"
       env:
         GITHUB_WORKSPACE: "/github/workspace"
         GITHUB_WORKFLOW: "/github/workflow"
