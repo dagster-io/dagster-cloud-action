@@ -63,7 +63,7 @@ def dependency_failure_lines(lines):
 def deploy_pex_from_current_environment(args):
     return run(
         [
-            BUILDER_PEX_PATH,
+            str(BUILDER_PEX_PATH),
             *args,
         ]
     )
