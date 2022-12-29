@@ -28,9 +28,9 @@ def run_python_subprocess(args: List[str], env=None):
     return proc
 
 
-def run_self_module(module_name, args: List[str]):
+def run_self_module(module_name, args: List[str], env=None):
     "Invoke this executable again with -m {module}"
-    return run_python_subprocess(["-m", module_name, *args])
+    return run_python_subprocess(["-m", module_name, *args], env=env)
 
 
 def get_pex_flags(python_version: version.Version, build_sdists: bool = False) -> List[str]:
@@ -41,14 +41,15 @@ def get_pex_flags(python_version: version.Version, build_sdists: bool = False) -
         )
     version_tag = f"{python_version.major}{python_version.minor}"  # eg '38'
     python_interpreter = python_interpreter_for(python_version)
-    # resolves dependencies using the local interpreter, effectively allowing source distributions
-    # to work (since they can be build by the local interpreter)
+    # Resolves dependencies using the local interpreter, effectively allowing source distributions
+    # to work (since they get built by the local interpreter).
+    # If build_sdists is false and a binary distribution matching the platform below is not
+    # available for a dependency, then the build will fail.
     # see also https://linear.app/elementl/issue/CLOUD-2023/pex-builds-fail-for-dbt-core-dependency
     resolve_local = ["--resolve-local-platforms"] if build_sdists else []
     return [
         # extra check to ensure run environment matches built version
         f"--python={python_interpreter}",
-        #       f"--interpreter-constraint=CPython>={python_version}",
         # use the dependency for the general linux distribution for the major/minor python version
         f"--platform=manylinux2014_x86_64-cp-{version_tag}-cp{version_tag}",
         # this ensures PEX_PATH is not cleared and any subprocess invoked can also use this.
@@ -99,7 +100,8 @@ def build_pex(
 
 
 def run_pex_command(args: List[str]):
-    return run_self_module("pex", args)
+    env = {**os.environ, "_PEX_FILE_LOCK_STYLE": "bsd"}
+    return run_self_module("pex", args, env=env)
 
 
 def run_dagster_cloud_cli_command(args: List[str]):

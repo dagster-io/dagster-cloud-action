@@ -115,8 +115,8 @@ def build_deps_from_requirements(
         )
         if proc.returncode:
             if try_flags:
-                logging.warn(proc.stderr.decode("utf-8"))
-                logging.warn("Will retry building deps with a different resolution mechanism")
+                logging.warning(proc.stderr.decode("utf-8"))
+                logging.warning("Will retry building deps with a different resolution mechanism")
             else:
                 logging.error("Failed to build deps.pex")
                 logging.error(proc.stdout.decode("utf-8"))
