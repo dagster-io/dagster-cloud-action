@@ -256,7 +256,7 @@ def load_github_event(project_dir):
 @click.option(
     "--build-sdists/--no-build-sdists",
     is_flag=True,
-    default=False,
+    default=True,
     help="Whether to build source only Python dependencies (sdists).",
 )
 def cli(

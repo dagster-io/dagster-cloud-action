@@ -61,6 +61,7 @@ def dependency_failure_lines(lines):
 
 
 def deploy_pex_from_current_environment(args):
+    args = args + ['--no-build-sdists']
     return run(
         [
             str(BUILDER_PEX_PATH),
