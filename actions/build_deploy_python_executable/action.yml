@@ -54,7 +54,8 @@ runs:
       with:
         python-version: ${{ inputs.python_version }}
 
-    - run: >
+    - if: ${{ inputs.deploy == 'true' }}
+      run: >
         cd $ACTION_REPO &&
         /usr/bin/python src/deploy_pex.py -m builder.deploy
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
@@ -65,3 +66,14 @@ runs:
       shell: bash
       env:
         DAGSTER_CLOUD_FILE: ${{ inputs.dagster_cloud_file }}
+
+    - if: ${{ inputs.deploy != 'true' }}
+        DAGSTER_CLOUD_FILE: ${{ inputs.dagster_cloud_file }}
+      run: >
+        cd $ACTION_REPO &&
+        generated/gha/builder.pex -m builder.deploy 
+        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        --python-version=${{ inputs.python_version }}
+        $FLAG_DEPS_CACHE_TO
+        $FLAG_DEPS_CACHE_FROM
+      shell: bash
