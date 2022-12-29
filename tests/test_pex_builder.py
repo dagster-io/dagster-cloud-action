@@ -43,7 +43,11 @@ def test_pex_deploy_build_only(repo_root, builder_pex_path):
     )
     with run_builder(
         builder_pex_path, ["-m", "builder.deploy", str(dagster_project1_yaml)]
-    ) as (build_output_dir, pex_files, other_files):
+    ) as (
+        build_output_dir,
+        pex_files,
+        other_files,
+    ):
         # one source-HASH.pex and one deps-HASH.pex file are expected
         assert 2 == len(pex_files)
         pex_file_by_alias = {
@@ -83,7 +87,11 @@ def test_pex_deploy_python_file(repo_root, builder_pex_path):
 
         with run_builder(
             builder_pex_path, ["-m", "builder.deploy", str(dagster_project_yaml)]
-        ) as (build_output_dir, pex_files, other_files):
+        ) as (
+            build_output_dir,
+            pex_files,
+            other_files,
+        ):
             pex_file_by_alias = {
                 filename.split("-", 1)[0]: filename for filename in pex_files
             }
@@ -210,6 +218,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         # deps-HASH.pex, source-HASH.pex
         assert set(pex_registry_fixture.keys()) == {
@@ -232,6 +241,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         build_deps_from_requirements_mock.assert_called()
         assert "deps-pex-2.pex" in pex_registry_fixture
@@ -248,6 +258,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         assert "deps-pex-3.pex" in pex_registry_fixture
         assert location_builds[0].pex_tag == "files=deps-pex-3.pex:source-pex-1.pex"
@@ -263,6 +274,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         assert "deps-pex-4.pex" not in pex_registry_fixture
         assert location_builds[0].pex_tag == "files=deps-pex-3.pex:source-pex-1.pex"
@@ -279,6 +291,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         assert "deps-pex-5.pex" in pex_registry_fixture
         assert location_builds[0].pex_tag == "files=deps-pex-5.pex:source-pex-1.pex"
@@ -295,6 +308,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         assert "deps-pex-6.pex" not in pex_registry_fixture
         assert location_builds[0].pex_tag == "files=deps-pex-5.pex:source-pex-1.pex"
@@ -311,6 +325,7 @@ def test_builder_deploy_with_upload(
             update_code_location=False,
             code_location_details=None,
             python_version="3.8",
+            build_sdists=True,
         )
         print(pex_registry_fixture)
         assert "deps-pex-7.pex" not in pex_registry_fixture
