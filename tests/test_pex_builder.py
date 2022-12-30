@@ -331,3 +331,10 @@ def test_builder_deploy_with_upload(
         print(pex_registry_fixture)
         assert "deps-pex-7.pex" not in pex_registry_fixture
         assert location_builds[0].pex_tag == "files=deps-pex-5.pex:source-pex-1.pex"
+
+
+def test_builder_selftest(builder_pex_path):
+    output = subprocess.check_output(
+        [builder_pex_path, "-m", "builder.selftest"], encoding="utf-8"
+    )
+    assert "hello from selftest.py" in output
