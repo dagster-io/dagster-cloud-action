@@ -57,7 +57,7 @@ runs:
     - if: ${{ inputs.deploy == 'true' }}
       run: >
         cd $ACTION_REPO &&
-        generated/gha/builder.pex -m builder.deploy 
+        /usr/bin/python src/deploy_pex.py -m builder.deploy
         ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
         --upload-pex --update-code-location
