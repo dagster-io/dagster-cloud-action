@@ -5,9 +5,14 @@
 # images.
 
 # To publish a new version:
-# echo $GITHUB-PAT | docker login ghcr.io -u USERNAME --password-stdin
-# docker build . -f Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:dev
-# docker push ghcr.io/dagster-io/dagster-manylinux-builder:dev
+# $ cd path/to/dagster-cloud-action
+#
+# Update generated/gha/builder.pex (optional)
+#
+# $ echo $GITHUB-PAT | docker login ghcr.io -u USERNAME --password-stdin
+#
+# $ docker build . -f src/Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:dev
+# $ docker push ghcr.io/dagster-io/dagster-manylinux-builder:dev
 
 # See ./deploy_pex.py for code that uses this image.
 
@@ -19,15 +24,7 @@ FROM --platform=linux/amd64 quay.io/pypa/manylinux2014_x86_64:latest
 # Add all the relevant Python binaries to the PATH
 ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp37-cp37m/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:$PATH"
 
-# Install the PEX builder
-COPY . /src
-RUN rm -rf /src/pex-builder/build  # remove any temp build output of working directory
-
-WORKDIR /src/pex-builder
-RUN python3 setup.py build
-RUN pip3 install pipenv pex
-RUN pipenv requirements --exclude-markers > build/lib/requirements.txt
-RUN pex -r build/lib/requirements.txt -D build/lib -o /builder.pex -v --include-tools  --python=python3.8 --platform=current
+COPY generated/gha/builder.pex /builder.pex
 
 # Run a selftest to ensure it works and also unpack the pex for faster startup
 RUN /builder.pex -m builder.selftest
