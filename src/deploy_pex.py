@@ -103,9 +103,9 @@ def deploy_pex_from_current_environment(args, build_sdists: bool):
 
 
 def deploy_pex_from_docker(args):
-    # This invokes the docker cli.
+    # This invokes the docker cli to run builder.pex.
     # The problem with using the a Github custom docker action instead is that the docker image
-    # is always downloaded (even if it is a conditional step that is never run). Using the CLI
+    # is always downloaded (even if it is a conditional step that is never run). Using the cli
     # makes the download lazy (takes about 40 seconds). But requires a bunch of directory and
     # env mappings. These have been copied from an actual Github docker action.
     local_github_workspace_path = os.environ["GITHUB_WORKSPACE"]
@@ -188,7 +188,7 @@ def deploy_pex_from_docker(args):
     builder_pex_args = builder_pex_args.replace(local_github_workspace_path, "/github/workspace")
     docker_run_args.extend(
         [
-            "ghcr.io/dagster-io/dagster-manylinux-builder:dev",
+            DOCKER_IMAGE,
             "-c",
             f"git config --global --add safe.directory /github/workspace/project-repo; /builder.pex {builder_pex_args}",
         ]
