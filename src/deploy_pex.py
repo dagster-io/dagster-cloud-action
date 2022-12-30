@@ -23,8 +23,9 @@ DOCKER_IMAGE = "ghcr.io/dagster-io/dagster-manylinux-builder:v0.1"
 
 def main():
     args = sys.argv[1:]
-
-    if get_runner_ubuntu_version() == "20.04":
+    ubuntu_version = get_runner_ubuntu_version()
+    print("Running on Ubuntu", ubuntu_version)
+    if ubuntu_version == "20.04":
         returncode, output = deploy_pex_from_current_environment(args, build_sdists=True)
     else:
         returncode, output = deploy_pex_from_current_environment(args, build_sdists=False)
