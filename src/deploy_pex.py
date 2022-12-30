@@ -48,13 +48,13 @@ def main():
                 finally:
                     print("::endgroup::", flush=True)
 
-            if returncode:
-                print(
-                    "::error Title=Deploy failed::Failed to deploy Python Executable. "
-                    "Try removing `ENABLE_FAST_DEPLOYS: 'true'` from your .github/workflows/*yml."
-                )
-                # TODO: fallback to docker deploy here
-                sys.exit(1)
+    if returncode:
+        print(
+            "::error Title=Deploy failed::Failed to deploy Python Executable. "
+            "Try removing `ENABLE_FAST_DEPLOYS: 'true'` from your .github/workflows/*yml."
+        )
+        # TODO: fallback to docker deploy here
+        sys.exit(1)
 
 
 def get_runner_ubuntu_version():
