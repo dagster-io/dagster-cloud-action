@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# Build the builder.pex from Pexfile.lock and src/
+# Build the builder.pex from Pexfile.lock and ./builder/
 # Writes src/pex-builder/build/builder.pex
 # Can be run locally or on GHA
 
+# Bundles the latest `dagster-cloud` version from PyPI by default.
+# To use the internal version of `dagster-cloud`, first export
+# PEX_BUILDER_SRC_DIR=/path/to/dagster_cloud_cli/core/pex_builder
+
 set -o xtrace   # debug printing
+set -e
 
 # change to script dir
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )

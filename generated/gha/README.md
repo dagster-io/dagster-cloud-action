@@ -14,6 +14,8 @@ cd dagster-cloud-action
 pytest tests
 
 # Build a new builder.pex, written to src/pexbuilder/build/builder.pex
+# Optionally use an internal version
+# export PEX_BUILDER_SRC_DIR=/path/to/internal/../pex_builder
 ./src/pex-builder/build-builder.sh
 
 # Copy to this directory
@@ -27,9 +29,4 @@ git commit -m "Updated builder.pex"
 Note the new builder.pex is at HEAD but not live since the GitHub workflow uses the `pex-v0.1` tag.
 The new version can be tested by any workflow by removing the `@pex-v0.1` suffix in the workflow.
 
-To make the new version live, update the tag:
-
-```
-git tag -f pex-v0.1 <git-sha-of-commit>
-git push -f origin pex-v0.1
-```
+To make the new version live, upgrade HEAD to the released tag. See CONTRIBUTING.md.
