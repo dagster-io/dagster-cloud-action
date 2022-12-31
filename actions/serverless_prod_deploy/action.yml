@@ -9,13 +9,13 @@ inputs:
     required: true
   location:
     required: true
-    description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file".'
+    description: 'The code location to deploy. A JSON string consisting of keys "name", "directory", "registry", "location_file", and "base_iamge".'
   env_vars:
     required: false
     description: "A JSON string of environment variables to store in the deployed code location image."
   base_image:
     required: false
-    description: "A string of the base image name for the deployed code location image."
+    description: "The base image name for the deployed code location image. Will be used for every location where the "base_image" key is not set."
   deployment:
     required: false
     description: "The deployment to push to, defaults to 'prod'."
@@ -62,7 +62,7 @@ runs:
       with:
         target_directory: ${{ fromJson(inputs.location).directory }}
         env_vars: ${{ inputs.env_vars }}
-        base_image: ${{ inputs.base_image }}
+        base_image: ${{ fromJson(inputs.location).base_image || inputs.base_image }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
