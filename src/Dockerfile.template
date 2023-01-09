@@ -16,6 +16,10 @@ RUN if [ -f "setup.py" ]; then \
 WORKDIR /opt/dagster/app
 COPY . /opt/dagster/app
 
+RUN apt-get install tree 
+
+RUN tree -L 2 ./
+
 # Install the rest of dependencies in case there is a requirements.txt
 RUN if [ -f "requirements.txt" ]; then \
         pip install -r requirements.txt; \
