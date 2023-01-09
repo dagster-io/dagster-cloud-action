@@ -19,7 +19,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout target repo
-      if: ${{ inputs.checkout_repo }} == 'true'
+      if: inputs.checkout_repo == 'true'
       uses: actions/checkout@v3
       with:
         ref: ${{ github.sha }}
