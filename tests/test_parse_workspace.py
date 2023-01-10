@@ -34,10 +34,7 @@ def test_parse_workspace(repo_root, exec_context, tmp_path):
             "location_file": str(dagster_cloud_file),
         }
     ]
-    assert (
-        f"build_info={json.dumps(expected)}"
-        in exec_context.get_stdout()
-    )
+    assert f"build_info={json.dumps(expected)}" in exec_context.get_stdout()
 
     # secrets_set
     assert "secrets_set=false" in exec_context.get_stdout()
