@@ -1,6 +1,7 @@
-import logging
+import json
 import os
-from dataclasses import dataclass
+import sys
+from dataclasses import asdict, dataclass
 from typing import List
 
 import yaml
@@ -35,5 +36,17 @@ def get_locations(dagster_cloud_yaml_file) -> List[Location]:
                     location_file=os.path.abspath(dagster_cloud_yaml_file),
                 )
             )
-        logging.info("Parsed %s locations from %r", len(locations), locations)
         return locations
+
+
+if __name__ == "__main__":
+    filename = sys.argv[1]
+    locations = get_locations(filename)
+    location_names = [location.name for location in locations]
+    locations_by_name = { location.name: location for location in locations }
+    location_arg = sys.argv[2] if len(sys.argv) >= 3 else locations[0].name
+    location = locations_by_name.get(location_arg)
+    location_json = json.dumps(asdict(location))
+    print(f'DAGSTER_CLOUD_LOCATION={location_json}')
+    print(f'DAGSTER_CLOUD_LOCATION_NAME={location.name}')
+    print(f'DAGSTER_CLOUD_LOCATION_DIR={location.build_folder}')
