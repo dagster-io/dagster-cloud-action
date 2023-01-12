@@ -17,7 +17,7 @@ def deploy(dagster_cloud_yaml_file):
     project = os.getenv("CI_PROJECT_NAME")
     project_url = os.getenv("CI_PROJECT_URL")
     commit = os.getenv("CI_COMMIT_SHORT_SHA")
-    branch = os.getenv("CI_COMMIT_BRANCH")
+    branch = os.getenv("CI_COMMIT_BRANCH") or os.getenv("CI_COMMIT_REF_NAME")
 
     deps_cache = project + "/" + branch
     commit_url = project_url + "/commit/" + commit
