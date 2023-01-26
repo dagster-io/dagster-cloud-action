@@ -81,7 +81,7 @@ runs:
       if: ${{ github.event.pull_request.state != 'closed' }}
       uses: docker/build-push-action@v3
       with:
-        ssh: default
+        ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJSON(inputs.location).directory }}
         push: true
         tags: "${{ env.REGISTRY_URL }}:prod-${{ fromJson(inputs.location).name }}-${{ github.sha }}"
