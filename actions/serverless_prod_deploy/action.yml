@@ -73,7 +73,7 @@ runs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
-        ssh: default
+        ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJson(inputs.location).directory }}
         push: true
         tags: "${{ env.REGISTRY_URL }}:${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ github.sha }}"
