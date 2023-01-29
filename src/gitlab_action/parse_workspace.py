@@ -2,7 +2,7 @@ import json
 import os
 import sys
 from dataclasses import asdict, dataclass
-from typing import List
+from typing import List, Optional
 
 import yaml
 
@@ -13,6 +13,7 @@ class Location:
     directory: str
     build_folder: str
     location_file: str
+    registry: Optional[str]
 
 
 def get_locations(dagster_cloud_yaml_file) -> List[Location]:
@@ -25,15 +26,15 @@ def get_locations(dagster_cloud_yaml_file) -> List[Location]:
 
         locations = []
         for location in workspace_contents_yaml["locations"]:
-            location_dir = os.path.join(
-                base_dir, location.get("build", {"directory": "."}).get("directory")
-            )
+            build = location.get("build", {"directory": "."})
+            location_dir = os.path.join(base_dir, build.get("directory"))
             locations.append(
                 Location(
                     name=location["location_name"],
                     directory=location_dir,
                     build_folder=location_dir,
                     location_file=os.path.abspath(dagster_cloud_yaml_file),
+                    registry= build.get("registry"),
                 )
             )
         return locations
@@ -50,3 +51,5 @@ if __name__ == "__main__":
     print(f'DAGSTER_CLOUD_LOCATION={location_json}')
     print(f'DAGSTER_CLOUD_LOCATION_NAME={location.name}')
     print(f'DAGSTER_CLOUD_LOCATION_DIR={location.build_folder}')
+    if location.registry:
+        print(f'DAGSTER_CLOUD_LOCATION_REGISTRY={location.registry}')
