@@ -102,6 +102,10 @@ else
     export DEPLOYMENT_NAME=$INPUT_DEPLOYMENT
 fi
 
+if [ -z $INPUT_DIRECTORY ]; then
+    COMMIT_URL="${COMMIT_URL}/${INPUT_DIRECTORY}"
+fi
+
 if [ -z $DEPLOYMENT_NAME ]; then
     echo "::error title=Failed to update branch deployment::Failed to update branch deployment"
     exit 1
