@@ -4,7 +4,7 @@ variables:
   DAGSTER_CLOUD_API_TOKEN: $DAGSTER_CLOUD_API_TOKEN
 
 deploy-branch:
-  stage: build
+  stage: deploy
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
