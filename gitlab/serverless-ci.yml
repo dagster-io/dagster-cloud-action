@@ -7,6 +7,7 @@ deploy-branch:
   stage: build
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
   script:
     # first create the branch deployment
     - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
