@@ -7,7 +7,7 @@ import sys
 import parse_workspace
 
 
-def deploy(dagster_cloud_yaml_file):
+def deploy(dagster_cloud_yaml_file, deployment=None):
     if not os.getenv("SERVERLESS_BASE_IMAGE_PREFIX"):
         base_image_prefix = "657821118200.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
         if ".dogfood." in os.environ["DAGSTER_CLOUD_URL"]:
@@ -23,49 +23,36 @@ def deploy(dagster_cloud_yaml_file):
     commit_url = project_url + "/commit/" + commit
 
     locations = parse_workspace.get_locations(dagster_cloud_yaml_file)
+    assert not os.getenv("DISABLE_FAST_DEPLOYS")
+
     for location in locations:
         try:
-            if os.getenv("DISABLE_FAST_DEPLOYS"):
-                legacy_deploy(location.name, dagster_cloud_yaml_file, commit, commit_url)
-            else:
-                fast_deploy(
-                    location_name=location.name,
-                    location_file=dagster_cloud_yaml_file,
-                    deps_cache=deps_cache,
-                    commit=commit,
-                    url=commit_url,
-                )
+            print("Updating code location", location.name)
+            command_args = [
+                "dagster-cloud",
+                "serverless",
+                "deploy-python-executable",
+                f"--location-name={location.name}",
+                f"--location-file={dagster_cloud_yaml_file}",
+                f"--deps-cache-from={deps_cache}",
+                f"--deps-cache-to={deps_cache}",
+                f"--commit-hash={commit}",
+                f"--git-url={commit_url}",
+            ]
+            if deployment:
+                command_args.append(f"--deployment={deployment}")
+            subprocess.check_call(command_args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as err:
             print("Failed to update code location", location.name)
             print(err.output)
             sys.exit(1)
 
 
-def fast_deploy(location_name, location_file, deps_cache, commit, url):
-    print("Updating code location", location_name)
-    subprocess.check_call(
-        [
-            "dagster-cloud",
-            "serverless",
-            "deploy-python-executable",
-            f"--location-name={location_name}",
-            f"--location-file={location_file}",
-            f"--deps-cache-from={deps_cache}",
-            "--deps-cache-to={deps_cache}",
-            f"--commit-hash={commit}",
-            f"--git-url={url}",
-        ],
-        stderr=subprocess.STDOUT,
-    )
-
-def legacy_deploy(location_name, location_file, commit, url):
-    print("skip")
-
-
 if __name__ == "__main__":
     dagster_cloud_yaml_file = sys.argv[1]
+    deployment = sys.argv[2] if len(sys.argv) > 2 else None
     if os.path.exists(dagster_cloud_yaml_file):
-        deploy(dagster_cloud_yaml_file)
+        deploy(dagster_cloud_yaml_file, deployment)
     else:
-        print("Not found", dagster_cloud_yaml_file)
+        print("Could not find dagster_cloud.yaml", dagster_cloud_yaml_file)
         sys.exit(1)
