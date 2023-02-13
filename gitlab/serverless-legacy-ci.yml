@@ -12,7 +12,7 @@ parse-workspace:
   stage: setup
   image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
   script:
-    - python /parse_workspace.py dagster_cloud.yaml >> build.env
+    - python /gitlab_action/parse_workspace.py dagster_cloud.yaml >> build.env
     - cp /Dockerfile.template .
   artifacts:
     reports:
@@ -40,7 +40,8 @@ build-image:
   before_script:
     - echo $AWS_ECR_PASSWORD | docker login --username $AWS_ECR_USERNAME --password-stdin $REGISTRY_URL
   script:
-    - cat Dockerfile.template > $DAGSTER_CLOUD_LOCATION_DIR/Dockerfile
+    - echo "FROM python:3.8-slim" > $DAGSTER_CLOUD_LOCATION_DIR/Dockerfile
+    - cat Dockerfile.template >> $DAGSTER_CLOUD_LOCATION_DIR/Dockerfile
     - docker build $DAGSTER_CLOUD_LOCATION_DIR -t $REGISTRY_URL:prod-$DAGSTER_CLOUD_LOCATION_NAME-$CI_COMMIT_SHA
     - docker push $REGISTRY_URL:prod-$DAGSTER_CLOUD_LOCATION_NAME-$CI_COMMIT_SHA
 
