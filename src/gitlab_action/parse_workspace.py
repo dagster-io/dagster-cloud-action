@@ -34,7 +34,7 @@ def get_locations(dagster_cloud_yaml_file) -> List[Location]:
                     directory=location_dir,
                     build_folder=location_dir,
                     location_file=os.path.abspath(dagster_cloud_yaml_file),
-                    registry= build.get("registry"),
+                    registry=build.get("registry"),
                 )
             )
         return locations
@@ -44,12 +44,12 @@ if __name__ == "__main__":
     filename = sys.argv[1]
     locations = get_locations(filename)
     location_names = [location.name for location in locations]
-    locations_by_name = { location.name: location for location in locations }
+    locations_by_name = {location.name: location for location in locations}
     location_arg = sys.argv[2] if len(sys.argv) >= 3 else locations[0].name
     location = locations_by_name.get(location_arg)
     location_json = json.dumps(asdict(location))
-    print(f'DAGSTER_CLOUD_LOCATION={location_json}')
-    print(f'DAGSTER_CLOUD_LOCATION_NAME={location.name}')
-    print(f'DAGSTER_CLOUD_LOCATION_DIR={location.build_folder}')
+    print(f"DAGSTER_CLOUD_LOCATION={location_json}")
+    print(f"DAGSTER_CLOUD_LOCATION_NAME={location.name}")
+    print(f"DAGSTER_CLOUD_LOCATION_DIR={location.build_folder}")
     if location.registry:
-        print(f'DAGSTER_CLOUD_LOCATION_REGISTRY={location.registry}')
+        print(f"DAGSTER_CLOUD_LOCATION_REGISTRY={location.registry}")
