@@ -34,6 +34,7 @@ $VENV_ROOT/bin/python3.8 setup.py build
 # Generate a requirements.txt from Pipfile.lock
 # Put it in build/lib so it also gets copied into the builder.pex for reference
 $VENV_ROOT/bin/pipenv requirements --exclude-markers > build/lib/requirements.txt
+echo "github3.py" >> build/lib/requirements.txt
 
 # Generate a multi platform builder.pex (linux and macos)
 # Require running builder.pex under 3.8, in case multiple pythons are present on PATH
