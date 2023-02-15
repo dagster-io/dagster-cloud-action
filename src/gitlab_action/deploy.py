@@ -8,7 +8,7 @@ import parse_workspace
 
 
 def deploy(dagster_cloud_yaml_file, deployment=None):
-    url = os.environ['DAGSTER_CLOUD_URL']
+    url = os.environ["DAGSTER_CLOUD_URL"]
     if not os.getenv("SERVERLESS_BASE_IMAGE_PREFIX"):
         base_image_prefix = "657821118200.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
         if ".dogfood." in url:
@@ -34,7 +34,7 @@ def deploy(dagster_cloud_yaml_file, deployment=None):
                 "serverless",
                 "deploy-python-executable",
                 f"--location-name={location.name}",
-                f"--location-file={dagster_cloud_yaml_file}",
+                f"--location-file={location.location_file}",
                 f"--deps-cache-from={deps_cache}",
                 f"--deps-cache-to={deps_cache}",
                 f"--commit-hash={commit}",
@@ -42,6 +42,8 @@ def deploy(dagster_cloud_yaml_file, deployment=None):
             ]
             if deployment:
                 command_args.append(f"--url={url}/{deployment}")
+            if location.build_folder:
+                command_args.append(location.build_folder)
             subprocess.check_call(command_args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as err:
             print("Failed to update code location", location.name)
