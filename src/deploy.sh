@@ -113,7 +113,7 @@ fi
 
 if [[ -z $PR_STATUS || "$PR_STATUS" == "OPEN" ]]; then
     echo "Deploying location ${INPUT_LOCATION_NAME} to deployment ${DEPLOYMENT_NAME}..."
-    echo "deployment=${DEPLOYMENT_NAME}" >> ${OUTPUT_FILE}
+    echo "deployment=${DEPLOYMENT_NAME}" >> ${GITHUB_OUTPUT}
 
     # Extend timeout in case the agent is still spinning up
     if [[ $CI_RUN_NUMBER -eq 1 ]]; then
