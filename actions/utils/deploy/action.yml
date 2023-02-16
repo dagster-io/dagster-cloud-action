@@ -42,6 +42,6 @@ runs:
   image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.11"
   entrypoint: "/deploy.sh"
   env:
-    OUTPUT_FILE: $GITHUB_OUTPUT
+    OUTPUT_FILE: ${{ env.GITHUB_OUTPUT }}
   args:
     - ${{ inputs.pr }}
