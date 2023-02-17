@@ -18,11 +18,11 @@
     "default": {
         "alembic": {
             "hashes": [
-                "sha256:8fd6aaea56f5a703a190d25a705dfa91d7c313bb71de2f9c68f5abdcaf5df164",
-                "sha256:ed2f73ea9c986f43af8ad7502c5f60d6bb1400bcd6d29f230e760e08884cb476"
+                "sha256:4d3bd32ecdbb7bbfb48a9fe9e6d6fd6a831a1b59d03e26e292210237373e7db5",
+                "sha256:6f1c2207369bf4f49f952057a33bb017fbe5c148c2a773b46906b806ea6e825f"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==1.9.3"
+            "version": "==1.9.4"
         },
         "certifi": {
             "hashes": [
@@ -263,19 +263,19 @@
         },
         "dagster": {
             "hashes": [
-                "sha256:68e24f06be4fab583f9ec4498c27c503ede8e61a258dda76dbcec74ff2b3e7e0",
-                "sha256:d904fd62d8bec55256b5f800e10ee19474920973a621244271b09e4777c7457b"
+                "sha256:5166ebb478e301366537aff7c7e56dc71ceb12ed100c336186cff4cfbb622090",
+                "sha256:bfce26bd885053ba3995543df07ec39aa5ddab7a7a6ab601ddc861aad01cacc1"
             ],
             "index": "pypi",
-            "version": "==1.1.18"
+            "version": "==1.1.19"
         },
         "dagster-cloud-cli": {
             "hashes": [
-                "sha256:4ca7f4eebbbf30bf88f4f56b9851b9c34262465c57f89ff0fcdb91ac7d7f0447",
-                "sha256:f397568495523c8e8faa4a75452ed0156436b6909d85460baf87ad59db6e702c"
+                "sha256:420cc40912409be76e1e820b7a5b4c108a9e7221f899a1dca2a52f8ad6791e9a",
+                "sha256:67986fcbd48c2bda9ee01b3c193c1916e85e23f56bdbb4aef28624f7ff1bcd89"
             ],
             "index": "pypi",
-            "version": "==1.1.18"
+            "version": "==1.1.19"
         },
         "docstring-parser": {
             "hashes": [
