@@ -20,7 +20,7 @@ jobs:
           dagster_cloud_file: sample-repo/dagster_cloud.yaml
 
   dagster_cloud_build_push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: parse_workspace
     name: Dagster Serverless Branch Deployments
     strategy:
