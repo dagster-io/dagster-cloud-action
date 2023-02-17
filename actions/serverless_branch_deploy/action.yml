@@ -90,6 +90,8 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+    - run: cat ${{ fromJSON(inputs.location).directory }}/Dockerfile
+    
     - name: Deploy to Dagster Cloud
       uses: ./action-repo/actions/utils/deploy
       id: deploy
