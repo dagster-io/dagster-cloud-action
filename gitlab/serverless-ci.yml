@@ -29,6 +29,32 @@ deploy-branch:
       --author-email $PR_EMAIL)
     # then deploy to that branch
     - /gitlab_action/deploy.py ./dagster_cloud.yaml $DEPLOYMENT_NAME
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    on_stop: close_branch
+
+close_branch:
+  stage: deploy
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab
+  when: manual
+  only:
+    - merge_requests
+  script:
+    - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
+    - dagster-cloud branch-deployment create-or-update
+      --url $DAGSTER_CLOUD_URL
+      --api-token $DAGSTER_CLOUD_API_TOKEN
+      --git-repo-name $CI_PROJECT_NAME
+      --branch-name $CI_COMMIT_REF_NAME
+      --branch-url "${CI_PROJECT_URL}/-/tree/${CI_COMMIT_REF_NAME}"
+      --pull-request-url "${CI_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_IID}"
+      --pull-request-id $CI_MERGE_REQUEST_IID
+      --pull-request-status "CLOSED"
+      --commit-hash $CI_COMMIT_SHORT_SHA
+      --timestamp $PR_TIMESTAMP
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    action: stop
 
 deploy:
   stage: deploy
