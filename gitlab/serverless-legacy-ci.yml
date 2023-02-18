@@ -10,7 +10,7 @@ workflow:
 
 parse-workspace:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab
   script:
     - python /gitlab_action/parse_workspace.py dagster_cloud.yaml >> build.env
     - cp /Dockerfile.template .
@@ -23,7 +23,7 @@ parse-workspace:
 
 fetch-registry-info:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab
   script: dagster-cloud serverless registry-info --url $DAGSTER_CLOUD_URL/prod --api-token $DAGSTER_CLOUD_API_TOKEN | grep '=' >> registry.env
   artifacts:
     reports:
@@ -53,7 +53,7 @@ deploy-docker:
     - build-image
     - parse-workspace
     - fetch-registry-info
-  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab
   script:
     - dagster-cloud workspace add-location
       --url $DAGSTER_CLOUD_URL/prod
@@ -74,7 +74,7 @@ deploy-docker-branch:
     - build-image
     - parse-workspace
     - fetch-registry-info
-  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab-dev
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab
   script:
     - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
     - export PR_MESSAGE=$(git log -1 --format='%s')
@@ -103,3 +103,29 @@ deploy-docker-branch:
       --agent-heartbeat-timeout 600
       --commit-hash $CI_COMMIT_SHA
       --git-url $CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    on_stop: close_branch
+
+close_branch:
+  stage: deploy
+  image: ghcr.io/dagster-io/dagster-cloud-action-gitlab:gitlab
+  when: manual
+  only:
+    - merge_requests
+  script:
+    - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
+    - dagster-cloud branch-deployment create-or-update
+      --url $DAGSTER_CLOUD_URL
+      --api-token $DAGSTER_CLOUD_API_TOKEN
+      --git-repo-name $CI_PROJECT_NAME
+      --branch-name $CI_COMMIT_REF_NAME
+      --branch-url "${CI_PROJECT_URL}/-/tree/${CI_COMMIT_REF_NAME}"
+      --pull-request-url "${CI_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_IID}"
+      --pull-request-id $CI_MERGE_REQUEST_IID
+      --pull-request-status "CLOSED"
+      --commit-hash $CI_COMMIT_SHORT_SHA
+      --timestamp $PR_TIMESTAMP
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    action: stop
