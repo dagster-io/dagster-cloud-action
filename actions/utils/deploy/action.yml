@@ -34,6 +34,11 @@ inputs:
   image_tag:
     required: true
     description: "The image tag to deploy."
+
+  location_load_timeout:
+    description: 'Timeout to wait for the code location deployed by the agent.'
+    required: false
+    default: '600'
 outputs:
   deployment:
     description: "The Cloud deployment associated with this branch."
