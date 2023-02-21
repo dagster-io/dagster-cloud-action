@@ -14,7 +14,7 @@
 # $ docker build . -f src/Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:dev
 # $ docker push ghcr.io/dagster-io/dagster-manylinux-builder:dev
 
-# See ./deploy_pex.py for code that uses this image.
+# See dagster-cloud (docker_runner.py) for code that uses this image.
 
 # ---
 
