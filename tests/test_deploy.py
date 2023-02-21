@@ -24,7 +24,7 @@ def test_deploy_full_deployment_github(tmp_path, exec_context, action_docker_ima
             "GITHUB_REPOSITORY": "some-org/some-project",
             "GITHUB_SHA": "sha12345",
             "INPUT_IMAGE_TAG": "prod-some-location-sha",
-            "OUTPUT_FILE": output_file.name,
+            "GITHUB_OUTPUT": output_file.name,
         }
     )
 
@@ -65,7 +65,7 @@ def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id, tmp
             "CI_PROJECT_URL": "https://gitlab.com/some-org/some-project/",
             "CI_COMMIT_SHORT_SHA": "sha12345",
             "INPUT_IMAGE_TAG": "prod-some-location-sha",
-            "OUTPUT_FILE": output_file.name,
+            "GITHUB_OUTPUT": output_file.name,
         }
     )
 

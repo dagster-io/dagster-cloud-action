@@ -205,7 +205,7 @@ def test_builder_deploy_with_upload(
 
     build_deps_from_requirements_mock.side_effect = build_deps_from_requirements
 
-    def build_source_pex(code_directory, output_directory, python_version):
+    def build_source_pex(code_directory, local_package_paths, output_directory, python_version):
         filepath = os.path.join(output_directory, source_pex_content + ".pex")
         with open(filepath, "w") as pex_file:
             pex_file.write(source_pex_content)
