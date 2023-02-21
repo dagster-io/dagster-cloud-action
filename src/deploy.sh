@@ -60,6 +60,7 @@ fi
 # or if we should use a specific deployment
 if [ -z $INPUT_DEPLOYMENT ]; then
     # Extract git metadata
+    git config --global --add safe.directory /github/workspace
     TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
     MESSAGE=$(git log -1 --format='%s')
     export EMAIL=$(git log -1 --format='%ae')
