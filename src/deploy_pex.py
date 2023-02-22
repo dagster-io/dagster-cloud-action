@@ -93,7 +93,7 @@ def deploy_pex(args, build_method: str):
         [
             str(DAGSTER_CLOUD_PEX_PATH),
             "-m",
-            "dagster-cloud",
+            "dagster_cloud_cli.entrypoint",
             "serverless",
             "deploy-python-executable",
             *args,
