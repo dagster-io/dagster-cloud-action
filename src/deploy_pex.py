@@ -88,7 +88,7 @@ def get_branch_deployment_name(project_dir):
             project_dir,
         ]
     )
-    if not returncode:
+    if returncode:
         print("Could not determine branch deployment")
         sys.exit(1)
     name = "".join(output).strip()
