@@ -98,7 +98,7 @@ def deploy_pex(args, build_method: str):
             "deploy-python-executable",
             *args,
             f"--location-name={first_location['name']}",
-            f"--location-name={dagster_cloud_yaml}",
+            f"--location-file={dagster_cloud_yaml}",
         ]
     )
 
