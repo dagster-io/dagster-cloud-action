@@ -68,10 +68,11 @@ runs:
         $FLAG_DEPS_CACHE_FROM
       shell: bash
 
-    # - if: ${{ inputs.deploy != 'true' }}
-    #   run: >
-    #     cd $ACTION_REPO &&
-    #     generated/gha/dagster-cloud.pex serverless build-python-executable
-    #     $SOURCE_DIRECTORY ${{ inputs.build_output_dir }}
-    #     --python-version=${{ inputs.python_version }}
-    #   shell: bash
+    - if: ${{ inputs.deploy != 'true' }}
+      run: >
+        cd $ACTION_REPO &&
+        generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint
+        serverless build-python-executable
+        $SOURCE_DIRECTORY ${{ inputs.build_output_dir }}
+        --python-version=${{ inputs.python_version }}
+      shell: bash
