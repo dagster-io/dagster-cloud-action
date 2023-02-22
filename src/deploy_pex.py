@@ -25,9 +25,11 @@ DAGSTER_CLOUD_PEX_PATH = (
 def main():
     args = sys.argv[1:]
 
-    if os.getenv("GITHUB_EVENT") == "pull_request":
+    if os.getenv("GITHUB_EVENT_NAME") == "pull_request":
+        print("Running in a pull request - going to do a branch deployment")
         deployment_name = get_branch_deployment_name()
     else:
+        print("Going to do a full deployment.")
         deployment_name = None
 
     ubuntu_version = get_runner_ubuntu_version()
