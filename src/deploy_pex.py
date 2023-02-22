@@ -27,7 +27,9 @@ def main():
 
     if os.getenv("GITHUB_EVENT_NAME") == "pull_request":
         print("Running in a pull request - going to do a branch deployment")
-        deployment_name = get_branch_deployment_name()
+        dagster_cloud_yaml = args[0]
+        project_dir = os.path.dirname(dagster_cloud_yaml)
+        deployment_name = get_branch_deployment_name(project_dir)
     else:
         print("Going to do a full deployment.")
         deployment_name = None
@@ -75,7 +77,7 @@ def run(args):
     return returncode, output
 
 
-def get_branch_deployment_name():
+def get_branch_deployment_name(project_dir):
     returncode, output = run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
@@ -83,6 +85,7 @@ def get_branch_deployment_name():
             "dagster_cloud_cli.entrypoint",
             "ci",
             "branch-deployment",
+            project_dir,
         ]
     )
     if not returncode:
