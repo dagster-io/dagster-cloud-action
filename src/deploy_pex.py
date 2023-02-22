@@ -11,6 +11,8 @@
 #   right docker environment on 22.04. Note if dependencies are not being built, docker will not
 #   be used. The source.pex is always built using the local environment.
 
+import os
+import yaml
 from pathlib import Path
 import subprocess
 import sys
@@ -18,6 +20,21 @@ import sys
 DAGSTER_CLOUD_PEX_PATH = (
     Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
 )
+
+
+def parse_workspace(dagster_cloud_file):
+    workspace = dagster_cloud_file
+
+    with open(workspace) as f:
+        workspace_contents = f.read()
+    workspace_contents_yaml = yaml.safe_load(workspace_contents)
+
+    return [
+        {
+            "name": location["location_name"],
+        }
+        for location in workspace_contents_yaml["locations"]
+    ]
 
 
 def main():
@@ -66,13 +83,20 @@ def run(args):
 
 
 def deploy_pex(args, build_method: str):
+    dagster_cloud_yaml = args.pop(0)
+    args.insert(0, os.path.dirname(dagster_cloud_yaml))
     args = args + [f"--build-method={build_method}"]
+    first_location = parse_workspace(dagster_cloud_yaml)[0]
+    print(f"Deploying {first_location}")
+
     return run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
             "serverless",
             "deploy-python-executable",
             *args,
+            f"--location-name={first_location['name']}",
+            f"--location-name={dagster_cloud_yaml}",
         ]
     )
 
