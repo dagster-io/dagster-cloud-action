@@ -70,6 +70,8 @@ def deploy_pex(args, build_method: str):
     dagster_cloud_yaml = args.pop(0)
     args.insert(0, os.path.dirname(dagster_cloud_yaml))
     args = args + [f"--build-method={build_method}"]
+    commit_hash = os.getenv("GITHUB_SHA")
+    git_url = f"{os.getenv('GITHUB_SERVER_URL')}/{os.getenv('GITHUB_REPOSITORY')}/tree/{commit_hash}"
     return run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
@@ -80,6 +82,8 @@ def deploy_pex(args, build_method: str):
             *args,
             f"--location-name=*",
             f"--location-file={dagster_cloud_yaml}",
+            f"--git-url={git_url}",
+            f"--commit-hash={commit_hash}",
         ]
     )
 
