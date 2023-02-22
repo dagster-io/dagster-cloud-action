@@ -24,12 +24,10 @@ set -x
 # --pip-version and --resolver-version recommended by the pex team, uses the latest dependency
 #   resolution logic
 # --venv prepend unpacks the pex into a venv before execution, nice to have for debugging
-# -c specifies the default entrypoint
 pex $DAGSTER_CLOUD_SOURCE_PACKAGE $DAGSTER_CLOUD_CLI_SOURCE_PACKAGE \
     -o dagster-cloud.pex \
     --platform=manylinux2014_x86_64-cp-38-cp38 \
     --platform=macosx_12_0_x86_64-cp-38-cp38 \
     --pip-version=23.0 \
     --resolver-version=pip-2020-resolver \
-    --venv prepend \
-    -c dagster-cloud
+    --venv prepend

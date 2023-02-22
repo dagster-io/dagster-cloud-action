@@ -92,6 +92,8 @@ def deploy_pex(args, build_method: str):
     return run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
+            "-m",
+            "dagster-cloud",
             "serverless",
             "deploy-python-executable",
             *args,
