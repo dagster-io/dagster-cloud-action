@@ -7,12 +7,13 @@
 # To publish a new version:
 # $ cd path/to/dagster-cloud-action
 #
-# Update generated/gha/builder.pex (optional)
+# (optional) By default dagster-cloud from PyPI will be included. To build from a local version, build the
+# wheels and drop into the wheels/ folder
 #
 # $ echo $GITHUB-PAT | docker login ghcr.io -u USERNAME --password-stdin
 #
-# $ docker build . -f src/Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:dev
-# $ docker push ghcr.io/dagster-io/dagster-manylinux-builder:dev
+# $ docker build . -f src/Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:latest
+# $ docker push ghcr.io/dagster-io/dagster-manylinux-builder:latest
 
 # See dagster-cloud (docker_runner.py) for code that uses this image.
 
@@ -23,6 +24,12 @@ FROM --platform=linux/amd64 quay.io/pypa/manylinux2014_x86_64:latest
 
 # Add all the relevant Python binaries to the PATH
 ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp37-cp37m/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:$PATH"
+
+# To install unreleased versions, build the wheels and drop them in this directory
+COPY wheels /wheels
+
+# Install dagster-cloud
+RUN python3.8 -m pip install dagster-cloud --find-links file:///wheels/
 
 COPY generated/gha/builder.pex /builder.pex
 

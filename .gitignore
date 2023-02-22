@@ -5,3 +5,5 @@ __pycache__/
 # builder.pex
 src/pex-builder/build
 
+# locally built wheels for Dockerfile.dagster-manylinux-builder
+wheels/*whl
