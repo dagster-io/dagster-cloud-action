@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from typing import Optional
 
 DAGSTER_CLOUD_PEX_PATH = (
     Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
@@ -23,12 +24,18 @@ DAGSTER_CLOUD_PEX_PATH = (
 
 def main():
     args = sys.argv[1:]
+
+    if os.getenv("GITHUB_EVENT") == "pull_request":
+        deployment_name = get_branch_deployment_name()
+    else:
+        deployment_name = None
+
     ubuntu_version = get_runner_ubuntu_version()
     print("Running on Ubuntu", ubuntu_version)
     if ubuntu_version == "20.04":
-        returncode, output = deploy_pex(args, build_method="local")
+        returncode, output = deploy_pex(args, deployment_name, build_method="local")
     else:
-        returncode, output = deploy_pex(args, build_method="docker")
+        returncode, output = deploy_pex(args, deployment_name, build_method="docker")
     if returncode:
         print(
             "::error Title=Deploy failed::Failed to deploy Python Executable. "
@@ -66,12 +73,34 @@ def run(args):
     return returncode, output
 
 
-def deploy_pex(args, build_method: str):
+def get_branch_deployment_name():
+    returncode, output = run(
+        [
+            str(DAGSTER_CLOUD_PEX_PATH),
+            "-m",
+            "dagster_cloud_cli.entrypoint",
+            "ci",
+            "branch-deployment",
+        ]
+    )
+    if not returncode:
+        print("Could not determine branch deployment")
+        sys.exit(1)
+    name = "".join(output).strip()
+    print("Deploying to branch deployment:", name)
+    return name
+
+
+def deploy_pex(args, deployment_name: Optional[str], build_method: str):
     dagster_cloud_yaml = args.pop(0)
     args.insert(0, os.path.dirname(dagster_cloud_yaml))
     args = args + [f"--build-method={build_method}"]
     commit_hash = os.getenv("GITHUB_SHA")
     git_url = f"{os.getenv('GITHUB_SERVER_URL')}/{os.getenv('GITHUB_REPOSITORY')}/tree/{commit_hash}"
+    if deployment_name:
+        deployment_flag = [f"--deployment={deployment_name}"]
+    else:
+        deployment_flag = []
     return run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
@@ -85,6 +114,7 @@ def deploy_pex(args, build_method: str):
             f"--git-url={git_url}",
             f"--commit-hash={commit_hash}",
         ]
+        + deployment_flag
     )
 
 
