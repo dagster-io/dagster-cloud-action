@@ -10,6 +10,7 @@ dagster = "*"
 click = "*"
 packaging = "*"
 github3-py = "*"
+PyGithub = "*"
 
 [dev-packages]
 
