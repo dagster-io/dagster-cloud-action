@@ -103,7 +103,7 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
     commit_hash = os.getenv("GITHUB_SHA")
     git_url = f"{os.getenv('GITHUB_SERVER_URL')}/{os.getenv('GITHUB_REPOSITORY')}/tree/{commit_hash}"
     if deployment_name:
-        deployment_flag = [f"--deployment={deployment_name}"]
+        deployment_flag = [f"--url={os.getenv('DAGSTER_CLOUD_URL')}/{deployment_name}"]
     else:
         deployment_flag = []
     return run(
