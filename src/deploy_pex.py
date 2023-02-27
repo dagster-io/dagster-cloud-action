@@ -13,6 +13,8 @@
 
 import os
 from pathlib import Path
+import pathlib
+import re
 import subprocess
 import sys
 from typing import Optional
@@ -121,6 +123,45 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
         ]
         + deployment_flag
     )
+
+
+def update_pr_comment(deployment_name: str, location_name: str, action: str):
+    # action is one of "pending", "success", "failed"
+    pr_id = get_pr_number()
+    if not pr_id:
+        print("Not in a pull request, will not post PR comment")
+        return
+
+    script_path = pathlib.Path(__file__).parent / "create_or_update_comment.py"
+    if not script_path.exists:
+        print(f"Could not find script_path, will not post PR comment")
+        return
+
+    env = dict(os.environ)
+    github_run_url = f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}'
+    env.update(
+        {
+            "INPUT_PR": str(pr_id),
+            "INPUT_ACTION": action,
+            "INPUT_DEPLOYMENT": deployment_name,
+            "INPUT_LOCATION_NAME": location_name,
+            "GITHUB_RUN_URL": github_run_url,
+        }
+    )
+    env = {name: value for name, value in env.items() if value is not None}
+    proc = subprocess.run([str(script_path)], env=env, check=False)
+
+    if proc.returncode:
+        print("Ignoring failure to update PR comment: %s\n%s", proc.stdout, proc.stderr)
+
+
+def get_pr_number():
+    # Extract pull request number from GITHUB_REF
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull-request-event-pull_request
+    mo = re.match(r"/refs/pull/({\d+})", os.getenv("GITHUB_REF", ""))
+    if not mo:
+        return None
+    return mo.group(1)
 
 
 if __name__ == "__main__":
