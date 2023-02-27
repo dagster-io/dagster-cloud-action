@@ -189,7 +189,7 @@ def get_pr_number():
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull-request-event-pull_request
     github_ref = os.getenv("GITHUB_REF", "")
     print("Looking for a PR number in", repr(github_ref))
-    mo = re.match(r"/refs/pull/({\d+})", github_ref)
+    mo = re.match(r"refs/pull/(\d+)", github_ref)
     if not mo:
         return None
     return mo.group(1)
