@@ -148,11 +148,13 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
 
 
 def notify(deployment_name: Optional[str], locations: List[str], action: str):
+    if deployment_name is None:
+        return
     for location_name in locations:
         update_pr_comment(deployment_name, location_name, action)
 
 
-def update_pr_comment(deployment_name: Optional[str], location_name: str, action: str):
+def update_pr_comment(deployment_name: str, location_name: str, action: str):
     # action is one of "pending", "success", "failed"
     pr_id = get_pr_number()
     if not pr_id:
@@ -185,7 +187,9 @@ def update_pr_comment(deployment_name: Optional[str], location_name: str, action
 def get_pr_number():
     # Extract pull request number from GITHUB_REF
     # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull-request-event-pull_request
-    mo = re.match(r"/refs/pull/({\d+})", os.getenv("GITHUB_REF", ""))
+    github_ref = os.getenv("GITHUB_REF", "")
+    print("Looking for a PR number in", repr(github_ref))
+    mo = re.match(r"/refs/pull/({\d+})", github_ref)
     if not mo:
         return None
     return mo.group(1)
