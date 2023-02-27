@@ -24,6 +24,9 @@ import yaml
 DAGSTER_CLOUD_PEX_PATH = (
     Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
 )
+UPDATE_COMMENT_SCRIPT_PATH = (
+    pathlib.Path(__file__).parent / "create_or_update_comment.py"
+)
 
 
 def main():
@@ -161,8 +164,7 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
         print("Not in a pull request, will not post PR comment")
         return
 
-    script_path = pathlib.Path(__file__).parent / "create_or_update_comment.py"
-    if not script_path.exists:
+    if not UPDATE_COMMENT_SCRIPT_PATH.exists:
         print(f"Could not find script_path, will not post PR comment")
         return
 
@@ -178,7 +180,9 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
         }
     )
     env = {name: value for name, value in env.items() if value is not None}
-    proc = subprocess.run([str(script_path)], env=env, check=False)
+    proc = subprocess.run(
+        [sys.executable, str(UPDATE_COMMENT_SCRIPT_PATH)], env=env, check=False
+    )
 
     if proc.returncode:
         print("Ignoring failure to update PR comment: %s\n%s", proc.stdout, proc.stderr)
