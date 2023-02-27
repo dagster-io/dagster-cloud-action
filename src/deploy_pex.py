@@ -17,7 +17,9 @@ import pathlib
 import re
 import subprocess
 import sys
-from typing import Optional
+from typing import List, Optional
+
+import yaml
 
 DAGSTER_CLOUD_PEX_PATH = (
     Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
@@ -64,6 +66,16 @@ def get_runner_ubuntu_version():
     return "22.04"  # fallback to safer behavior
 
 
+def get_locations(dagster_cloud_file) -> List[str]:
+    with open(dagster_cloud_file) as f:
+        workspace_contents = f.read()
+    workspace_contents_yaml = yaml.safe_load(workspace_contents)
+
+    return [
+        location["location_name"] for location in workspace_contents_yaml["locations"]
+    ]
+
+
 def run(args):
     # Prints streaming output and also captures and returns it
     print("Running", args)
@@ -108,7 +120,11 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
         deployment_flag = [f"--url={os.getenv('DAGSTER_CLOUD_URL')}/{deployment_name}"]
     else:
         deployment_flag = []
-    return run(
+
+    locations = get_locations(dagster_cloud_yaml)
+    notify(deployment_name, locations, "pending")
+
+    returncode, output = run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
             "-m",
@@ -123,9 +139,20 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
         ]
         + deployment_flag
     )
+    # TODO: status update should be per location, but this is not reported by the deploy command yet
+    if returncode:
+        notify(deployment_name, locations, "failed")
+    else:
+        notify(deployment_name, locations, "success")
+    return returncode, output
 
 
-def update_pr_comment(deployment_name: str, location_name: str, action: str):
+def notify(deployment_name: Optional[str], locations: List[str], action: str):
+    for location_name in locations:
+        update_pr_comment(deployment_name, location_name, action)
+
+
+def update_pr_comment(deployment_name: Optional[str], location_name: str, action: str):
     # action is one of "pending", "success", "failed"
     pr_id = get_pr_number()
     if not pr_id:
