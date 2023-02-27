@@ -13,7 +13,6 @@
 
 import os
 from pathlib import Path
-import pathlib
 import re
 import subprocess
 import sys
@@ -24,9 +23,7 @@ import yaml
 DAGSTER_CLOUD_PEX_PATH = (
     Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
 )
-UPDATE_COMMENT_SCRIPT_PATH = (
-    pathlib.Path(__file__).parent / "create_or_update_comment.py"
-)
+UPDATE_COMMENT_SCRIPT_PATH = Path(__file__).parent / "create_or_update_comment.py"
 
 
 def main():
@@ -181,11 +178,13 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
     )
     env = {name: value for name, value in env.items() if value is not None}
     proc = subprocess.run(
-        [sys.executable, str(UPDATE_COMMENT_SCRIPT_PATH)], env=env, check=False
+        [str(DAGSTER_CLOUD_PEX_PATH), str(UPDATE_COMMENT_SCRIPT_PATH)],
+        env=env,
+        check=False,
     )
 
     if proc.returncode:
-        print("Ignoring failure to update PR comment: %s\n%s", proc.stdout, proc.stderr)
+        print(f"Ignoring failure to update PR comment: {proc.stdout}\n{proc.stderr}")
 
 
 def get_pr_number():
