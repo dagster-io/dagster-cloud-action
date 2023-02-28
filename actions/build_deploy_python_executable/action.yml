@@ -54,13 +54,16 @@ runs:
       with:
         python-version: ${{ inputs.python_version }}
 
+    - run: >
+        echo SOURCE_DIRECTORY=$(dirname ${{ inputs.dagster_cloud_file }}) >> $GITHUB_ENV
+      shell: bash
+
     - if: ${{ inputs.deploy == 'true' }}
       run: >
         cd $ACTION_REPO &&
-        /usr/bin/python src/deploy_pex.py -m builder.deploy
-        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        /usr/bin/python src/deploy_pex.py
+        ${{ inputs.dagster_cloud_file }}
         --python-version=${{ inputs.python_version }}
-        --upload-pex --update-code-location
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
       shell: bash
@@ -68,9 +71,8 @@ runs:
     - if: ${{ inputs.deploy != 'true' }}
       run: >
         cd $ACTION_REPO &&
-        generated/gha/builder.pex -m builder.deploy 
-        ${{ inputs.dagster_cloud_file }} ${{ inputs.build_output_dir }}
+        generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint
+        serverless build-python-executable
+        $SOURCE_DIRECTORY ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}
-        $FLAG_DEPS_CACHE_TO
-        $FLAG_DEPS_CACHE_FROM
       shell: bash
