@@ -122,6 +122,12 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
         deployment_flag = []
 
     locations = get_locations(dagster_cloud_yaml)
+    # give first deploy extra time to spin up agent
+    agent_heartbeat_timeout = 600 if (os.getenv("GITHUB_RUN_NUMBER") == "1") else 90
+    timeout_args = [
+        "--location-load-timeout=600",
+        f"--agent-heartbeat-timeout={agent_heartbeat_timeout}",
+    ]
     notify(deployment_name, locations, "pending")
 
     returncode, output = run(
@@ -136,6 +142,7 @@ def deploy_pex(args, deployment_name: Optional[str], build_method: str):
             f"--location-file={dagster_cloud_yaml}",
             f"--git-url={git_url}",
             f"--commit-hash={commit_hash}",
+            *timeout_args,
         ]
         + deployment_flag
     )
