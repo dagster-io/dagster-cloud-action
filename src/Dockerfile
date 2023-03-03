@@ -6,7 +6,8 @@ RUN pip install --upgrade pip
 RUN pip install dagster \
                 dagster-cloud-cli \
                 PyGithub \
-                pex
+                pex \
+                python-gitlab
 
 # for setting the org-specific registry info
 COPY registry_info.sh /registry_info.sh
