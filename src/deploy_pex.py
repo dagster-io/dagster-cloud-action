@@ -30,16 +30,16 @@ def main():
     args = sys.argv[1:]
 
     if os.getenv("GITHUB_EVENT_NAME") == "pull_request":
-        print("Running in a pull request - going to do a branch deployment")
+        print("Running in a pull request - going to do a branch deployment", flush=True)
         dagster_cloud_yaml = args[0]
         project_dir = os.path.dirname(dagster_cloud_yaml)
         deployment_name = get_branch_deployment_name(project_dir)
     else:
-        print("Going to do a full deployment.")
+        print("Going to do a full deployment.", flush=True)
         deployment_name = None
 
     ubuntu_version = get_runner_ubuntu_version()
-    print("Running on Ubuntu", ubuntu_version)
+    print("Running on Ubuntu", ubuntu_version, flush=True)
     if ubuntu_version == "20.04":
         returncode, output = deploy_pex(args, deployment_name, build_method="local")
     else:
@@ -78,13 +78,13 @@ def get_locations(dagster_cloud_file) -> List[str]:
 
 def run(args):
     # Prints streaming output and also captures and returns it
-    print("Running", args)
+    print("Running", args, flush=True)
     popen = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding="utf-8"
     )
     output = []
     for line in iter(popen.stdout.readline, ""):
-        print(line, end="")
+        print(line, end="", flush=True)
         output.append(line)
     popen.stdout.close()
     returncode = popen.wait()
@@ -103,10 +103,10 @@ def get_branch_deployment_name(project_dir):
         ]
     )
     if returncode:
-        print("Could not determine branch deployment")
+        print("Could not determine branch deployment", flush=True)
         sys.exit(1)
     name = "".join(output).strip()
-    print("Deploying to branch deployment:", name)
+    print("Deploying to branch deployment:", name, flush=True)
     return name
 
 
@@ -162,11 +162,11 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
     # action is one of "pending", "success", "failed"
     pr_id = get_pr_number()
     if not pr_id:
-        print("Not in a pull request, will not post PR comment")
+        print("Not in a pull request, will not post PR comment", flush=True)
         return
 
     if not UPDATE_COMMENT_SCRIPT_PATH.exists:
-        print(f"Could not find script_path, will not post PR comment")
+        print(f"Could not find script_path, will not post PR comment", flush=True)
         return
 
     env = dict(os.environ)
@@ -188,7 +188,10 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
     )
 
     if proc.returncode:
-        print(f"Ignoring failure to update PR comment: {proc.stdout}\n{proc.stderr}")
+        print(
+            f"Ignoring failure to update PR comment: {proc.stdout}\n{proc.stderr}",
+            flush=True,
+        )
 
 
 def get_pr_number():
