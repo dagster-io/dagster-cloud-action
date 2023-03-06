@@ -99,6 +99,8 @@ def update_docker_action_references(
                 text = input_text.replace(previous_image_name, image_name)
                 if text != input_text:
                     print(path)
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.write(text)
 
 
 @app.command()
