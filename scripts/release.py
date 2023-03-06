@@ -112,7 +112,11 @@ def create_rc(
     if check_workdir:
         ensure_clean_workdir()
     branch = ensure_in_branch()
-    info("Preparing a new RC")
+    info(f"Preparing a new RC in {branch}")
+
+    if not re.match(r"^[0-9.]+$", version_tag):
+        error(f"Invalid version tag {version_tag}")
+        sys.exit(1)
 
     update_dagster_cloud_pex()
     if execute_tests:
