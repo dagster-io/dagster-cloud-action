@@ -138,7 +138,7 @@ def ensure_clean_workdir():
 
 def ensure_in_branch():
     branch = get_branch_name()
-    if branch != "main":
+    if branch == "main":
         error("ERROR: Not in branch")
         sys.exit(1)
     return branch
