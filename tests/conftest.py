@@ -185,26 +185,13 @@ def action_docker_image_id(repo_root):
 
 
 @pytest.fixture(scope="session")
-def builder_pex_path(repo_root):
-    "Path to a freshly built builder.pex file, can be run as a subprocess."
-    # To cut down test time during local iteration, build once and reuse
-    # yield repo_root / "src/pex-builder/build/builder.pex"
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        proc = subprocess.run(
-            ["./build-builder.sh", tmpdir],
-            cwd=repo_root / "src/pex-builder",
-            check=True,
-            capture_output=True,
-        )
-        path = os.path.join(tmpdir, "builder.pex")
-        if not os.path.exists(path):
-            raise ValueError("builder.pex not created:" + proc.stderr.decode("utf-8"))
-        yield path
+def dagster_cloud_pex_path(repo_root):
+    "Path to generated/gha/dagster-cloud.pex."
+    yield repo_root / "generated/gha/dagster-cloud.pex"
 
 
 @pytest.fixture(scope="session")
-def builder_module(builder_pex_path):
+def builder_module(dagster_cloud_pex_path):
     "Imported builder module object, for in-process testing of builder code."
     # This contains the same code as the builder.pex, but using it as a module
     # makes patching easier. To make sure we use the same dependencies that are
@@ -215,7 +202,7 @@ def builder_module(builder_pex_path):
         try:
             # special invocation to have builder.pex unpack itself
             subprocess.check_output(
-                [builder_pex_path, "venv", venv_dir],
+                [dagster_cloud_pex_path, "venv", venv_dir],
                 env={"PEX_TOOLS": "1", **os.environ},
                 stderr=subprocess.STDOUT,
                 encoding="utf-8",
@@ -232,7 +219,7 @@ def builder_module(builder_pex_path):
 @pytest.fixture(scope="function")
 def pex_registry_fixture():
     # replaces remote registry with a python dictionary, which is returned by this fixture
-    # note this fixture only works with builder_module, not builder_pex_path
+    # note this fixture only works with builder_module, not dagster_cloud_pex_path
 
     s3_objects = {}  # filename -> content
 
