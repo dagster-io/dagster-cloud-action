@@ -1,4 +1,4 @@
-FROM python:3.8.12-slim
+FROM --platform=linux/amd64 python:3.8.12-slim
 
 # Install deps
 RUN apt update && apt install git -y
