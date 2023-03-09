@@ -81,4 +81,8 @@ Note: both `v0.1` and `pex-v0.1` tags should be kept in sync.
 To revert, just tag the previous point version with the live tag and re push
 
 ```
+git tag -f v0.1 v0.1.21
+git tag -f pex-v0.1 v0.1.21
+git push -f origin v0.1
+git push -f origin pex-v0.1
 ```
