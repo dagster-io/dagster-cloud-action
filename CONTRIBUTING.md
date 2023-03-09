@@ -37,7 +37,8 @@ The point version is the next unused `v0.1.*` version, eg `v0.1.22` above.
 A script does this work:
 
 ```
-% python scripts/release.py v0.1.22 v0.1.21
+# Note no 'v' prefix
+% python scripts/release.py 0.1.22 0.1.21
 
 % git diff
 ```
