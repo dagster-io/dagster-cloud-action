@@ -6,7 +6,7 @@
 % echo $YOUR_GITHUB_PAT | docker login ghcr.io -u $YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-## Step 2. Clear working dir, determine the new point version
+## Step 2. Determine the new point version and create a release branch, 
 
 ```
 % git checkout main
@@ -30,7 +30,11 @@ v0.1.20
 v0.1.21
 ```
 
-The point version is the next unused `v0.1.*` version, eg `v0.1.22` above.
+The point version is the next unused `v0.1.*` version, eg `v0.1.22` above. Create a release branch
+
+```
+% git checkout -b release-0.1.22
+```
 
 ## Step 3. Build and eploy the new docker-cloud-action image and update code references to this image
 
@@ -38,7 +42,7 @@ A script does this work:
 
 ```
 # Note no 'v' prefix
-% python scripts/release.py 0.1.22 0.1.21
+% python scripts/release.py create-rc 0.1.22 0.1.21
 
 % git diff
 ```
