@@ -11,7 +11,6 @@
 ```
 % git checkout main
 % git fetch origin --tags --force
-% git tag
 % git tag 
 pex-v0.1
 pex-v0.1.14
