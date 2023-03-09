@@ -44,10 +44,10 @@ runs:
         DAGSTER_ACTION_REF: ${{ github.repository != 'dagster-io/dagster-cloud-action' && github.action_ref || github.head_ref }}
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJson(inputs.location).directory }}
