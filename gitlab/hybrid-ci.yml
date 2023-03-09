@@ -28,6 +28,17 @@ build-image:
   image: docker:latest
   services:
     - docker:dind
+  before_script:
+    # For Gitlab Container Registry
+    - echo $CI_JOB_TOKEN | docker login --username $CI_REGISTRY_USER --password-stdin $REGISTRY_URL
+    ## For DockerHub
+    # - echo $DOCKERHUB_TOKEN | docker login --username $DOCKERHUB_USERNAME --password-stdin $REGISTRY_URL
+    ## For AWS Elastic Container Registry (ECR)
+    # - apk add --no-cache curl jq python3 py3-pip
+    # - pip install awscli
+    # - echo $AWS_ECR_PASSWORD | docker login --username $AWS_ECR_USERNAME --password-stdin $REGISTRY_URL
+    ## For Google Container Registry (GCR)
+    # - echo $GCR_JSON_KEY | docker login --username _json_key --password-stdin $REGISTRY_URL
   script:
     - docker build $DAGSTER_CLOUD_LOCATION_DIR -t $REGISTRY_URL:$CI_COMMIT_SHA
     - docker push $REGISTRY_URL:$CI_COMMIT_SHA
