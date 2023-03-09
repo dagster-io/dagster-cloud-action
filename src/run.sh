@@ -25,5 +25,5 @@ if [ -z $RUN_ID ]; then
     exit 1
 else
     echo "Successfully launched run: ${RUN_ID}"
-    echo "::set-output name=run_id::${RUN_ID}"
+    echo "run_id=${RUN_ID}" >> $GITHUB_OUTPUT
 fi
