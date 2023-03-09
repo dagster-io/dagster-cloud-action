@@ -36,24 +36,29 @@ The point version is the next unused `v0.1.*` version, eg `v0.1.22` above. Creat
 % git checkout -b release-0.1.22
 ```
 
-## Step 3. Build and eploy the new docker-cloud-action image and update code references to this image
+## Step 3. Build and deploy a new docker-cloud-action image, a new dagster.cloud.pex and update code references to docker
 
 A script does this work:
 
 ```
 # Note no 'v' prefix
+# This accepts `NEW_VERSION OLD_VERSION` so it can update code references from the old to the new version.
 % python scripts/release.py create-rc 0.1.22 0.1.21
 
+```
+
+This leaves uncommited changes in the working directory.
+
+# Commit and tag the new version
+
+```
+View changes made by the release script
 % git diff
-```
-Note it accepts `NEW_VERSION OLD_VERSION` so it can update code references from the old to the new version.
 
-This only modifies the working directory.
+# Commit
+% git add . && git commit -m "Rebuild"
 
-# Step 4. Tag the new version
-
-```
-# using '-a' lets us add an annotation message, typically we use the version "v0.1.22"
+# Tag: using '-a' lets us add an annotation message, typically we use the version "v0.1.22"
 % git tag -a v0.1.22
 ```
 
