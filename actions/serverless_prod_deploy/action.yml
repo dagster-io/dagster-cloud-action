@@ -70,13 +70,20 @@ runs:
         env_vars: ${{ inputs.env_vars }}
         base_image: ${{ inputs.base_image }}
 
+    - name: generate short github sha
+      shell: bash
+      id: generate-short-sha
+      run: |
+          SHA="${{ github.sha }}"
+          echo SHORT_SHA=${SHA:0:7} >> $GITHUB_ENV
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
         ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJson(inputs.location).directory }}
         push: true
-        tags: "${{ env.REGISTRY_URL }}:${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ github.sha }}"
+        tags: "${{ env.REGISTRY_URL }}:${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ env.SHORT_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}"
         labels: |
           branch=${{ github.head_ref }}
         cache-from: type=gha
@@ -90,7 +97,7 @@ runs:
         deployment: ${{ inputs.deployment }}
         pr: "${{ github.event.number }}"
         location: ${{ inputs.location }}
-        image_tag: ${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ github.sha }}
+        image_tag: ${{ inputs.deployment }}-${{ fromJson(inputs.location).name }}-${{ env.SHORT_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
         registry: ${{ env.REGISTRY_URL }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}

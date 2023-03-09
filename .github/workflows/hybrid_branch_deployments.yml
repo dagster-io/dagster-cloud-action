@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 env:
-  DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_HYBRID_URL }}
+  DAGSTER_CLOUD_URL: "https://action-demo-hybrid.dogfood.dagster.cloud"
 
 jobs:
   parse_workspace:

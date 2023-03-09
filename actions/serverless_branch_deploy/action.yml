@@ -77,6 +77,13 @@ runs:
         env_vars: ${{ inputs.env_vars }}
         base_image: ${{ inputs.base_image }}
 
+    - name: generate short github sha
+      shell: bash
+      id: generate-short-sha
+      run: |
+          SHA="${{ github.sha }}"
+          echo SHORT_SHA=${SHA:0:7} >> $GITHUB_ENV
+
     - name: Build and push Docker image
       if: ${{ github.event.pull_request.state != 'closed' }}
       uses: docker/build-push-action@v3
@@ -84,7 +91,7 @@ runs:
         ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJSON(inputs.location).directory }}
         push: true
-        tags: "${{ env.REGISTRY_URL }}:prod-${{ fromJson(inputs.location).name }}-${{ github.sha }}"
+        tags: "${{ env.REGISTRY_URL }}:branch-${{ fromJson(inputs.location).name }}-${{ env.SHORT_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}"
         labels: |
           branch=${{ github.head_ref }}
         cache-from: type=gha
@@ -98,7 +105,7 @@ runs:
         pr: "${{ github.event.number }}"
         pr_status: "${{ github.event.pull_request.merged && 'merged' || github.event.pull_request.state }}"
         location: ${{ inputs.location }}
-        image_tag: prod-${{ fromJson(inputs.location).name }}-${{ github.sha }}
+        image_tag: branch-${{ fromJson(inputs.location).name }}-${{ env.SHORT_SHA }}-${{ github.run_id }}-${{ github.run_attempt }}
         registry: ${{ env.REGISTRY_URL }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
