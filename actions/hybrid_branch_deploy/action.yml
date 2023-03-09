@@ -60,7 +60,7 @@ runs:
         ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJson(inputs.location).directory }}
         push: true
-        tags: "${{ fromJson(inputs.location).registry }}:${{ github.sha }}"
+        tags: "${{ fromJson(inputs.location).registry }}:${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
         labels: |
           branch=${{ github.head_ref }}
         cache-from: type=gha
@@ -74,7 +74,7 @@ runs:
         pr: "${{ github.event.number }}"
         pr_status: "${{ github.event.pull_request.merged && 'merged' || github.event.pull_request.state }}"
         location: ${{ inputs.location }}
-        image_tag: ${{ github.sha }}
+        image_tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
 
