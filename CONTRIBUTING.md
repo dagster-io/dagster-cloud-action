@@ -2,6 +2,10 @@
 
 ## Step 1. Log into docker ghcr.io
 
+See [authenticate to GHCR with a PAT](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
+
+If you have a PAT handy you can just do:
+
 ```
 % echo $YOUR_GITHUB_PAT | docker login ghcr.io -u $YOUR_GITHUB_USERNAME --password-stdin
 ```
