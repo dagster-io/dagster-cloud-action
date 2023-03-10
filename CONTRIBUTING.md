@@ -90,7 +90,11 @@ git push -f origin pex-v0.1
 
 Note: both `v0.1` and `pex-v0.1` tags should be kept in sync.
 
-# Step 7. (optional) Revert
+# Step 7. Merge the release branch into main
+
+Create a PR, get approval, merge.
+
+# Step 8. (optional) Revert
 
 To revert, just tag the previous point version with the live tag and re push
 
