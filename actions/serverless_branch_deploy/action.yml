@@ -67,7 +67,7 @@ runs:
 
     - name: Set up Docker Buildx
       if: ${{ github.event.pull_request.state != 'closed' }}
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: Copy user code template file
       if: ${{ github.event.pull_request.state != 'closed' }}
@@ -86,7 +86,7 @@ runs:
 
     - name: Build and push Docker image
       if: ${{ github.event.pull_request.state != 'closed' }}
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         ssh: ${{ env.DOCKER_BUILD_SSH }}
         context: ${{ fromJSON(inputs.location).directory }}
