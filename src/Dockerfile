@@ -26,6 +26,7 @@ COPY parse_workspace.py parse_workspace.py
 COPY notify.sh /notify.sh
 COPY deploy.sh /deploy.sh
 COPY run.sh /run.sh
+COPY get_branch_deployment.sh /get_branch_deployment.sh
 
 # Gitlab scripts
 COPY gitlab_action gitlab_action
