@@ -1,5 +1,6 @@
-import pytest
 import json
+
+import pytest
 
 
 def test_deploy_full_deployment_github(tmp_path, exec_context, action_docker_image_id):
@@ -34,7 +35,7 @@ def test_deploy_full_deployment_github(tmp_path, exec_context, action_docker_ima
             "workspace add-location --url http://dagster.cloud/test/prod "
             "--api-token api-token --location-file some-location/dagster_cloud.yaml "
             "--location-name some-location --image some-location-registry:prod-some-location-sha "
-            "--location-load-timeout 600 --agent-heartbeat-timeout 90 "
+            "--location-load-timeout 3600 --agent-heartbeat-timeout 90 "
             "--git-url https://github.com//some-org/some-project/tree/sha12345 "
             "--commit-hash sha12345": "",
         },
@@ -75,7 +76,7 @@ def test_deploy_full_deployment_gitlab(exec_context, action_docker_image_id, tmp
             "workspace add-location --url http://dagster.cloud/test/prod "
             "--api-token api-token --location-file some-location/dagster_cloud.yaml "
             "--location-name some-location --image some-location-registry:prod-some-location-sha "
-            "--location-load-timeout 600 --agent-heartbeat-timeout 90 "
+            "--location-load-timeout 3600 --agent-heartbeat-timeout 90 "
             "--git-url https://gitlab.com/some-org/some-project//-/commit/sha12345 "
             "--commit-hash sha12345": "",
         },

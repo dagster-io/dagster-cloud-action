@@ -129,7 +129,7 @@ if [[ -z $PR_STATUS || "$PR_STATUS" == "OPEN" ]]; then
         --location-file "${INPUT_LOCATION_FILE}" \
         --location-name "${INPUT_LOCATION_NAME}" \
         --image "${INPUT_REGISTRY}:${INPUT_IMAGE_TAG}" \
-        --location-load-timeout 600 \
+        --location-load-timeout 3600 \
         --agent-heartbeat-timeout $AGENT_HEARTBEAT_TIMEOUT \
         --git-url "$COMMIT_URL" \
         --commit-hash "$COMMIT_HASH"
