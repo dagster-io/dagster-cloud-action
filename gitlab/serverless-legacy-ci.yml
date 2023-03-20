@@ -61,7 +61,7 @@ deploy-docker:
       --location-file dagster_cloud.yaml
       --location-name $DAGSTER_CLOUD_LOCATION_NAME
       --image $REGISTRY_URL:prod-$DAGSTER_CLOUD_LOCATION_NAME-$CI_COMMIT_SHA
-      --location-load-timeout 600
+      --location-load-timeout 3600
       --agent-heartbeat-timeout 600
       --commit-hash $CI_COMMIT_SHA
       --git-url $CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
@@ -99,7 +99,7 @@ deploy-docker-branch:
       --location-file dagster_cloud.yaml
       --location-name $DAGSTER_CLOUD_LOCATION_NAME
       --image $REGISTRY_URL:prod-$DAGSTER_CLOUD_LOCATION_NAME-$CI_COMMIT_SHA
-      --location-load-timeout 600
+      --location-load-timeout 3600
       --agent-heartbeat-timeout 600
       --commit-hash $CI_COMMIT_SHA
       --git-url $CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
