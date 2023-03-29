@@ -73,6 +73,8 @@ runs:
         organization_id: ${{ inputs.organization_id }}
         pr: "${{ github.event.number || github.event.inputs.dbtref }}"
         pr_status: "${{ github.event.pull_request.merged && 'merged' || github.event.pull_request.state || 'open' }}"
+        branch_name: ${{ github.event.inputs.branch-name }} || ${{ github.head_ref }}
+        repository: ${{ github.event.inputs.repository }} ||${{ github.repository }}
         location: ${{ inputs.location }}
         image_tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       env:
