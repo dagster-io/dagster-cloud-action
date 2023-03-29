@@ -27,7 +27,7 @@ runs:
     - name: Checkout action repo
       uses: actions/checkout@v3
       with:
-        repository: dagster-io/dagster-cloud-action
+        repository: voxmedia/dagster-cloud-action
         ref: ${{ env.DAGSTER_ACTION_REF }}
         path: ./action-repo/
       env:
