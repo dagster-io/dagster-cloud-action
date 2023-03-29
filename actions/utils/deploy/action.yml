@@ -17,6 +17,12 @@ inputs:
   pr_status:
     required: false
     description: 'The status for this PR, one of "merged", "closed" or "open".'
+  branch_name:
+    required: false
+    description: "The branch name for this PR, if any, used for branch deployments."
+  repository:
+    required: false
+    description: "The repository in which the PR is, if any, used for branch deployments."
 
   location:
     required: true
@@ -43,3 +49,5 @@ runs:
   entrypoint: "/deploy.sh"
   args:
     - ${{ inputs.pr }}
+    - ${{ inputs.branch_name }}
+    - ${{ inputs.repository }}
