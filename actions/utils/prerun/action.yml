@@ -1,24 +1,13 @@
 name: "Prerun checks"
 description: "Initialization and checks before running the deploy."
-inputs:
-  cancel_when_pr_closed:
-    default: "true"
-    required: false
-    description: "If this pull request is closed, cancels workflow"
 runs:
   using: "composite"
   steps:
     - name: Cleanup closed PR
       if: ${{ github.event.pull_request.state == 'closed' }}
       run: >
-        echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR" &&
-        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment
-      shell: bash
-
-    - name: Cancel workflow for closed PR
-      if: ${{ github.event.pull_request.state == 'closed' && input.exit_on_cleanup != 'true' }}
-      run: >
-        echo "::notice title=Closed Pull Request::Returning failure to cancel the rest of this workflow" && 
+        echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, returning failure to cancel workflow" &&
+        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment &&
         exit 1
       shell: bash
 
