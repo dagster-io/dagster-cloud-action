@@ -3,11 +3,17 @@ description: "Initialization and checks before running the deploy."
 runs:
   using: "composite"
   steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.sha }}
+        path: prerun
+
     - name: Cleanup closed PR
       if: ${{ github.event.pull_request.state == 'closed' }}
       run: >
         echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, returning failure to cancel workflow" &&
-        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment &&
+        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun &&
         exit 1
       shell: bash
 
