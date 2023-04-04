@@ -9,9 +9,17 @@ runs:
   using: "composite"
   steps:
     - if: ${{ github.event.pull_request.state == 'closed' }}
-      run: "echo closed"
+      run: >
+        echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR" &&
+        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment
+      shell: bash
+
+    - if: ${{ github.event.pull_request.state == 'closed' && input.exit_on_cleanup != 'true' }}
+      run: >
+        echo "::notice title=Closed Pull Request::Returning failure to cancel the rest of this workflow" && 
+        exit 1
       shell: bash
 
     - if: ${{ github.event.pull_request.state != 'closed' }}
-      run: "echo 'Not a PR or PR not closed'"
+      run: echo 'PR not closed (or not in a PR)'
       shell: bash
