@@ -1,5 +1,10 @@
 name: "Prerun checks"
 description: "Initialization and checks before running the deploy."
+outputs:
+  result:
+    description: "May be 'skip', to indicate the rest of the workflow should be skipped"
+    value: ${{ steps.cleanup-closed-pr.outputs.result }}
+
 runs:
   using: "composite"
   steps:
@@ -10,13 +15,15 @@ runs:
         path: prerun
 
     - name: Cleanup closed PR
+      id: cleanup-closed-pr
       if: ${{ github.event.pull_request.state == 'closed' }}
       run: >
-        echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, returning failure to cancel workflow" &&
+        echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, will skip remaining workflow" &&
         $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun &&
-        exit 1
+        echo 'result=skip' >> $GITHUB_OUTPUT
       shell: bash
 
     - if: ${{ github.event.pull_request.state != 'closed' }}
       run: echo 'PR not closed (or not in a PR)'
       shell: bash
+
