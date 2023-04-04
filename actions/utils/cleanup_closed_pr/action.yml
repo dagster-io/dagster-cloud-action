@@ -10,6 +10,8 @@ runs:
   steps:
     - if: ${{ github.event.pull_request.state == 'closed' }}
       run: "echo closed"
+      shell: bash
 
     - if: ${{ github.event.pull_request.state != 'closed' }}
       run: "echo 'Not a PR or PR not closed"
+      shell: bash
