@@ -1,0 +1,15 @@
+name: "Cleanup for closed pull request"
+description: "If this pull request is closed, marks it closed in dagster-cloud."
+inputs:
+  exit_on_cleanup:
+    default: "true"
+    required: false
+    description: "If this pull request is closed, cancels workflow"
+runs:
+  using: "composite"
+  steps:
+    - if: ${{ github.event.pull_request.state == 'closed' }}
+      run: "echo closed"
+
+    - if: ${{ github.event.pull_request.state != 'closed' }}
+      run: "echo 'Not a PR or PR not closed"
