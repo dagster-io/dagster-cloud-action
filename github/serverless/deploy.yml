@@ -19,24 +19,28 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}
-    
+
     steps:
+      - name: Prerun checks
+        id: prerun
+        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v0.1
+
       - name: Parse cloud workspace
-        if: env.ENABLE_FAST_DEPLOYS != 'true'
+        if: steps.prerun.outputs.result != 'skip' && env.ENABLE_FAST_DEPLOYS != 'true'
         id: parse-workspace
         uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1
         with:
           dagster_cloud_file: dagster_cloud.yaml
 
       - name: Checkout
-        if: env.ENABLE_FAST_DEPLOYS == 'true'
+        if: steps.prerun.outputs.result != 'skip' && env.ENABLE_FAST_DEPLOYS == 'true'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           path: project-repo
           
       - name: Build and deploy Python executable
-        if: env.ENABLE_FAST_DEPLOYS == 'true'
+        if: steps.prerun.outputs.result != 'skip' && env.ENABLE_FAST_DEPLOYS == 'true'
         uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@pex-v0.1
         with:
           dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/dagster_cloud.yaml"
