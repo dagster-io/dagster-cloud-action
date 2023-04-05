@@ -10,7 +10,7 @@ workflow:
 
 parse-workspace:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.23
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.24
   script:
     - python /parse_workspace.py dagster_cloud.yaml >> build.env
     - cp /Dockerfile.template .
@@ -50,7 +50,7 @@ deploy-docker:
   dependencies:
     - build-image
     - parse-workspace
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.23
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.24
   script:
     - dagster-cloud workspace add-location
       --url $DAGSTER_CLOUD_URL
@@ -70,7 +70,7 @@ deploy-docker-branch:
   dependencies:
     - build-image
     - parse-workspace
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.23
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.24
   script:
     - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
     - export PR_MESSAGE=$(git log -1 --format='%s')
@@ -105,7 +105,7 @@ deploy-docker-branch:
 
 close_branch:
   stage: deploy
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.23
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.24
   when: manual
   only:
     - merge_requests

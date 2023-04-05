@@ -1,0 +1,19 @@
+name: "Get Dagster Cloud branch deployment"
+description: "Returns the Dagster Cloud branch deployment name associated with the current context."
+inputs:
+  organization_id:
+    required: false
+    description: "The organization ID of your Dagster Cloud organization."
+  dagster_cloud_url:
+    required: false
+    description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
+  source_directory:
+    required: false
+    description: "Path to the source directory"
+outputs:
+  deployment:
+    description: "The Cloud deployment associated with this branch."
+runs:
+  using: "docker"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.24"
+  entrypoint: "/get_branch_deployment.sh"
