@@ -11,15 +11,19 @@ runs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
+        # Checking out the commit sha should always work. For closed PRs with deleted branches,
+        # this checks out the sha of the merge commit.
         ref: ${{ github.sha }}
-        path: prerun
+        path: prerun_checkout_dir
 
     - name: Cleanup closed PR
       id: cleanup-closed-pr
       if: ${{ github.event.pull_request.state == 'closed' }}
+      # Running `ci branch-deployment` synchronizes the state of this PR with dagster cloud. For
+      # closed PRs, this marks the pr_status=closed and attaches the merge commit details. 
       run: >
         echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, will skip remaining workflow" &&
-        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun &&
+        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun_checkout_dir &&
         echo 'result=skip' >> $GITHUB_OUTPUT
       shell: bash
 
