@@ -7,6 +7,9 @@ inputs:
   dagster_cloud_url:
     required: false
     description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
+  source_directory:
+    required: false
+    description: "Path to the source directory"
 outputs:
   deployment:
     description: "The Cloud deployment associated with this branch."

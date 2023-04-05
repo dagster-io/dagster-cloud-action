@@ -8,6 +8,11 @@ if [ -z $DAGSTER_CLOUD_URL ]; then
     fi
 fi
 
-BRANCH_DEPLOYMENT_NAME=$(dagster-cloud ci branch-deployment .)
+if [ -z $INPUT_SOURCE_DIRECTORY ]; then
+    export INPUT_SOURCE_DIRECTORY=$(pwd)
+fi
+
+git config --global --add safe.directory /github/workspace
+BRANCH_DEPLOYMENT_NAME=$(dagster-cloud ci branch-deployment $INPUT_SOURCE_DIRECTORY)
 
 echo "deployment=${BRANCH_DEPLOYMENT_NAME}" >> $GITHUB_OUTPUT
