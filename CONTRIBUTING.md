@@ -69,6 +69,9 @@ View changes made by the release script
 # Step 5. Push and Test
 
 ```
+# push the release branch
+% git push --set-upstream origin release-0.1.22
+# push the tag
 % git push origin v0.1.22
 # to test, change the reference in a github workflow yaml file `@v0.1 -> @v0.1.22` and `@pex-v0.1 -> @v0.1.22`
 # see also dagster-cloud-action-test
