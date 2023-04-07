@@ -3,7 +3,7 @@ description: "Initialization and checks before running the deploy."
 outputs:
   result:
     description: "May be 'skip', to indicate the rest of the workflow should be skipped"
-    value: ${{ steps.cleanup-closed-pr.outputs.result }}
+    value: ${{ steps.cleanup-closed-pr.outputs.result || steps.check-deployment-type.outputs.result}}
 
 runs:
   using: "composite"
@@ -28,6 +28,7 @@ runs:
       shell: bash
 
     - if: ${{ github.event.pull_request.state != 'closed' }}
+      id: check-deployment-type
       run: >
         echo 'PR not closed (or not in a PR)' &&
         if [ ${ENABLE_FAST_DEPLOYS:-false} == "true" ]; then echo "result=pex-deploy"; else echo "result=docker-deploy"; fi >> $GITHUB_OUTPUT
