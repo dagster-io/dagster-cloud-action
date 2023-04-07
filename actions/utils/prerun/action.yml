@@ -28,6 +28,8 @@ runs:
       shell: bash
 
     - if: ${{ github.event.pull_request.state != 'closed' }}
-      run: echo 'PR not closed (or not in a PR)'
+      run: >
+        echo 'PR not closed (or not in a PR)' &&
+        if [ ${ENABLE_FAST_DEPLOYS:-false} == "true" ]; then echo "result=pex-deploys"; else echo "result=docker-deploys"; fi >> $GITHUB_OUTPUT
       shell: bash
 
