@@ -61,7 +61,7 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
         print(output)
         if publish_docker_action:
             info(f"Publishing {image_name}")
-            subprocess.check_output(
+            output = subprocess.check_output(
                 [
                     "docker",
                     "push",
