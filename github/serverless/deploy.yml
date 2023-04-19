@@ -6,7 +6,7 @@ on:
       - "master"
     
 concurrency:
-  # Cancel in-progress deploys to main branch
+  # Cancel in-progress deploys to same branch
   group: ${{ github.ref }}/deploy
   cancel-in-progress: true
 env:
@@ -26,12 +26,12 @@ jobs:
     steps:
       - name: Prerun Checks
         id: prerun
-        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v0.1.25
+        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v0.1
 
       - name: Launch Docker Deploy
         if: steps.prerun.outputs.result == 'docker-deploy'
         id: parse-workspace
-        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1.25
+        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1
         with:
           dagster_cloud_file: $DAGSTER_CLOUD_FILE
 
@@ -44,7 +44,7 @@ jobs:
           
       - name: Python Executable Deploy
         if: steps.prerun.outputs.result == 'pex-deploy'
-        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v0.1.25
+        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v0.1
         with:
           dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_CLOUD_FILE"
           build_output_dir: "$GITHUB_WORKSPACE/build"
@@ -68,7 +68,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - name: Build and deploy to Dagster Cloud serverless
-        uses: dagster-io/dagster-cloud-action/actions/serverless_prod_deploy@v0.1.25
+        uses: dagster-io/dagster-cloud-action/actions/serverless_prod_deploy@v0.1
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
