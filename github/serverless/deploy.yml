@@ -4,14 +4,17 @@ on:
     branches:
       - "main"
       - "master"
+    
 concurrency:
   # Cancel in-progress deploys to main branch
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}/deploy
   cancel-in-progress: true
 env:
   DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_URL }}
   DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
   ENABLE_FAST_DEPLOYS: 'true'
+  PYTHON_VERSION: '3.8'
+  DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
 
 jobs:
   dagster_cloud_default_deploy:
@@ -21,32 +24,37 @@ jobs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}
     
     steps:
-      - name: Parse cloud workspace
-        if: env.ENABLE_FAST_DEPLOYS != 'true'
-        id: parse-workspace
-        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1
-        with:
-          dagster_cloud_file: dagster_cloud.yaml
+      - name: Prerun Checks
+        id: prerun
+        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v0.1.25
 
-      - name: Checkout
-        if: env.ENABLE_FAST_DEPLOYS == 'true'
+      - name: Launch Docker Deploy
+        if: steps.prerun.outputs.result == 'docker-deploy'
+        id: parse-workspace
+        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1.25
+        with:
+          dagster_cloud_file: $DAGSTER_CLOUD_FILE
+
+      - name: Checkout for Python Executable Deploy
+        if: steps.prerun.outputs.result == 'pex-deploy'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           path: project-repo
           
-      - name: Build and deploy Python executable
-        if: env.ENABLE_FAST_DEPLOYS == 'true'
-        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@pex-v0.1
+      - name: Python Executable Deploy
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v0.1.25
         with:
-          dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/dagster_cloud.yaml"
+          dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_CLOUD_FILE"
           build_output_dir: "$GITHUB_WORKSPACE/build"
-          python_version: "3.8"
+          python_version: "${{ env.PYTHON_VERSION }}"
+          force_rebuild_deps: 'true'  # Not part of standard workflow, but we want to test deps build each time
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   dagster_cloud_docker_deploy:
-    name: Dagster Serverless Docker Deploy
+    name: Docker Deploy
     runs-on: ubuntu-20.04
     if: needs.dagster_cloud_default_deploy.outputs.build_info
     needs: dagster_cloud_default_deploy
@@ -60,10 +68,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - name: Build and deploy to Dagster Cloud serverless
-        uses: dagster-io/dagster-cloud-action/actions/serverless_prod_deploy@v0.1
+        uses: dagster-io/dagster-cloud-action/actions/serverless_prod_deploy@v0.1.25
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
+          base_image: "python:${{ env.PYTHON_VERSION }}-slim"
           # Uncomment to pass through Github Action secrets as a JSON string of key-value pairs
           # env_vars: ${{ toJson(secrets) }}
           organization_id: ${{ secrets.ORGANIZATION_ID }}
