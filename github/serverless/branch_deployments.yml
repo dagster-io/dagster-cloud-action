@@ -1,10 +1,10 @@
-name: branch_deployments Serverless Deployment
-on: 
+name: Serverless Branch Deployments
+on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     
 concurrency:
-  # Cancel in-progress deploys to main branch
+  # Cancel in-progress runs on same branch
   group: ${{ github.ref }}/branch_deployments
   cancel-in-progress: true
 env:

@@ -1,5 +1,5 @@
 name: Serverless Prod Deployment
-on: 
+on:
   push:
     branches:
       - "main"
