@@ -77,6 +77,9 @@ runs:
         image_tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
+        
+    - name: Export BRANCH_DEPLOYMENT_NAME
+      run: echo BRANCH_DEPLOYMENT_NAME=${{ steps.deploy.outputs.deployment }} >> $GITHUB_ENV
 
     # Optional steps, leaves PR comment about build status
     - name: Notify build success
@@ -89,6 +92,8 @@ runs:
         deployment: ${{ steps.deploy.outputs.deployment }}
       env:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        
+    
 
     - name: Notify build failure
       if: ${{ failure() }}
