@@ -14,6 +14,11 @@ inputs:
     required: false
     description: "Whether to start the action by checking out the repository. Set to false if your workflow modifies the file structure before deploying."
     default: 'true'
+outputs:
+  deployment:
+    description: "Name of the branch deployment for this PR"
+    value: ${{ steps.deploy.outputs.deployment }}
+
   # Build, push, deploy each location
 runs:
   using: "composite"
