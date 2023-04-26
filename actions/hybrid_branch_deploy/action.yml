@@ -83,9 +83,6 @@ runs:
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
         
-    - name: Export BRANCH_DEPLOYMENT_NAME
-      run: echo BRANCH_DEPLOYMENT_NAME=${{ steps.deploy.outputs.deployment }} >> $GITHUB_ENV
-
     # Optional steps, leaves PR comment about build status
     - name: Notify build success
       uses: ./action-repo/actions/utils/notify
