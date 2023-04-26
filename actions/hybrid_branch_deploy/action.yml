@@ -82,7 +82,7 @@ runs:
         image_tag: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
-        
+
     # Optional steps, leaves PR comment about build status
     - name: Notify build success
       uses: ./action-repo/actions/utils/notify
