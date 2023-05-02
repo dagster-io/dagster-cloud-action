@@ -1,0 +1,12 @@
+name: "Deploy"
+description: "Deploy code locations for this build"
+
+runs:
+  using: "composite"
+  steps:
+    - id: ci-deploy
+      run: >
+        $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci deploy
+      shell: bash
+
+    
