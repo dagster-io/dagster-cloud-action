@@ -1,0 +1,13 @@
+name: "dagster-cloud ci <command>"
+description: "Run a dagster-cloud cli command"
+inputs:
+  command:
+    required: true
+    description: "The dagster-cloud cli command to run"
+
+runs:
+  using: "composite"
+  steps:
+    - id: dagster-cloud-cli
+      run: $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ${{ inputs.command }}
+      shell: bash
