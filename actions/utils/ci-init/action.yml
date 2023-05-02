@@ -16,6 +16,6 @@ runs:
       shell: bash
 
     - id: ci-status
-      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci init
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci status
       shell: bash
 
