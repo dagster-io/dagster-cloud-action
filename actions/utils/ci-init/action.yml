@@ -10,7 +10,7 @@ runs:
   steps:
     - name: Initialize environment
       run: >
-        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex" >> $GITHUB_ENV
+        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex" >> $GITHUB_ENV &&
         echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
       shell: bash
 
