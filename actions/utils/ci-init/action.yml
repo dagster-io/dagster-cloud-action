@@ -1,21 +1,14 @@
-name: "Initialize CI"
-description: "Parse configuration and initialize CI state"
+name: "dagster-cloud ci <command>"
+description: "Run a dagster-cloud ci command"
 inputs:
-  project_dir:
+  command:
     required: true
-    description: "The root directory of the dagster project."
+    description: "The dagster-cloud ci command to run"
 
 runs:
   using: "composite"
   steps:
-    - run: echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
-      shell: bash
-
     - id: ci-init
-      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci init
-      shell: bash
-
-    - id: ci-status
-      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci status
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci ${{ inputs.command }}
       shell: bash
 
