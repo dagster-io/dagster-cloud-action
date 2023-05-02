@@ -1,0 +1,15 @@
+name: "Initialize CI"
+description: "Parse configuration and initialize CI state"
+inputs:
+  project_dir:
+    required: true
+    description: "The root directory of the dagster project."
+
+runs:
+  using: "composite"
+  steps:
+    - run: echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
+
+    - id: ci-init
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint init
+      shell: bash

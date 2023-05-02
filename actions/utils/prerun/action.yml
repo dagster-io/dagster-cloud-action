@@ -16,6 +16,10 @@ runs:
         ref: ${{ github.sha }}
         path: prerun_checkout_dir
 
+    - name: Initialize environment
+      run: echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex" >> $GITHUB_ENV
+      shell: bash
+
     - name: Cleanup closed PR
       id: cleanup-closed-pr
       if: ${{ github.event.pull_request.state == 'closed' }}
