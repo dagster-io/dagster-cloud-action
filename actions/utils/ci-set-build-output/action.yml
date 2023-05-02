@@ -1,0 +1,21 @@
+name: "Set build output"
+description: "Record the built image tag for this build session"
+inputs:
+  image_tag:
+    required: true
+    description: "The tag for the build docker image"
+
+  commit_hash:
+    required: false
+    description: "The commit hash for the source of the build"
+
+runs:
+  using: "composite"
+  steps:
+    - id: ci-set-build-output
+      run: >
+        $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci set-build-output 
+        --image-tag ${{ inputs.image_tag }} 
+      shell: bash
+
+    
