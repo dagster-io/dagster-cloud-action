@@ -7,7 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
-from typing import List
+from typing import List, Optional
 
 import typer
 from rich.console import Console
@@ -15,6 +15,14 @@ from rich.console import Console
 console = Console()
 
 app = typer.Typer()
+
+DAGSTER_INTERNAL_BRANCH_OPTION = typer.Option(
+    None,
+    help="The internal git branch that is used to build dagster-cloud and other packages.",
+)
+DAGSTER_OSS_BRANCH_OPTION = typer.Option(
+    None, help="The OSS git branch that is used to build dagster and other packages."
+)
 
 
 @contextmanager
@@ -44,7 +52,6 @@ def run_tests():
 
 @app.command()
 def build_docker_action(version_tag: str, publish_docker_action: bool = True):
-    pattern = get_docker_action_image_name('.+?"')
     image_name = get_docker_action_image_name(version_tag)
     info(f"Building {image_name}")
     with chdir("src"):
@@ -73,14 +80,52 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
 
 
 @app.command()
-def update_dagster_cloud_pex():
-    with chdir("src/pex-builder"):
-        info("Building generated/gha/dagster-cloud.pex")
-        output = subprocess.check_output(
-            "./build-dagster-cloud-pex.sh", shell=True, encoding="utf-8"
+def update_dagster_cloud_pex(
+    dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
+    dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
+):
+    if dagster_internal_branch:
+        info(
+            f"Using internal@{dagster_internal_branch} for dagster-cloud, dagster-cloud-cli packages"
         )
-        print(output)
-        shutil.move("dagster-cloud.pex", "../../generated/gha/dagster-cloud.pex")
+        dagster_cloud_pkg = f"git+https://github.com/dagster-io/internal.git@{dagster_internal_branch}#egg=dagster-cloud&subdirectory=dagster-cloud/python_modules/dagster-cloud"
+        dagster_cloud_cli_pkg = f"git+https://github.com/dagster-io/internal.git@{dagster_internal_branch}#egg=dagster-cloud-cli&subdirectory=dagster-cloud/python_modules/dagster-cloud-cli"
+    else:
+        info("Using PyPI for dagster-cloud, dagster-cloud-cli packages")
+        dagster_cloud_pkg = "dagster-cloud"
+        dagster_cloud_cli_pkg = "dagster-cloud-cli"
+
+    if dagster_oss_branch:
+        info(f"Using dagster@{dagster_internal_branch} for dagster package")
+        dagster_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster&subdirectory=python_modules/dagster"
+    else:
+        info("Using PyPI for dagster package")
+        dagster_pkg = "dagster"
+
+    info("Building generated/gha/dagster-cloud.pex")
+    args = [
+        "pex",
+        dagster_cloud_pkg,
+        dagster_cloud_cli_pkg,
+        dagster_pkg,
+        "PyGithub",
+        "-o=dagster-cloud.pex",
+        "--platform=manylinux2014_x86_64-cp-38-cp38",
+        "--platform=macosx_12_0_x86_64-cp-38-cp38",
+        "--pip-version=23.0",
+        "--resolver-version=pip-2020-resolver",
+        "--venv=prepend",
+        "-v",
+    ]
+    print(f"Running {args}")
+    output = subprocess.check_output(
+        args,
+        shell=False,
+        encoding="utf-8",
+    )
+    print(output)
+    shutil.move("dagster-cloud.pex", "generated/gha/dagster-cloud.pex")
+    info("Built generated/gha/dagster-cloud.pex")
 
 
 @app.command()
