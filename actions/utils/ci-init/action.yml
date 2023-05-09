@@ -28,6 +28,7 @@ runs:
     - name: set-location-names
       if: ${{ inputs.location_names }}
       run: echo ${{ format("LOCATION_NAMES_FLAG=--location-name={0}", join(fromJSON(inputs.location_names), " --location-name=")) }} >> $GITHUB_ENV
+      shell: bash
 
     - id: ci-init
       run: >
