@@ -12,7 +12,7 @@ jobs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}
       secrets_set: ${{ steps.parse-workspace.outputs.secrets_set }}
     steps:
-      - run: python3 -c 'import os; print(os.environ("DAGSTER_CLOUD_SERVERLESS_URL").split("/"))'
+      - run: python3 -c 'import os; print(os.environ["DAGSTER_CLOUD_SERVERLESS_URL"].split("/"))'
         shell: bash
       - uses: actions/checkout@v3
       - name: Parse cloud workspace
