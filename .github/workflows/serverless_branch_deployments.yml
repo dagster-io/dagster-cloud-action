@@ -12,6 +12,8 @@ jobs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}
       secrets_set: ${{ steps.parse-workspace.outputs.secrets_set }}
     steps:
+      - run: python3 -c 'import sys; print(sys.argv[1].split("/"))' ${{ env.DAGSTER_CLOUD_SERVERLESS_URL }}
+        shell: bash
       - uses: actions/checkout@v3
       - name: Parse cloud workspace
         id: parse-workspace
