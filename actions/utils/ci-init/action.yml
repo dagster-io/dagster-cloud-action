@@ -1,0 +1,45 @@
+name: "Initialize CI"
+description: "Parse configuration and initialize CI state"
+inputs:
+  project_dir:
+    required: true
+    description: "The root directory of the dagster project."
+  dagster_cloud_yaml_path:
+    required: false
+    description: "Path to dagster_cloud.yaml relative to project_dir"
+    default: "dagster_cloud.yaml"
+  deployment:
+    required: false
+    description: "The deployment name to deploy. This value is ignored for pull requests."
+    default: "prod"
+  location_names:
+    required: false
+    description: "JSON list containing names of locations to deploy. If unspecified, all locations are deployed."
+
+runs:
+  using: "composite"
+  steps:
+    - name: init-env-vars
+      run: >
+        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex" >> $GITHUB_ENV &&
+        echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
+      shell: bash
+
+    - name: set-location-names
+      if: ${{ inputs.location_names }}
+      run: echo ${{ format('LOCATION_NAMES_FLAG=--location-name={0}', join(fromJSON(inputs.location_names), ' --location-name=')) }} >> $GITHUB_ENV
+      shell: bash
+
+    - id: ci-init
+      run: >
+        $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci init 
+        --project-dir=${{ inputs.project_dir }}
+        --dagster-cloud-yaml-path=${{ inputs.dagster_cloud_yaml_path }}
+        --deployment=${{ inputs.deployment }}
+        $LOCATION_NAMES_FLAG
+      shell: bash
+
+    - id: ci-status
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci status
+      shell: bash
+
