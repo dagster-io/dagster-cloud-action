@@ -165,7 +165,7 @@ def create_rc(
         error(f"Invalid version tag {version_tag}")
         sys.exit(1)
 
-    update_dagster_cloud_pex()
+    update_dagster_cloud_pex(None, None)
     if execute_tests:
         run_tests()
     build_docker_action(version_tag, publish_docker_action)
