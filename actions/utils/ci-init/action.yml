@@ -30,6 +30,7 @@ runs:
       run: echo ${{ format('LOCATION_NAMES_FLAG=--location-name={0}', join(fromJSON(inputs.location_names), ' --location-name=')) }} >> $GITHUB_ENV
       shell: bash
 
+    # Initialize the build session
     - id: ci-init
       run: >
         $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci init 
@@ -39,7 +40,12 @@ runs:
         $LOCATION_NAMES_FLAG
       shell: bash
 
+    # Print location status
     - id: ci-status
       run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci status
       shell: bash
 
+    # Create a PR comment if necessary
+    - id: ci-notify
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci notify --project-dir=${{ inputs.project_dir }}
+      shell: bash
