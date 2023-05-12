@@ -37,7 +37,7 @@ runs:
         --project-dir=${{ inputs.project_dir }}
         --dagster-cloud-yaml-path=${{ inputs.dagster_cloud_yaml_path }}
         --deployment=${{ inputs.deployment }}
-        --status-url=${{ env.GITHUB_RUN_URL }}
+        --status-url=${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/actions/runs/${{ env.GITHUB_RUN_ID }}"
         $LOCATION_NAMES_FLAG
       shell: bash
 
