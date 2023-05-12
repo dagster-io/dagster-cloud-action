@@ -50,16 +50,18 @@ def run_tests():
     subprocess.run(["pytest", "tests"], check=True)
 
 
-@app.command()
+@app.command(help="Build dagster-cloud-action docker image from dagster-cloud.pex")
 def build_docker_action(version_tag: str, publish_docker_action: bool = True):
     image_name = get_docker_action_image_name(version_tag)
     info(f"Building {image_name}")
-    with chdir("src"):
+    with chdir("."):
         output = subprocess.check_output(
             [
                 "docker",
                 "build",
                 ".",
+                "-f",
+                "src/Dockerfile",
                 "-t",
                 image_name,
             ],
@@ -79,7 +81,7 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
             print(output)
 
 
-@app.command()
+@app.command(help="Build dagster-cloud.pex")
 def update_dagster_cloud_pex(
     dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
