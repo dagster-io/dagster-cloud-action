@@ -47,7 +47,6 @@ jobs:
           dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_CLOUD_FILE"
           build_output_dir: "$GITHUB_WORKSPACE/build"
           python_version: "${{ env.PYTHON_VERSION }}"
-          force_rebuild_deps: 'true'  # Not part of standard workflow, but we want to test deps build each time
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
