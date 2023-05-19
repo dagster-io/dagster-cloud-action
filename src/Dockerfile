@@ -6,7 +6,7 @@ RUN pip install pex
 
 COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
 RUN pex-tools dagster-cloud.pex venv /venv-dagster-cloud
-
+ENV PATH="/venv-dagster-cloud/bin:$PATH"
 
 # Copy all src scripts
 
@@ -33,5 +33,5 @@ COPY src/get_branch_deployment.sh /get_branch_deployment.sh
 # Gitlab scripts
 COPY src/gitlab_action gitlab_action
 
-# Use the venv python as the entrypoint
-ENTRYPOINT venv-dagster-cloud/bin/python3
+# Use the venv python as the command
+CMD venv-dagster-cloud/bin/python3
