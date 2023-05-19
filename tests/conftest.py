@@ -174,8 +174,18 @@ def action_docker_image_id(repo_root):
     _, iidfile = tempfile.mkstemp()
     try:
         proc = subprocess.run(
-            ["docker", "buildx", "build", ".", "--load", "--iidfile", iidfile],
-            cwd=repo_root / "src",
+            [
+                "docker",
+                "buildx",
+                "build",
+                ".",
+                "-f",
+                "src/Dockerfile",
+                "--load",
+                "--iidfile",
+                iidfile,
+            ],
+            cwd=repo_root,
             check=True,
             capture_output=True,
         )
