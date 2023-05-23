@@ -1,3 +1,22 @@
+# See https://docs.dagster.io/dagster-cloud/getting-started 
+variables:
+  # The organization name in Dagster Cloud
+  DAGSTER_CLOUD_ORGANIZATION: <organinization-name>
+  # The API token from https://dagster.cloud/ should be stored in a CI/CD Variable called DAGSTER_CLOUD_API_TOKEN
+
+  # Path to the root folder containing the dagster project
+  DAGSTER_PROJECT_DIR: .
+  # Path to dagster_cloud.yaml relative to DAGSTER_PROJECT_DIR
+  DAGSTER_CLOUD_YAML_PATH: dagster_cloud.yaml
+
+  # The IMAGE_REGISTRY should match the 'registry:' in dagster_cloud.yaml
+  IMAGE_REGISTRY: <account-id>.dkr.ecr.us-west-2.amazonaws.com/<image-name>
+
+  # The IMAGE_TAG determines the tag for the built Docker image
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA-$CI_PIPELINE_ID
+
+  # Internally used directory name for build state
+  DAGSTER_BUILD_STATEDIR: build-state
 stages:
   - setup
   - build
@@ -8,40 +27,46 @@ workflow:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
-parse-workspace:
+initialize:
   stage: setup
   image: ghcr.io/dagster-io/dagster-cloud-action:0.1.27
   script:
-    - python /parse_workspace.py dagster_cloud.yaml >> build.env
-    - cp /Dockerfile.template .
+    - export
+    - dagster-cloud ci check --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
+    - > 
+      dagster-cloud ci init --deployment=prod --statedir=build-state
+      --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
+      --git-url=$CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
+      --commit-hash=$CI_COMMIT_SHA
+      --status-url=$CI_PIPELINE_URL
+    - dagster-cloud ci status
+
   artifacts:
-    reports:
-      dotenv: build.env
     paths:
-      - Dockerfile.template
+      - $DAGSTER_BUILD_STATEDIR
     expire_in: 1 week
 
 build-image:
   stage: build
   dependencies:
-    - parse-workspace
+    - initialize
   image: docker:latest
   services:
     - docker:dind
   before_script:
-    # For Gitlab Container Registry
-    - echo $CI_JOB_TOKEN | docker login --username $CI_REGISTRY_USER --password-stdin $REGISTRY_URL
-    ## For DockerHub
+    # # For Gitlab Container Registry
+    # - echo $CI_JOB_TOKEN | docker login --username $CI_REGISTRY_USER --password-stdin $REGISTRY_URL
+    # # For DockerHub
     # - echo $DOCKERHUB_TOKEN | docker login --username $DOCKERHUB_USERNAME --password-stdin $REGISTRY_URL
-    ## For AWS Elastic Container Registry (ECR)
+    # # For AWS Elastic Container Registry (ECR)
     # - apk add --no-cache curl jq python3 py3-pip
     # - pip install awscli
-    # - echo $AWS_ECR_PASSWORD | docker login --username $AWS_ECR_USERNAME --password-stdin $REGISTRY_URL
-    ## For Google Container Registry (GCR)
+    # - echo $AWS_ECR_PASSWORD | docker login --username AWS --password-stdin $IMAGE_REGISTRY
+    # # For Google Container Registry (GCR)
     # - echo $GCR_JSON_KEY | docker login --username _json_key --password-stdin $REGISTRY_URL
   script:
-    - docker build $DAGSTER_CLOUD_LOCATION_DIR -t $REGISTRY_URL:$CI_COMMIT_SHA
-    - docker push $REGISTRY_URL:$CI_COMMIT_SHA
+    - docker build . -t $IMAGE_REGISTRY:$IMAGE_TAG
+    - docker push $IMAGE_REGISTRY:$IMAGE_TAG
 
 deploy-docker:
   stage: deploy
@@ -49,19 +74,11 @@ deploy-docker:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   dependencies:
     - build-image
-    - parse-workspace
+    - initialize
   image: ghcr.io/dagster-io/dagster-cloud-action:0.1.27
   script:
-    - dagster-cloud workspace add-location
-      --url $DAGSTER_CLOUD_URL
-      --api-token $DAGSTER_CLOUD_API_TOKEN
-      --location-file dagster_cloud.yaml
-      --location-name $DAGSTER_CLOUD_LOCATION_NAME
-      --image $REGISTRY_URL:$CI_COMMIT_SHA
-      --location-load-timeout 3600
-      --agent-heartbeat-timeout 600
-      --commit-hash $CI_COMMIT_SHA
-      --git-url $CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
+    - dagster-cloud ci set-build-output --image-tag=$IMAGE_TAG
+    - dagster-cloud ci deploy
 
 deploy-docker-branch:
   stage: deploy
@@ -69,59 +86,23 @@ deploy-docker-branch:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   dependencies:
     - build-image
-    - parse-workspace
+    - initialize
   image: ghcr.io/dagster-io/dagster-cloud-action:0.1.27
   script:
-    - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
-    - export PR_MESSAGE=$(git log -1 --format='%s')
-    - export PR_EMAIL=$(git log -1 --format='%ae')
-    - export PR_NAME=$(git log -1 --format='%an')
-    - export DEPLOYMENT_NAME=$(dagster-cloud branch-deployment create-or-update
-      --url $DAGSTER_CLOUD_URL
-      --api-token $DAGSTER_CLOUD_API_TOKEN
-      --git-repo-name $CI_PROJECT_NAME
-      --branch-name $CI_COMMIT_REF_NAME
-      --branch-url "${CI_PROJECT_URL}/-/tree/${CI_COMMIT_REF_NAME}"
-      --pull-request-url "${CI_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_IID}"
-      --pull-request-id $CI_MERGE_REQUEST_IID
-      --commit-hash $CI_COMMIT_SHORT_SHA
-      --timestamp $PR_TIMESTAMP
-      --commit-message "${PR_MESSAGE}"
-      --author-name "${PR_NAME}"
-      --author-email $PR_EMAIL)
-    - dagster-cloud workspace add-location
-      --url $DAGSTER_CLOUD_URL/$DEPLOYMENT_NAME
-      --api-token $DAGSTER_CLOUD_API_TOKEN
-      --location-file dagster_cloud.yaml
-      --location-name $DAGSTER_CLOUD_LOCATION_NAME
-      --image $REGISTRY_URL:$CI_COMMIT_SHA
-      --location-load-timeout 3600
-      --agent-heartbeat-timeout 600
-      --commit-hash $CI_COMMIT_SHA
-      --git-url $CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
+    - dagster-cloud ci set-build-output --image-tag=$IMAGE_TAG
+    - dagster-cloud ci deploy
   environment:
     name: branch/$CI_COMMIT_REF_NAME
-    on_stop: close_branch
+    on_stop: close-branch
 
-close_branch:
+close-branch:
   stage: deploy
   image: ghcr.io/dagster-io/dagster-cloud-action:0.1.27
   when: manual
   only:
     - merge_requests
   script:
-    - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
-    - dagster-cloud branch-deployment create-or-update
-      --url $DAGSTER_CLOUD_URL
-      --api-token $DAGSTER_CLOUD_API_TOKEN
-      --git-repo-name $CI_PROJECT_NAME
-      --branch-name $CI_COMMIT_REF_NAME
-      --branch-url "${CI_PROJECT_URL}/-/tree/${CI_COMMIT_REF_NAME}"
-      --pull-request-url "${CI_PROJECT_URL}/-/merge_requests/${CI_MERGE_REQUEST_IID}"
-      --pull-request-id $CI_MERGE_REQUEST_IID
-      --pull-request-status "CLOSED"
-      --commit-hash $CI_COMMIT_SHORT_SHA
-      --timestamp $PR_TIMESTAMP
+    - dagster-cloud ci branch-deployment $DAGSTER_PROJECT_DIR --mark-closed
   environment:
     name: branch/$CI_COMMIT_REF_NAME
     action: stop
