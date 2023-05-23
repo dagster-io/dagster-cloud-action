@@ -34,7 +34,7 @@ initialize:
     - export
     - dagster-cloud ci check --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
     - > 
-      dagster-cloud ci init --deployment=prod --statedir=build-state
+      dagster-cloud ci init --deployment=prod --statedir=$DAGSTER_BUILD_STATEDIR
       --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
       --git-url=$CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
       --commit-hash=$CI_COMMIT_SHA
