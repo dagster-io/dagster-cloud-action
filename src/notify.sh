@@ -23,5 +23,6 @@ if [ -z $DAGSTER_CLOUD_URL ]; then
 fi
 
 export INPUT_LOCATION_NAME=$INPUT_LOCATION_NAME
+echo "Running debug.py"
 python /debug.py
 python /create_or_update_comment.py
