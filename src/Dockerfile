@@ -30,6 +30,10 @@ COPY src/deploy.sh /deploy.sh
 COPY src/run.sh /run.sh
 COPY src/get_branch_deployment.sh /get_branch_deployment.sh
 
+# Debug script
+COPY src/debug.py /debug.py
+
+
 # Gitlab scripts
 COPY src/gitlab_action gitlab_action
 
