@@ -50,8 +50,8 @@ runs:
       with:
         organization_id: ${{ inputs.organization_id }}
         deployment: ${{ inputs.deployment }}
-        location: ${{ inputs.location_name }}
-        repository: ${{ inputs.repository_name }}
-        job: ${{ inputs.job_name }}
+        location_name: ${{ inputs.location_name }}
+        repository_name: ${{ inputs.repository_name }}
+        job_name: ${{ inputs.job_name }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
