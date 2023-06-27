@@ -38,6 +38,8 @@ runs:
         --dagster-cloud-yaml-path=${{ inputs.dagster_cloud_yaml_path }}
         --deployment=${{ inputs.deployment }}
         --status-url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        --git-url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}
+        --commit-hash=${{ github.sha }}
         $LOCATION_NAMES_FLAG
       shell: bash
 
