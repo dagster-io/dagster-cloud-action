@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 env:
-  DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_URL }}
+  DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_URL_DOGFOOD }}
 
 jobs:
   parse_workspace:
@@ -35,7 +35,7 @@ jobs:
       - name: Build and deploy to Dagster Cloud serverless
         uses: ./actions/serverless_branch_deploy
         with:
-          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
+          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN_DOGFOOD }}
           location: ${{ toJson(matrix.location) }}
           env_vars: ${{ toJson(secrets) }}
         env:
