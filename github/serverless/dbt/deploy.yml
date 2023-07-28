@@ -1,0 +1,97 @@
+name: Serverless Prod Deployment
+on:
+  push:
+    branches:
+      - "main"
+      - "master"
+
+concurrency:
+  # Cancel in-progress deploys to same branch
+  group: ${{ github.ref }}/deploy
+  cancel-in-progress: true
+env:
+  DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_URL }}
+  DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
+  ENABLE_FAST_DEPLOYS: 'true'
+  PYTHON_VERSION: '3.8'
+  DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
+
+jobs:
+  dagster_cloud_default_deploy:
+    name: Dagster Serverless Deploy
+    runs-on: ubuntu-20.04
+    outputs:
+      build_info: ${{ steps.parse-workspace.outputs.build_info }}
+
+    steps:
+      - name: Prerun Checks
+        id: prerun
+        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v0.1
+
+      - name: Launch Docker Deploy
+        if: steps.prerun.outputs.result == 'docker-deploy'
+        id: parse-workspace
+        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1
+        with:
+          dagster_cloud_file: $DAGSTER_CLOUD_FILE
+
+      - name: Checkout for Python Executable Deploy
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          path: project-repo
+
+      - name: Parse dbt project and package with Dagster project
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        run: |
+          pip install pip --upgrade
+          cd ${{ env.DBT_PROJECT_DIR }}/${{ env.DAGSTER_PROJECT_NAME }}
+          pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
+          pip install pyOpenSSL --upgrade
+          cd -
+          rsync -avz --exclude ${{ env.DAGSTER_PROJECT_NAME }} --exclude .git ${{ env.DBT_PROJECT_DIR }}/ ${{ env.DBT_PACKAGE_DATA_DIR }}
+          dbt deps --project-dir ${{ env.DBT_PACKAGE_DATA_DIR }} --profiles-dir ${{ env.DBT_PACKAGE_DATA_DIR }}
+          dbt parse --project-dir ${{ env.DBT_PACKAGE_DATA_DIR }} --profiles-dir ${{ env.DBT_PACKAGE_DATA_DIR }}
+          rm ${{ env.DBT_PACKAGE_DATA_DIR }}/target/partial_parse.msgpack
+        shell: bash
+        env:
+          DAGSTER_PROJECT_NAME: 'dagster_dbt_scaffold'
+          DBT_PROJECT_DIR: "$GITHUB_WORKSPACE/project-repo"
+          DBT_PACKAGE_DATA_DIR: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_PROJECT_NAME/dbt-project"
+
+      - name: Python Executable Deploy
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v0.1
+        with:
+          dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_CLOUD_FILE"
+          build_output_dir: "$GITHUB_WORKSPACE/build"
+          python_version: "${{ env.PYTHON_VERSION }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dagster_cloud_docker_deploy:
+    name: Docker Deploy
+    runs-on: ubuntu-20.04
+    if: needs.dagster_cloud_default_deploy.outputs.build_info
+    needs: dagster_cloud_default_deploy
+    strategy:
+      fail-fast: false
+      matrix:
+        location: ${{ fromJSON(needs.dagster_cloud_default_deploy.outputs.build_info) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Build and deploy to Dagster Cloud serverless
+        uses: dagster-io/dagster-cloud-action/actions/serverless_prod_deploy@v0.1
+        with:
+          dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
+          location: ${{ toJson(matrix.location) }}
+          base_image: "python:${{ env.PYTHON_VERSION }}-slim"
+          # Uncomment to pass through Github Action secrets as a JSON string of key-value pairs
+          # env_vars: ${{ toJson(secrets) }}
+          organization_id: ${{ secrets.ORGANIZATION_ID }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
