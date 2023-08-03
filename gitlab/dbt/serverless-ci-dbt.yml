@@ -36,6 +36,8 @@ deploy-branch:
     - pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
     - pip install pyOpenSSL --upgrade
     - cd -
+    - apt-get update -y
+    - apt-get -y install rsync
     - rsync -avz --exclude $DAGSTER_PROJECT_NAME --exclude .git $DBT_PROJECT_DIR/ $DBT_PACKAGE_DATA_DIR
     - dbt deps --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
     - dbt parse --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
