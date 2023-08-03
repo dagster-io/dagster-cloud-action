@@ -32,14 +32,14 @@ deploy-branch:
       --author-email $PR_EMAIL)
     # install dbt package
     - pip install pip --upgrade
-    - cd ${{ env.DBT_PROJECT_DIR }}/${{ env.DAGSTER_PROJECT_NAME }}
+    - cd $DBT_PROJECT_DIR/$DAGSTER_PROJECT_NAME
     - pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
     - pip install pyOpenSSL --upgrade
     - cd -
-    - rsync -avz --exclude ${{ env.DAGSTER_PROJECT_NAME }} --exclude .git ${{ env.DBT_PROJECT_DIR }}/ ${{ env.DBT_PACKAGE_DATA_DIR }}
-    - dbt deps --project-dir ${{ env.DBT_PACKAGE_DATA_DIR }} --profiles-dir ${{ env.DBT_PACKAGE_DATA_DIR }}
-    - dbt parse --project-dir ${{ env.DBT_PACKAGE_DATA_DIR }} --profiles-dir ${{ env.DBT_PACKAGE_DATA_DIR }}
-    - rm ${{ env.DBT_PACKAGE_DATA_DIR }}/target/partial_parse.msgpack
+    - rsync -avz --exclude $DAGSTER_PROJECT_NAME --exclude .git $DBT_PROJECT_DIR/ $DBT_PACKAGE_DATA_DIR
+    - dbt deps --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
+    - dbt parse --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
+    - rm $DBT_PACKAGE_DATA_DIR/target/partial_parse.msgpack
     # then deploy to that branch
     - /gitlab_action/deploy.py ./dagster_cloud.yaml $DEPLOYMENT_NAME
   environment:
