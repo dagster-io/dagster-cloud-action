@@ -56,7 +56,7 @@ jobs:
           rm ${{ env.DBT_PACKAGE_DATA_DIR }}/target/partial_parse.msgpack
         shell: bash
         env:
-          DAGSTER_PROJECT_NAME: ${{ secrets.DAGSTER_DBT_LOCATION_NAME }}
+          DAGSTER_PROJECT_NAME: 'dagster_dbt_scaffold'
           DBT_PROJECT_DIR: "$GITHUB_WORKSPACE/project-repo"
           DBT_PACKAGE_DATA_DIR: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_PROJECT_NAME/dbt-project"
 
