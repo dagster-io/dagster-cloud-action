@@ -4,6 +4,9 @@ outputs:
   result:
     description: "May be 'skip', to indicate the rest of the workflow should be skipped"
     value: ${{ steps.cleanup-closed-pr.outputs.result || steps.check-deployment-type.outputs.result}}
+  closed_branch_deployment:
+    description: "If this action closed a branch deployment, this field is set to the branch deployment name."
+    value: ${{ steps.cleanup-closed-pr.outputs.closed_branch_deployment }} 
 
 runs:
   using: "composite"
@@ -23,7 +26,8 @@ runs:
       # closed PRs, this marks the pr_status=closed and attaches the merge commit details. 
       run: >
         echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, will skip remaining workflow" &&
-        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun_checkout_dir &&
+        $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun_checkout_dir > /tmp/closed-branch-deployment.txt &&
+        echo "closed_branch_deployment=$(cat /tmp/closed-branch-deployment.txt)" >> $GITHUB_OUTPUT &&
         echo 'result=skip' >> $GITHUB_OUTPUT
       shell: bash
 
