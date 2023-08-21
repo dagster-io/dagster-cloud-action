@@ -2,9 +2,9 @@ variables:
   DISABLE_FAST_DEPLOYS:
   DAGSTER_CLOUD_URL: $DAGSTER_CLOUD_URL
   DAGSTER_CLOUD_API_TOKEN: $DAGSTER_CLOUD_API_TOKEN
-  DAGSTER_PROJECT_NAME: "dagster_dbt_scaffold"
-  DBT_PROJECT_DIR: "${CI_PROJECT_DIR}"
-  DBT_PACKAGE_DATA_DIR: "${CI_PROJECT_DIR}/$DAGSTER_PROJECT_NAME/dbt-project"
+  DAGSTER_DBT_PROJECT_NAME: $DAGSTER_DBT_LOCATION_NAME
+  DAGSTER_DBT_PROJECT_DIR: "${CI_PROJECT_DIR}"
+  DAGSTER_DBT_PACKAGE_DATA_DIR: "${CI_PROJECT_DIR}/$DAGSTER_DBT_PROJECT_NAME/dbt-project"
 
 deploy-branch:
   stage: deploy
@@ -32,15 +32,15 @@ deploy-branch:
       --author-email $PR_EMAIL)
     # install dbt package
     - pip install pip --upgrade
-    - cd $DBT_PROJECT_DIR/$DAGSTER_PROJECT_NAME
+    - cd $DAGSTER_DBT_PROJECT_DIR/$DAGSTER_DBT_PROJECT_NAME
     - pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
     - pip install pyOpenSSL --upgrade
     - cd -
     - which rsync || ( apt-get update -y && apt-get -y install rsync )
-    - rsync -avz --exclude $DAGSTER_PROJECT_NAME --exclude .git $DBT_PROJECT_DIR/ $DBT_PACKAGE_DATA_DIR
-    - dbt deps --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
-    - dbt parse --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
-    - rm $DBT_PACKAGE_DATA_DIR/target/partial_parse.msgpack
+    - rsync -avz --exclude $DAGSTER_DBT_PROJECT_NAME --exclude .git $DAGSTER_DBT_PROJECT_DIR/ $DAGSTER_DBT_PACKAGE_DATA_DIR
+    - dbt deps --project-dir $DAGSTER_DBT_PACKAGE_DATA_DIR --profiles-dir $DAGSTER_DBT_PACKAGE_DATA_DIR
+    - dbt parse --project-dir $DAGSTER_DBT_PACKAGE_DATA_DIR --profiles-dir $DAGSTER_DBT_PACKAGE_DATA_DIR
+    - rm $DAGSTER_DBT_PACKAGE_DATA_DIR/target/partial_parse.msgpack
     # then deploy to that branch
     - /gitlab_action/deploy.py ./dagster_cloud.yaml $DEPLOYMENT_NAME
   environment:
@@ -78,14 +78,14 @@ deploy:
   script:
     # install dbt package
     - pip install pip --upgrade
-    - cd $DBT_PROJECT_DIR/$DAGSTER_PROJECT_NAME
+    - cd $DAGSTER_DBT_PROJECT_DIR/$DAGSTER_DBT_PROJECT_NAME
     - pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
     - pip install pyOpenSSL --upgrade
     - cd -
     - which rsync || ( apt-get update -y && apt-get -y install rsync )
-    - rsync -avz --exclude $DAGSTER_PROJECT_NAME --exclude .git $DBT_PROJECT_DIR/ $DBT_PACKAGE_DATA_DIR
-    - dbt deps --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
-    - dbt parse --project-dir $DBT_PACKAGE_DATA_DIR --profiles-dir $DBT_PACKAGE_DATA_DIR
-    - rm $DBT_PACKAGE_DATA_DIR/target/partial_parse.msgpack
+    - rsync -avz --exclude $DAGSTER_DBT_PROJECT_NAME --exclude .git $DAGSTER_DBT_PROJECT_DIR/ $DAGSTER_DBT_PACKAGE_DATA_DIR
+    - dbt deps --project-dir $DAGSTER_DBT_PACKAGE_DATA_DIR --profiles-dir $DAGSTER_DBT_PACKAGE_DATA_DIR
+    - dbt parse --project-dir $DAGSTER_DBT_PACKAGE_DATA_DIR --profiles-dir $DAGSTER_DBT_PACKAGE_DATA_DIR
+    - rm $DAGSTER_DBT_PACKAGE_DATA_DIR/target/partial_parse.msgpack
     # deploy
     - /gitlab_action/deploy.py ./dagster_cloud.yaml
