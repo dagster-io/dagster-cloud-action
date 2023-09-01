@@ -15,6 +15,10 @@ inputs:
   location_names:
     required: false
     description: "JSON list containing names of locations to deploy. If unspecified, all locations are deployed."
+outputs:
+  branch_deployment:
+    description: "The branch deployment na"
+    value: ${{ steps.ci-set-branch-deployment.outputs.branch_deployment }}
 
 runs:
   using: "composite"
@@ -41,6 +45,11 @@ runs:
         --git-url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}
         --commit-hash=${{ github.sha }}
         $LOCATION_NAMES_FLAG
+      shell: bash
+
+    # Set the action output for the branch deployment name
+    - id: ci-set-branch-deployment
+      run: echo "branch_deployment=$($DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci init ${{ inputs.project_dir }})" >> $GITHUB_OUTPUT
       shell: bash
 
     # Print location status
