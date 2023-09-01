@@ -49,7 +49,7 @@ runs:
 
     # Set the action output for the branch deployment name
     - id: ci-set-branch-deployment
-      run: echo "branch_deployment=$($DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci init ${{ inputs.project_dir }})" >> $GITHUB_OUTPUT
+      run: echo "branch_deployment=$($DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci branch-deployment ${{ inputs.project_dir }})" >> $GITHUB_OUTPUT
       shell: bash
 
     # Print location status
