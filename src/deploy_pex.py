@@ -34,7 +34,8 @@ def main():
         deployment_name = get_branch_deployment_name(project_dir)
     else:
         print("Going to do a full deployment.", flush=True)
-        deployment_name = os.getenv("DAGSTER_CLOUD_DEPLOYMENT", "prod")
+        # INPUT_DEPLOYMENT is automatically set by github to the `deployment:` input value, if provided
+        deployment_name = os.getenv("INPUT_DEPLOYMENT", "prod")
 
     ubuntu_version = get_runner_ubuntu_version()
     print("Running on Ubuntu", ubuntu_version, flush=True)
