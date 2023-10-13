@@ -8,6 +8,10 @@ inputs:
     description: 'Python version string, major.minor only, eg "3.8"'
     required: false
     default: '3.8'
+  deployment:
+    required: false
+    description: "The deployment to push to, defaults to 'prod'. Ignored for pull requests where the branch deployment is used."
+    default: "prod"  
   deploy:
     description: 'Whether to upload the code files and update the code location'
     required: false
@@ -61,6 +65,7 @@ runs:
     - if: ${{ inputs.deploy == 'true' }}
       run: >
         cd $ACTION_REPO &&
+        INPUT_DEPLOYMENT=${{ inputs.deployment }}
         /usr/bin/python src/deploy_pex.py
         ${{ inputs.dagster_cloud_file }}
         --python-version=${{ inputs.python_version }}
