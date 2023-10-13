@@ -33,7 +33,7 @@ def main():
         project_dir = os.path.dirname(dagster_cloud_yaml)
         deployment_name = get_branch_deployment_name(project_dir)
     else:
-        # INPUT_DEPLOYMENT is automatically set by github to the `deployment:` input value, if provided
+        # INPUT_DEPLOYMENT is to the `deployment:` input value in action.yml
         deployment_name = os.getenv("INPUT_DEPLOYMENT", "prod")
         print(f"Deploying to a full deployment: {deployment_name}", flush=True)
 

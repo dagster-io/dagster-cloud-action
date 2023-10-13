@@ -65,6 +65,7 @@ runs:
     - if: ${{ inputs.deploy == 'true' }}
       run: >
         cd $ACTION_REPO &&
+        INPUT_DEPLOYMENT=${{ inputs.deployment }}
         /usr/bin/python src/deploy_pex.py
         ${{ inputs.dagster_cloud_file }}
         --python-version=${{ inputs.python_version }}
