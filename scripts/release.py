@@ -113,7 +113,7 @@ def update_dagster_cloud_pex(
         "PyGithub",
         "-o=dagster-cloud.pex",
         "--platform=manylinux2014_x86_64-cp-38-cp38",
-        "--platform=macosx_12_0_x86_64-cp-38-cp38",
+        "--platform=macosx_12_0_universal-cp-38-cp38",
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
