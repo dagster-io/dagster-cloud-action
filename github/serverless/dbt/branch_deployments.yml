@@ -10,9 +10,10 @@ concurrency:
 env:
   DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_URL }}
   DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
-  ENABLE_FAST_DEPLOYS: 'true'
-  PYTHON_VERSION: '3.8'
-  DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
+  ENABLE_FAST_DEPLOYS: "true"
+  PYTHON_VERSION: "3.8"
+  DAGSTER_CLOUD_FILE: "dagster_cloud.yaml"
+  IS_DAGSTER_DBT_DEPLOY: true
 
 jobs:
   dagster_cloud_default_deploy:
@@ -54,7 +55,7 @@ jobs:
           rm ${{ env.DBT_PACKAGE_DATA_DIR }}/target/partial_parse.msgpack
         shell: bash
         env:
-          DAGSTER_PROJECT_NAME: 'dagster_dbt_scaffold'
+          DAGSTER_PROJECT_NAME: "dagster_dbt_scaffold"
           DBT_PROJECT_DIR: "$GITHUB_WORKSPACE/project-repo"
           DBT_PACKAGE_DATA_DIR: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_PROJECT_NAME/dbt-project"
 
