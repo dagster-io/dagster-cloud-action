@@ -114,6 +114,7 @@ def update_dagster_cloud_pex(
         "-o=dagster-cloud.pex",
         "--platform=manylinux2014_x86_64-cp-38-cp38",
         "--platform=macosx_13_0_x86_64-cp-38-cp38",
+        "--platform=macosx_13_0_arm64-cp-38-cp38",
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
