@@ -48,5 +48,6 @@ jobs:
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_HYBRID_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
+          buildx_version: v0.12.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
