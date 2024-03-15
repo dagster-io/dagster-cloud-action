@@ -51,5 +51,6 @@ jobs:
           location: ${{ toJson(matrix.location) }}
           env_vars: ${{ toJson(secrets) }}
           buildx_version: v0.12.1
+          buildkit_version: v0.12.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
