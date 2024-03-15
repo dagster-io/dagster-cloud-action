@@ -27,6 +27,10 @@ inputs:
   buildx_version:
     required: false
     description: "Which version of buildx to use to build and deploy the Docker image."
+  buildkit_version:
+    required: false
+    description: "Which version of buildkit (the build serer) to use to build and deploy the Docker image."
+    default: 'latest'
 
 runs:
   using: "composite"
@@ -67,6 +71,7 @@ runs:
       uses: docker/setup-buildx-action@v2
       with:
         version: ${{ inputs.buildx_version }}
+        driver-opts: image=moby/buildkit:${{ inputs.buildkit_version }}
 
     - name: Copy user code template file
       uses: ./action-repo/actions/utils/copy_template
