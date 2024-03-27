@@ -5,9 +5,9 @@ inputs:
     description: 'Path to dagster_cloud.yaml'
     required: true
   python_version:
-    description: 'Python version string, major.minor only, eg "3.8"'
+    description: 'Python version string, major.minor only, eg "3.11"'
     required: false
-    default: '3.8'
+    default: '3.11'
   deployment:
     required: false
     description: "The deployment to push to, defaults to 'prod'. Ignored for pull requests where the branch deployment is used."
@@ -47,12 +47,12 @@ runs:
       run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
       shell: bash
 
-    - name: Set up Python 3.8
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: "3.8"
+        python-version: "3.11"
 
-    - if: ${{ inputs.python_version != '3.8' }}
+    - if: ${{ inputs.python_version != '3.11' }}
       name: Set up Python ${{ inputs.python_version }} for target
       uses: actions/setup-python@v4
       with:
