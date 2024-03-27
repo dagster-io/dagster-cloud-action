@@ -17,6 +17,8 @@ variables:
 
   # Internally used directory name for build state
   DAGSTER_BUILD_STATEDIR: build-state
+
+  PYTHON_VERSION: "3.11"
 stages:
   - setup
   - build
