@@ -219,7 +219,7 @@ def builder_module(dagster_cloud_pex_path):
             )
         except subprocess.CalledProcessError as exc:
             raise ValueError("Could not unpack builder:" + exc.output)
-        sys.path.insert(0, os.path.join(venv_dir, "lib/python3.11/site-packages"))
+        sys.path.insert(0, os.path.join(venv_dir, "lib/python3.8/site-packages"))
         try:
             yield importlib.import_module("dagster_cloud_cli.core.pex_builder")
         finally:
