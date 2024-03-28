@@ -49,15 +49,19 @@ def main():
             break
 
     deployment_url = f"{org_url}/{deployment_name}/home"
+    changed_assets_url = f"{deployment_url}/asset-groups?changedInBranch=%5B%22CODE_VERSION%22%2C%22INPUTS%22%2C%22NEW%22%2C%22PARTITIONS_DEFINITION%22%5D"
 
     message = f"[View in Cloud]({deployment_url})"
+    changed_assets_message = f"[View Changed Assets]({changed_assets_url})"
     image_url = SUCCESS_IMAGE_URL
 
     if action == "pending":
         message = f"[Building...]({github_run_url})"
+        changed_assets_message = message
         image_url = PENDING_IMAGE_URL
     elif action == "failed":
         message = f"[Deploy failed]({github_run_url})"
+        changed_assets_message = message
         image_url = FAILED_IMAGE_URL
 
     status_image = f'[<img src="{image_url}" width=25 height=25/>]({github_run_url})'
@@ -67,9 +71,9 @@ def main():
     message = f"""
 Your pull request is automatically being deployed to Dagster Cloud.
 
-| Location          | Status          | Link    | Updated         |
-| ----------------- | --------------- | ------- | --------------- | 
-| `{location_name}` | {status_image}  | {message}  | {time_str}      |
+| Location          | Status          | Link    | Jump to Changed Assets      | Updated         |
+| ----------------- | --------------- | ------- | --------------------------- | --------------- |
+| `{location_name}` | {status_image}  | {message} | {changed_assets_message} | {time_str}      |
     """
 
     if comment_to_update:
