@@ -12,5 +12,5 @@ inputs:
     description: "A string of the base image name for the deployed code location image."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.31"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.37"
   entrypoint: "/copy_template.sh"
