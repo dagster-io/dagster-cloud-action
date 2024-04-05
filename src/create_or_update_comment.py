@@ -49,7 +49,7 @@ def main():
             break
 
     deployment_url = f"{org_url}/{deployment_name}/home"
-    changed_assets_url = f"{deployment_url}/asset-groups?changedInBranch=%5B%22CODE_VERSION%22%2C%22INPUTS%22%2C%22NEW%22%2C%22PARTITIONS_DEFINITION%22%5D"
+    changed_assets_url = f"{org_url}/{deployment_name}/asset-groups?changedInBranch=%5B%22CODE_VERSION%22%2C%22INPUTS%22%2C%22NEW%22%2C%22PARTITIONS_DEFINITION%22%5D"
 
     message = f"[View in Cloud]({deployment_url})"
     changed_assets_message = f"[View Changed Assets]({changed_assets_url})"
@@ -71,8 +71,8 @@ def main():
     message = f"""
 Your pull request is automatically being deployed to Dagster Cloud.
 
-| Location          | Status          | Link    | Jump to Changed Assets      | Updated         |
-| ----------------- | --------------- | ------- | --------------------------- | --------------- |
+| Location          | Status          | Link      | Changed Assets           | Updated         |
+| ----------------- | --------------- | --------- | ------------------------ | --------------- |
 | `{location_name}` | {status_image}  | {message} | {changed_assets_message} | {time_str}      |
     """
 
