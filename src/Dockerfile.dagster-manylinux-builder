@@ -1,6 +1,6 @@
 # Builds ghcr.io/daster-io/dagster-manylinux-builder:*
 
-# This docker image contains the PEX builder (builder.pex) and is capable of 
+# This docker image contains the PEX builder (builder.pex) and is capable of
 # building source only dependencies (sdists) for Python that work with Dagster Cloud Serverless base
 # images.
 
@@ -29,7 +29,7 @@ ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp37-cp37m/bin:/opt/python/cp39-
 COPY wheels /wheels
 
 # Install dagster-cloud
-RUN python3.8 -m pip install dagster-cloud --find-links file:///wheels/
+RUN python3 -m pip install dagster-cloud --find-links file:///wheels/
 
 COPY generated/gha/builder.pex /builder.pex
 
