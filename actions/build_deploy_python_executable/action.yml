@@ -57,6 +57,7 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python_version }}
+      run: pip install setuptools
 
     - run: >
         echo SOURCE_DIRECTORY=$(dirname ${{ inputs.dagster_cloud_file }}) >> $GITHUB_ENV
