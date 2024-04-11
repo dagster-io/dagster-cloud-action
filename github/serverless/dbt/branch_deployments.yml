@@ -9,10 +9,12 @@ concurrency:
   cancel-in-progress: true
 env:
   DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_URL }}
+  DAGSTER_CLOUD_ORGANIZATION: ${{ secrets.DAGSTER_CLOUD_ORGANIZATION }}
   DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
   ENABLE_FAST_DEPLOYS: 'true'
   PYTHON_VERSION: '3.8'
   DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
+  DAGSTER_PROJECT_NAME: 'dagster_dbt_scaffold'
 
 jobs:
   dagster_cloud_default_deploy:
@@ -33,30 +35,42 @@ jobs:
         with:
           dagster_cloud_file: $DAGSTER_CLOUD_FILE
 
-      - name: Checkout for Python Executable Deploy
+      - name: Checkout
         if: steps.prerun.outputs.result == 'pex-deploy'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           path: project-repo
 
-      - name: Parse dbt project and package with Dagster project
+      - name: Validate configuration
+        id: ci-validate
         if: steps.prerun.outputs.result == 'pex-deploy'
+        uses: dagster-io/dagster-cloud-action/actions/utils/dagster-cloud-cli@v0.1
+        with:
+          command: "ci check --project-dir project-repo --dagster-cloud-yaml-path ${{ env.DAGSTER_CLOUD_FILE }}"
+        env:
+          DAGSTER_PROJECT_DIR: 'dagster_dbt_scaffold'
+
+
+      - name: Initialize build session
+        id: ci-init
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        uses: dagster-io/dagster-cloud-action/actions/utils/ci-init@v0.1
+        with:
+          project_dir: project-repo
+          dagster_cloud_yaml_path: ${{ env.DAGSTER_CLOUD_FILE }}
+
+      - name: Prepare DBT project for deployment
+        if: steps.prerun.outputs.result == 'pex-deploy'
+        # --upgrade-strategy eager picks up newer packages that are required for things to work
         run: |
           pip install pip --upgrade
-          cd ${{ env.DBT_PROJECT_DIR }}/${{ env.DAGSTER_PROJECT_NAME }}
-          pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
-          pip install pyOpenSSL --upgrade
-          cd -
-          rsync -avz --exclude ${{ env.DAGSTER_PROJECT_NAME }} --exclude .git ${{ env.DBT_PROJECT_DIR }}/ ${{ env.DBT_PACKAGE_DATA_DIR }}
-          dbt deps --project-dir ${{ env.DBT_PACKAGE_DATA_DIR }} --profiles-dir ${{ env.DBT_PACKAGE_DATA_DIR }}
-          dbt parse --project-dir ${{ env.DBT_PACKAGE_DATA_DIR }} --profiles-dir ${{ env.DBT_PACKAGE_DATA_DIR }}
-          rm ${{ env.DBT_PACKAGE_DATA_DIR }}/target/partial_parse.msgpack
+          cd project-repo/${{ env.DAGSTER_PROJECT_NAME }}
+          pip install . --upgrade --upgrade-strategy eager
+          dagster-dbt project prepare-for-deployment --file ${{ env.DAGSTER_PROJECT_NAME }}/project.py
+          # The cli command below can be used to manage syncing the prod manifest to branches if state_path is set on the DbtProject
+          # dagster-cloud ci dagster-dbt project manage-state --file ${{ env.DAGSTER_PROJECT_NAME }}/project.py
         shell: bash
-        env:
-          DAGSTER_PROJECT_NAME: 'dagster_dbt_scaffold'
-          DBT_PROJECT_DIR: "$GITHUB_WORKSPACE/project-repo"
-          DBT_PACKAGE_DATA_DIR: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_PROJECT_NAME/dbt-project"
 
       - name: Python Executable Deploy
         if: steps.prerun.outputs.result == 'pex-deploy'
