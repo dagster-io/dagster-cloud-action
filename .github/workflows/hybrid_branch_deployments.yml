@@ -2,11 +2,28 @@ name: Hybrid Branch Deployments
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
+    paths: # Default to deploying on any change. Change this to limit what triggers branch deployments
+      - "**"
 env:
   DAGSTER_CLOUD_URL: "https://action-demo-hybrid.dogfood.dagster.cloud"
 
 jobs:
+  check_paths:
+    runs-on: ubuntu-20.04
+    outputs:
+      workspace_changed: ${{ steps.filter.outputs.workspace }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            workspace:
+              - "**"
+
   parse_workspace:
+    needs: check_paths
+    if: needs.check_paths.outputs.workspace_changed == 'true'
     runs-on: ubuntu-latest
     outputs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}

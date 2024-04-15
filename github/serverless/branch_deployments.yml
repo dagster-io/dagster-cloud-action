@@ -2,6 +2,8 @@ name: Serverless Branch Deployments
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
+    paths: # Default to deploying on any change. Change this to limit what triggers branch deployments
+      - "**"
     
 concurrency:
   # Cancel in-progress deploys to same branch
@@ -15,8 +17,22 @@ env:
   DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
 
 jobs:
+  check_paths:
+    runs-on: ubuntu-20.04
+    outputs:
+      workspace_changed: ${{ steps.filter.outputs.workspace }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            workspace:
+              - "**"
   dagster_cloud_default_deploy:
     name: Dagster Serverless Deploy
+    needs: check_paths
+    if: needs.check_paths.outputs.workspace_changed == 'true'
     runs-on: ubuntu-20.04
     outputs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}
