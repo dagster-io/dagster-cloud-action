@@ -28,7 +28,7 @@ jobs:
         with:
           filters: |
             workspace:
-              - "**"
+              - "**" # Default to deploying on any change. Change this to limit what triggers branch deployments
   dagster_cloud_default_deploy:
     name: Dagster Serverless Deploy
     needs: check_paths

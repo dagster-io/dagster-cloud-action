@@ -18,8 +18,8 @@ jobs:
         id: filter
         with:
           filters: |
-            workspace:
-              - "**"
+            workspace: 
+              - "**"  # Default to deploying on any change. Change this to limit what triggers branch deployments
   parse_workspace:
     needs: check_paths
     if: needs.check_paths.outputs.workspace_changed == 'true'
