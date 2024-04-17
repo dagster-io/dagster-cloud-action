@@ -61,6 +61,7 @@ runs:
 
     - if: ${{ inputs.python_version != '3.8' }}
       run: ${{ steps.custom-python-version.outputs.python-path }} -m pip install setuptools
+      shell: bash
 
     - run: >
         echo SOURCE_DIRECTORY=$(dirname ${{ inputs.dagster_cloud_file }}) >> $GITHUB_ENV
