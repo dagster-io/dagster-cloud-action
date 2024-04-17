@@ -53,11 +53,14 @@ runs:
         python-version: "3.8"
 
     - if: ${{ inputs.python_version != '3.8' }}
+      id: custom-python-version
       name: Set up Python ${{ inputs.python_version }} for target
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python_version }}
-      run: pip install setuptools
+
+    - if: ${{ inputs.python_version != '3.8' }}
+      run: ${{ steps.custom-python-version.outputs.python-path }} -m pip install setuptools
 
     - run: >
         echo SOURCE_DIRECTORY=$(dirname ${{ inputs.dagster_cloud_file }}) >> $GITHUB_ENV
