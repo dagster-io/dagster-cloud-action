@@ -3,6 +3,7 @@
 ## Step 1. Log into docker ghcr.io
 
 See [authenticate to GHCR with a PAT](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
+Your PAT will need `delete:packages`, `write:packages`, and`repo` permissions.
 
 If you have a PAT handy you can just do:
 
@@ -10,12 +11,14 @@ If you have a PAT handy you can just do:
 % echo $YOUR_GITHUB_PAT | docker login ghcr.io -u $YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-## Step 2. Determine the new point version and create a release branch, 
+You will also need to be an owner in the dagster-io organization in order to push packages.
+
+## Step 2. Determine the new point version and create a release branch,
 
 ```
 % git checkout main
 % git fetch origin --tags --force
-% git tag 
+% git tag
 pex-v0.1
 pex-v0.1.14
 prha
@@ -51,7 +54,10 @@ A script does this work:
 
 ```
 
-This leaves uncommited changes in the working directory.
+Note that `OLD_VERSION` may not be the latest tag printed in step 2. You can find the `OLD_VERSION` by looking
+at the version for `dagster-cloud-action` used in https://github.com/dagster-io/dagster-cloud-action/blob/main/actions/utils/copy_template/action.yml or by looking at the release date for v0.1 and finding the dot version with the same date on the [tags page](https://github.com/dagster-io/dagster-cloud-action/tags)
+
+Running the script leaves uncommited changes in the working directory.
 
 # Commit and tag the new version
 
@@ -79,7 +85,7 @@ View changes made by the release script
 
 # Step 6. Promote
 Most users point at a dot version tag for the GitHub Action, e.g. `@v0.1` and `@pex-v0.1`.
-If you are releasing a fix or non-breaking feature, you want to move this tag so existing users get access to your changes. 
+If you are releasing a fix or non-breaking feature, you want to move this tag so existing users get access to your changes.
 
 ```
 # use '-f' to force move the tag, since these tags already exist
