@@ -81,14 +81,19 @@ View changes made by the release script
 Most users point at a dot version tag for the GitHub Action, e.g. `@v0.1` and `@pex-v0.1`.
 If you are releasing a fix or non-breaking feature, you want to move this tag so existing users get access to your changes. 
 
+> Due an unfortunate bug, the ci-summary step many user's workflow is pinned to v0.1.27 so we need to v0.1.27 to follow v0.1 as well.
+> See https://github.com/dagster-io/dagster-cloud-hybrid-quickstart/commit/2149359dd1076f3bcd6f652dc00cb74ac9c81636
+
 ```
 # use '-f' to force move the tag, since these tags already exist
 git tag -f v0.1 v0.1.22
 git tag -f pex-v0.1 v0.1.22
+git tag -f v0.1.27 v0.1
 
 # needs a force push to move remote tags
 git push -f origin v0.1
 git push -f origin pex-v0.1
+git push -f origin v0.1.27
 ```
 
 Note: both `v0.1` and `pex-v0.1` tags should be kept in sync.
