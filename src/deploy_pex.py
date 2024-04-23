@@ -100,9 +100,16 @@ def get_branch_deployment_name(project_dir):
         ]
     )
     if returncode:
-        print("Could not determine branch deployment", flush=True)
+        print("Could not determine branch deployment from output:", output, flush=True)
         sys.exit(1)
-    name = "".join(output).strip()
+    for line in output:
+        # sometimes the cmd prints warnings in addition to the branch deployment name
+        if re.match('[0-9a-f]+', line):
+            name = line.strip()
+            break
+    else:
+        print("Could not determine branch deployment from output: ", output, flush=True)
+        sys.exit(1)
     print("Deploying to branch deployment:", name, flush=True)
     return name
 
