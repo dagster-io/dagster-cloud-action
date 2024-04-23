@@ -81,7 +81,7 @@ View changes made by the release script
 Most users point at a dot version tag for the GitHub Action, e.g. `@v0.1` and `@pex-v0.1`.
 If you are releasing a fix or non-breaking feature, you want to move this tag so existing users get access to your changes. 
 
-> Due an unfortunate bug, the ci-summary step many user's workflow is pinned to v0.1.27 so we need to v0.1.27 to follow v0.1 as well.
+> Due an unfortunate bug, the ci-summary step in many user's workflow is pinned to v0.1.27, so we need v0.1.27 to follow v0.1 as well.
 > See https://github.com/dagster-io/dagster-cloud-hybrid-quickstart/commit/2149359dd1076f3bcd6f652dc00cb74ac9c81636
 
 ```
