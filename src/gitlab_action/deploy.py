@@ -8,6 +8,8 @@ import parse_workspace
 
 
 def deploy(dagster_cloud_yaml_file, deployment=None):
+    python_version = os.environ["PYTHON_VERSION"]
+
     url = os.environ["DAGSTER_CLOUD_URL"]
     if not os.getenv("SERVERLESS_BASE_IMAGE_PREFIX"):
         base_image_prefix = "657821118200.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
@@ -39,6 +41,7 @@ def deploy(dagster_cloud_yaml_file, deployment=None):
                 f"--deps-cache-to={deps_cache}",
                 f"--commit-hash={commit}",
                 f"--git-url={commit_url}",
+                f"--python-version={python_version}",
             ]
             if deployment:
                 command_args.append(f"--url={url}/{deployment}")
