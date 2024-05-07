@@ -27,14 +27,14 @@ runs:
       run: >
         echo "::notice title=Closed Pull Request::Marking branch deployment closed for this PR, will skip remaining workflow" &&
         $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ci branch-deployment prerun_checkout_dir > /tmp/closed-branch-deployment.txt &&
-        echo "closed_branch_deployment=$(cat /tmp/closed-branch-deployment.txt)" >> $GITHUB_OUTPUT &&
-        echo 'result=skip' >> $GITHUB_OUTPUT
+        echo "closed_branch_deployment=$(cat /tmp/closed-branch-deployment.txt)" >> "$GITHUB_OUTPUT" &&
+        echo 'result=skip' >> "$GITHUB_OUTPUT"
       shell: bash
 
     - if: ${{ github.event.pull_request.state != 'closed' }}
       id: check-deployment-type
       run: >
         echo 'PR not closed (or not in a PR)' &&
-        if [ ${ENABLE_FAST_DEPLOYS:-false} == "true" ]; then echo "result=pex-deploy"; else echo "result=docker-deploy"; fi >> $GITHUB_OUTPUT
+        if [ ${ENABLE_FAST_DEPLOYS:-false} == "true" ]; then echo "result=pex-deploy"; else echo "result=docker-deploy"; fi >> "$GITHUB_OUTPUT"
       shell: bash
 
