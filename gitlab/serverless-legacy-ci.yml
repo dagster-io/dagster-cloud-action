@@ -10,7 +10,7 @@ workflow:
 
 parse-workspace:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.38
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.39
   script:
     - python /gitlab_action/parse_workspace.py dagster_cloud.yaml >> build.env
     - cp /Dockerfile.template .
@@ -23,7 +23,7 @@ parse-workspace:
 
 fetch-registry-info:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.38
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.39
   script: dagster-cloud serverless registry-info --url $DAGSTER_CLOUD_URL/prod --api-token $DAGSTER_CLOUD_API_TOKEN | grep '=' >> registry.env
   artifacts:
     reports:
@@ -53,7 +53,7 @@ deploy-docker:
     - build-image
     - parse-workspace
     - fetch-registry-info
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.38
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.39
   script:
     - dagster-cloud workspace add-location
       --url $DAGSTER_CLOUD_URL/prod
@@ -74,7 +74,7 @@ deploy-docker-branch:
     - build-image
     - parse-workspace
     - fetch-registry-info
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.38
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.39
   script:
     - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
     - export PR_MESSAGE=$(git log -1 --format='%s')
@@ -109,7 +109,7 @@ deploy-docker-branch:
 
 close_branch:
   stage: deploy
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.38
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.39
   when: manual
   only:
     - merge_requests

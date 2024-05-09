@@ -158,6 +158,8 @@ def create_rc(
     check_workdir: bool = True,
     execute_tests: bool = True,
     publish_docker_action: bool = True,
+    dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
+    dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
     if check_workdir:
         ensure_clean_workdir()
@@ -168,7 +170,7 @@ def create_rc(
         error(f"Invalid version tag {version_tag}")
         sys.exit(1)
 
-    update_dagster_cloud_pex(None, None)
+    update_dagster_cloud_pex(dagster_internal_branch, dagster_oss_branch)
     if execute_tests:
         run_tests()
     build_docker_action(version_tag, publish_docker_action)
