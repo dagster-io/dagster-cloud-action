@@ -7,3 +7,6 @@ src/pex-builder/build
 
 # locally built wheels for Dockerfile.dagster-manylinux-builder
 wheels/*whl
+
+# PyCharm IDE Config files
+.idea/

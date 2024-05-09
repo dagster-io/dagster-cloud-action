@@ -1,5 +1,7 @@
 # Steps to release
 
+**Note**: These steps can also be used to release a docker-cloud-action image to test your changes.
+
 ## Step 1. Log into docker ghcr.io
 
 See [authenticate to GHCR with a PAT](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
@@ -42,7 +44,7 @@ The point version is the next unused `v0.1.*` version, eg `v0.1.22` above. Creat
 
 ## Step 3. Build and deploy a new docker-cloud-action image, a new dagster.cloud.pex and update code references to docker
 
-A script does this work:
+A script does this work. **Note**: a virtual environment using Python3.8 is required to run the script.
 
 ```
 # Note no 'v' prefix
@@ -51,7 +53,7 @@ A script does this work:
 
 ```
 
-This leaves uncommited changes in the working directory.
+This leaves uncommitted changes in the working directory.
 
 # Commit and tag the new version
 
