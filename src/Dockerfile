@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.8.16-slim
+FROM --platform=linux/amd64 quay.io/pypa/manylinux2014_x86_64:latest
 
 # Install deps
 RUN apt update && apt install git -y
