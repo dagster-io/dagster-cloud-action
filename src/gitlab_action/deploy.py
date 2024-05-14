@@ -8,7 +8,7 @@ import parse_workspace
 
 
 def deploy(dagster_cloud_yaml_file, deployment=None):
-    python_version = os.environ["PYTHON_VERSION"]
+    python_version = os.getenv("PYTHON_VERSION", "3.8")
 
     url = os.environ["DAGSTER_CLOUD_URL"]
     if not os.getenv("SERVERLESS_BASE_IMAGE_PREFIX"):
