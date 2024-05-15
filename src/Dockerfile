@@ -1,12 +1,18 @@
-FROM quay.io/pypa/manylinux2014_x86_64:latest
+# Use an official manylinux builder (https://github.com/pypa/manylinux#docker-images)
+FROM --platform=linux/amd64 quay.io/pypa/manylinux2014_x86_64:latest
+
+# Add all the relevant Python binaries to the PATH
+ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:/opt/python/cp311-cp311/bin:/opt/python/cp312-cp312/bin:$PATH"
 
 # Install deps
-RUN apt update && apt install git -y
-RUN pip install pex
+RUN yum update && yum install -y git
 
+# Install pex
+RUN python3.8 -m pip install pex
+
+# Create virtual environment
 COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
 RUN pex-tools dagster-cloud.pex venv /venv-dagster-cloud
-ENV PATH="/venv-dagster-cloud/bin:$PATH"
 
 # Copy all src scripts
 
