@@ -8,6 +8,7 @@ import parse_workspace
 
 
 def deploy(dagster_cloud_yaml_file, deployment=None):
+    # Use 3.8 as default version for backward compatibility
     python_version = os.getenv("PYTHON_VERSION", "3.8")
 
     url = os.environ["DAGSTER_CLOUD_URL"]

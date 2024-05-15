@@ -2,6 +2,7 @@ variables:
   DISABLE_FAST_DEPLOYS:
   DAGSTER_CLOUD_URL: $DAGSTER_CLOUD_URL
   DAGSTER_CLOUD_API_TOKEN: $DAGSTER_CLOUD_API_TOKEN
+  # Python versions 3.8 to 3.12 are supported
   PYTHON_VERSION: '3.8'
 
 deploy-branch:
