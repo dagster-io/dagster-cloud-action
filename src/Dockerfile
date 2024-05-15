@@ -8,11 +8,29 @@ ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-
 RUN yum update && yum install -y git
 
 # Install pex
-RUN python3.8 -m pip install pex
+#RUN python3.8 -m pip install pex
+#RUN /opt/python/cp38-cp38/bin/python -m pip install pex
+#RUN /opt/python/cp39-cp39/bin/python -m pip install pex
+#RUN /opt/python/cp310-cp310/bin/python -m pip install pex
+#RUN /opt/python/cp311-cp311/bin/python -m pip install pex
+#RUN /opt/python/cp312-cp312/bin/python -m pip install pex
+
+# Install Dagster Cloud
+RUN /opt/python/cp38-cp38/bin/python -m pip install dagster-cloud
+RUN /opt/python/cp39-cp39/bin/python -m pip install dagster-cloud
+RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud
+RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud
+RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud
+
 
 # Create virtual environment
-COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
-RUN pex-tools dagster-cloud.pex venv /venv-dagster-cloud
+#COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
+#RUN pex-tools dagster-cloud.pex venv /venv-dagster-cloud
+#RUN PEX_TOOLS=1 /opt/python/cp38-cp38/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
+#RUN PEX_TOOLS=1 /opt/python/cp39-cp39/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
+#RUN PEX_TOOLS=1 /opt/python/cp310-cp310/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
+#RUN PEX_TOOLS=1 /opt/python/cp311-cp311/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
+#RUN PEX_TOOLS=1 /opt/python/cp312-cp312/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
 
 # Copy all src scripts
 
@@ -40,4 +58,4 @@ COPY src/get_branch_deployment.sh /get_branch_deployment.sh
 COPY src/gitlab_action gitlab_action
 
 # Use the venv python as the command
-CMD venv-dagster-cloud/bin/python3
+# CMD venv-dagster-cloud/bin/python3
