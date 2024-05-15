@@ -18,9 +18,9 @@ RUN yum update && yum install -y git
 # Install Dagster Cloud
 RUN /opt/python/cp38-cp38/bin/python -m pip install dagster-cloud
 RUN /opt/python/cp39-cp39/bin/python -m pip install dagster-cloud
-RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud
-RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud
-RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud
+#RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud
+#RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud
+#RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud
 
 
 # Create virtual environment
@@ -59,3 +59,4 @@ COPY src/gitlab_action gitlab_action
 
 # Use the venv python as the command
 # CMD venv-dagster-cloud/bin/python3
+CMD python3
