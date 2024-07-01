@@ -1,6 +1,11 @@
 # Use an official manylinux builder (https://github.com/pypa/manylinux#docker-images)
 FROM --platform=linux/amd64 quay.io/pypa/manylinux2014_x86_64:latest
 
+# Fix for CentOS 7 EOL - see https://github.com/pypa/manylinux/issues/1641
+RUN  sed -i -e 's/mirrorlist/#mirrorlist/g' \
+	-e 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' \
+	/etc/yum.repos.d/CentOS-*
+
 # Install deps
 RUN yum update && yum install -y git
 RUN /opt/python/cp38-cp38/bin/python -m pip install pex
@@ -9,6 +14,7 @@ RUN /opt/python/cp38-cp38/bin/python -m pip install dagster-cloud-cli
 RUN /opt/python/cp39-cp39/bin/python -m pip install dagster-cloud-cli
 RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud-cli
 RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud-cli
+RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud-cli
 
 # Create virtual environment using PEX
 COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
