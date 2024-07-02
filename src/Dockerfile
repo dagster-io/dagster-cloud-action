@@ -1,5 +1,5 @@
 # Use an official manylinux builder (https://github.com/pypa/manylinux#docker-images)
-FROM --platform=linux/amd64 quay.io/pypa/manylinux_1_2_x86_64:latest
+FROM --platform=linux/amd64 quay.io/pypa/manylinux_2_28_x86_64:latest
 
 # Install deps
 RUN yum update && yum install -y git
