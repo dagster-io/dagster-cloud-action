@@ -20,7 +20,7 @@
 # ---
 
 # Use an official manylinux builder (https://github.com/pypa/manylinux#docker-images)
-FROM --platform=linux/amd64 quay.io/pypa/manylinux_2_28_x86_64:latest
+FROM --platform=linux/amd64 quay.io/pypa/manylinux_1_2_x86_64:latest
 
 # Add all the relevant Python binaries to the PATH
 ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp37-cp37m/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:$PATH"
