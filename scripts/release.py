@@ -112,7 +112,7 @@ def update_dagster_cloud_pex(
         dagster_pkg,
         "PyGithub",
         "-o=dagster-cloud.pex",
-        #"--platform=manylinux_2_28_x86_64-cp-38-cp38",
+        "--platform=manylinux_2_28_x86_64-cp-38-cp38",
         "--platform=macosx_12_0_x86_64-cp-38-cp38",
         "--platform=macosx_12_0_arm64-cp-38-cp38",
         "--pip-version=23.0",
