@@ -9,6 +9,7 @@ RUN /opt/python/cp38-cp38/bin/python -m pip install dagster-cloud-cli
 RUN /opt/python/cp39-cp39/bin/python -m pip install dagster-cloud-cli
 RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud-cli
 RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud-cli
+RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud-cli
 
 # Create virtual environment using PEX
 COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex

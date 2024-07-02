@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-from contextlib import contextmanager
 import glob
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
+from contextlib import contextmanager
+from pathlib import Path
 from typing import List, Optional
 
 import typer
@@ -47,7 +47,7 @@ def error(msg):
 @app.command()
 def run_tests():
     info("Running tests")
-    subprocess.run(["pytest", "tests"], check=True)
+    subprocess.run(["pytest", "tests", "-s"], check=True)
 
 
 @app.command(help="Build dagster-cloud-action docker image from dagster-cloud.pex")
@@ -179,9 +179,7 @@ def create_rc(
 
 
 def ensure_clean_workdir():
-    proc = subprocess.run(
-        ["git", "status", "--porcelain"], capture_output=True, check=False
-    )
+    proc = subprocess.run(["git", "status", "--porcelain"], capture_output=True, check=False)
     if proc.stdout or proc.stderr:
         error("ERROR: Git working directory not clean:")
         error((proc.stdout + proc.stderr).decode("utf-8"))

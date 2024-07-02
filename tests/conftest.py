@@ -1,6 +1,6 @@
 import importlib
+import logging
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -20,7 +20,7 @@ class ExecContext:
         self.reset()
 
     def tmp_file_path(self, filename) -> Path:
-        "Return a Path object pointing to named file in tmp_dir."
+        """Return a Path object pointing to named file in tmp_dir."""
         return Path(self.tmp_dir) / filename
 
     def tmp_file_content(self, filename):
@@ -42,7 +42,6 @@ class ExecContext:
             {'serverless registry-info --url "url" --api-token "token"':
              'AWS_ECR_USERNAME=username\nAWS_ECR_PASSWORD=password\n'})
         """
-
         command_stub.generate(str(self.tmp_file_path(cmdname)), commands_map)
 
     def prepare_run_script(self, command: str, target_tmp_dir=None) -> Path:
@@ -72,13 +71,11 @@ class ExecContext:
             main_script.write("export PATH=.:$PATH\n")
 
             # invoke main command
-            main_script.write(
-                command + " > ./output-stdout.txt 2> ./output-stderr.txt\n"
-            )
+            main_script.write(command + " > ./output-stdout.txt 2> ./output-stderr.txt\n")
 
             # save returncode and final env vars
-            main_script.write(f"echo $? > ./output-exitcode.txt\n")
-            main_script.write(f"env > ./output-env.txt\n")
+            main_script.write("echo $? > ./output-exitcode.txt\n")
+            main_script.write("env > ./output-env.txt\n")
 
         os.chmod(script_path, 0o700)
         return script_path
@@ -170,10 +167,10 @@ def repo_root():
 
 @pytest.fixture(scope="session")
 def action_docker_image_id(repo_root):
-    "Build a docker image using local source and return the tag"
+    """Build a docker image using local source and return the tag"""
     _, iidfile = tempfile.mkstemp()
     try:
-        proc = subprocess.run(
+        subprocess.run(
             [
                 "docker",
                 "buildx",
@@ -187,22 +184,24 @@ def action_docker_image_id(repo_root):
             ],
             cwd=repo_root,
             check=True,
-            capture_output=True,
         )
         return open(iidfile).read().strip()
     finally:
-        os.remove(iidfile)
+        try:
+            os.remove(iidfile)
+        except OSError:
+            logging.exception(f"Failed to remove {iidfile}")
 
 
 @pytest.fixture(scope="session")
 def dagster_cloud_pex_path(repo_root):
-    "Path to generated/gha/dagster-cloud.pex."
+    """Path to generated/gha/dagster-cloud.pex."""
     yield repo_root / "generated/gha/dagster-cloud.pex"
 
 
 @pytest.fixture(scope="session")
 def builder_module(dagster_cloud_pex_path):
-    "Imported builder module object, for in-process testing of builder code."
+    """Imported builder module object, for in-process testing of builder code."""
     # This contains the same code as the builder.pex, but using it as a module
     # makes patching easier. To make sure we use the same dependencies that are
     # packed in builder.pex, we unpack builder.pex to a venv and add the venv
@@ -234,9 +233,7 @@ def pex_registry_fixture():
     s3_objects = {}  # filename -> content
 
     def s3_urls_for_get(filenames):
-        return [
-            (filename if filename in s3_objects else None) for filename in filenames
-        ]
+        return [(filename if filename in s3_objects else None) for filename in filenames]
 
     def s3_urls_for_put(filenames):
         return filenames
@@ -263,9 +260,5 @@ def pex_registry_fixture():
     ) as _, mock.patch(
         "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_put",
         s3_urls_for_put,
-    ) as _, mock.patch(
-        "requests.get", requests_get
-    ) as _, mock.patch(
-        "requests.put", requests_put
-    ):
+    ) as _, mock.patch("requests.get", requests_get) as _, mock.patch("requests.put", requests_put):
         yield s3_objects
