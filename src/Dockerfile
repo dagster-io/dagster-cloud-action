@@ -2,7 +2,7 @@
 FROM --platform=linux/amd64 quay.io/pypa/manylinux_2_28_x86_64:latest
 
 # Install deps
-RUN yum update && yum install -y git
+RUN yum update -y & yum install -y git
 RUN /opt/python/cp38-cp38/bin/python -m pip install pex
 
 RUN /opt/python/cp38-cp38/bin/python -m pip install dagster-cloud-cli
