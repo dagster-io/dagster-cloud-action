@@ -12,7 +12,7 @@ deploy-branch:
   stage: deploy
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.40
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
   script:
     # first create the branch deployment
     - export PR_TIMESTAMP=$(git log -1 --format='%cd' --date=unix)
@@ -51,7 +51,7 @@ deploy-branch:
 
 close_branch:
   stage: deploy
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.40
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
   when: manual
   only:
     - merge_requests
@@ -76,7 +76,7 @@ deploy:
   stage: deploy
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.40
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
   script:
     # install dbt package
     - pip install pip --upgrade
