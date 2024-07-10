@@ -108,7 +108,7 @@ runs:
                 pullRequests.push(...pr.data);
               }
             }
-            reutrn pullRequests;
+            return pullRequests;
 
     - name: Print PRs
       run: echo "${{ steps.get_prs.outputs.result }}"
