@@ -28,6 +28,7 @@ runs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.sha }}
+        fetch-depth: 100
 
     - name: Checkout action repo
       uses: actions/checkout@v3
@@ -85,7 +86,8 @@ runs:
 
     - name: Get git sha
       id: get_shas
-      run: git rev-list --ancestry-path cd2a864d09faa69900bff468f0f78d7e630ff87b..${{ github.sha }}
+      run: git rev-list --ancestry-path cd2a864d09faa69900bff468f0f78d7e630ff87b..${{ github.event.pull_request.head.sha }}
+      shell: bash
 
     - uses: actions/github-script@v7
       id: get_prs
@@ -110,6 +112,7 @@ runs:
 
     - name: Print PRs
       run: echo "${{ steps.get_prs.outputs.result }}"
+      shell: bash
 
     # Optional steps, leaves PR comment about build status
     - name: Notify build success
