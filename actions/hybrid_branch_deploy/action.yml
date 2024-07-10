@@ -34,7 +34,7 @@ runs:
       id: get_shas
       run: |
           echo "SHAS<<EOF" >> $GITHUB_OUTPUT
-          echo "$(git rev-list --ancestry-path cd2a864d09faa69900bff468f0f78d7e630ff87b..${{ github.event.pull_request.head.sha }})" >> $GITHUB_OUTPUT
+          git rev-list --ancestry-path cd2a864d09faa69900bff468f0f78d7e630ff87b..${{ github.event.pull_request.head.sha }} >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       shell: bash
 
@@ -54,9 +54,8 @@ runs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
               });
-              console.log(pr);
               if (pr.data.length > 0) {
-                pullRequests.push(...pr.data);
+                pullRequests.push(...pr.data.map(p => p.number));
               }
             }
             console.log(pullRequests);
