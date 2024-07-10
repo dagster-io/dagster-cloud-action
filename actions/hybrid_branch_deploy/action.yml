@@ -28,11 +28,14 @@ runs:
       uses: actions/checkout@v3
       with:
         ref: ${{ github.sha }}
-        fetch-depth: 100
+        fetch-depth: 500
 
     - name: Get git sha
       id: get_shas
-      run: echo "SHAS<<EOF\n$(git rev-list --ancestry-path cd2a864d09faa69900bff468f0f78d7e630ff87b..ff558eb2e32c7c24f54fb8cc699e05db8662d883)\nEOF" >> $GITHUB_OUTPUT
+      run: |
+          echo "SHAS<<EOF" >> $GITHUB_OUTPUT
+          echo "$(git rev-list --ancestry-path cd2a864d09faa69900bff468f0f78d7e630ff87b..${{ github.event.pull_request.head.sha }})" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       shell: bash
 
     - uses: actions/github-script@v7
