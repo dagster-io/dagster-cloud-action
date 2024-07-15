@@ -86,7 +86,7 @@ Serverless:
 - GitHub: Deploy to a test organization in Dagster+ with both PEX and docker deployments.
 
 Hybrid:
-- GitHub: Create a new branch in the [Hooli repo](https://github.com/dagster-io/hooli-data-eng-pipelines) to update the release version. Push your changes and open a PR to test the deployment to Dagster+.
+- GitHub: Create a new branch in the [Hooli repo](https://github.com/dagster-io/hooli-data-eng-pipelines) to update the tags with the new version in the CI/CD file. Push your changes and open a PR to test the deployment to Dagster+.
 
 # Step 5b. Iterate
 
