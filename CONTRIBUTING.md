@@ -79,6 +79,15 @@ View changes made by the release script
 # see also dagster-cloud-action-test
 ```
 
+It is recommended to test the release with both Serverless and Hybrid deployments.
+
+Serverless:
+- GitLab: Deploy to a test organization in Dagster+ after updating the image version in the CI/CD file.
+- GitHub: Deploy to a test organization in Dagster+ with both PEX and docker deployments.
+
+Hybrid:
+- GitHub: Create a new branch in the [Hooli repo](https://github.com/dagster-io/hooli-data-eng-pipelines) to update the tags with the new version in the CI/CD file. Push your changes and open a PR to test the deployment to Dagster+.
+
 # Step 5b. Iterate
 
 If you make any changes and rebuild the rc, you need to retag and push the release tag:
