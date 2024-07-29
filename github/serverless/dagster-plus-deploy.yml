@@ -1,4 +1,4 @@
-name: Serverless Deployment
+name: Dagster Cloud Serverless Deployment
 on:
   push:
     branches:
@@ -16,7 +16,7 @@ env:
   DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
   ENABLE_FAST_DEPLOYS: 'true'
   PYTHON_VERSION: '3.8'
-  DAGSTER_PROJECT_DIR: '.'
+  DAGSTER_CLOUD_YAML_PATH: '.'
   DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
   DAGSTER_CLOUD_ORGANIZATION: ${{ secrets.DAGSTER_CLOUD_ORGANIZATION }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,14 +42,14 @@ jobs:
         if: steps.prerun.outputs.result != 'skip'
         uses: dagster-io/dagster-cloud-action/actions/utils/dagster-cloud-cli@v0.1
         with:
-          command: "ci check --project-dir ${{ env.DAGSTER_PROJECT_DIR }} --dagster-cloud-yaml-path ${{ env.DAGSTER_CLOUD_FILE }}"
+          command: "ci check --project-dir ${{ env.DAGSTER_CLOUD_YAML_PATH }} --dagster-cloud-yaml-path ${{ env.DAGSTER_CLOUD_FILE }}"
 
       # Parse dagster_cloud.yaml, detect if this is branch deployment and initialize the build session
       - name: Initialize build session
         id: ci-init
         uses: dagster-io/dagster-cloud-action/actions/utils/ci-init@v0.1
         with:
-          project_dir: ${{ env.DAGSTER_PROJECT_DIR }}
+          project_dir: ${{ env.DAGSTER_CLOUD_YAML_PATH }}
           dagster_cloud_yaml_path: ${{ env.DAGSTER_CLOUD_FILE }}
           # The full deployment name. If this run is for a PR, this value is ignored and a branch
           # deployment is used.
@@ -104,7 +104,7 @@ jobs:
         if: steps.prerun.outputs.result != 'skip'
         uses: dagster-io/dagster-cloud-action/actions/utils/dagster-cloud-cli@v0.1
         with:
-          command: "ci notify --project-dir=${{ env.DAGSTER_PROJECT_DIR }}"
+          command: "ci notify --project-dir=${{ env.DAGSTER_CLOUD_YAML_PATH }}"
 
       # Generate a summary that shows up on the Workflow Summary page
       - name: Generate a summary
