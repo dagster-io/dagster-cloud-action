@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 # Switches PEX deploy behavior based on github runner's ubuntu version
-# - ubuntu-20.04 can always build pexes that work on our target platform
-# - ubuntu-22.04 can only build pexes if there are no sdists (source only packages)
+# - ubuntu-20.04 and ubuntu-20.04 can always build pexes that work on our target platform
+# - ubuntu-24.04 can only build pexes if there are no sdists (source only packages)
 
-# On ubuntu-20.04: forward args to `dagster-cloud --build-method=local`
-# On ubuntu-22.04: forward args to `dagster-cloud --build-method=docker`
-# - Sometimes 22.04 may try to build sdists but build the wrong version (since we are not yet
+# On ubuntu-20.04 and ubuntu-20.04: forward args to `dagster-cloud --build-method=local`
+# On ubuntu-24.04: forward args to `dagster-cloud --build-method=docker`
+# - Sometimes 24.04 may try to build sdists but build the wrong version (since we are not yet
 #   using --complete-platform for pex). To avoid this situation, we always build dependencies in the
-#   right docker environment on 22.04. Note if dependencies are not being built, docker will not
+#   right docker environment on 24.04. Note if dependencies are not being built, docker will not
 #   be used. The source.pex is always built using the local environment.
 
 import os
@@ -39,7 +39,7 @@ def main():
 
     ubuntu_version = get_runner_ubuntu_version()
     print("Running on Ubuntu", ubuntu_version, flush=True)
-    if ubuntu_version == "20.04":
+    if ubuntu_version == "20.04" or ubuntu_version == "22.04":
         returncode, output = deploy_pex(args, deployment_name, build_method="local")
     else:
         returncode, output = deploy_pex(args, deployment_name, build_method="docker")
