@@ -68,7 +68,7 @@ runs:
       with:
         target_directory: ${{ fromJson(inputs.location).directory }}
         env_vars: ${{ inputs.env_vars }}
-        base_image: ${{ inputs.base_image }}
+        base_image: ${{ inputs.base_image || fromJson(inputs.location).base_image }}
 
     - name: generate short github sha
       shell: bash

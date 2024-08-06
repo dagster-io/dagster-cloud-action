@@ -17,7 +17,8 @@ def parse_workspace(dagster_cloud_file):
             "name": location["location_name"],
             "directory": location.get("build", {"directory": "."}).get("directory"),
             "build_folder": location.get("build", {"directory": "."}).get("directory"),
-            "registry": location.get("build", {"directory": "."}).get("registry"),
+            "registry": location.get("build", {}).get("registry"),
+            "base_image": location.get("build", {}).get("base_image"),
             "location_file": str(workspace),
         }
         for location in workspace_contents_yaml["locations"]
