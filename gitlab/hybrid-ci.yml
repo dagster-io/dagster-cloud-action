@@ -29,7 +29,7 @@ workflow:
 
 initialize:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.45
   script:
     - export
     - dagster-cloud ci check --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
@@ -75,7 +75,7 @@ deploy-docker:
   dependencies:
     - build-image
     - initialize
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.45
   script:
     - dagster-cloud ci set-build-output --image-tag=$IMAGE_TAG
     - dagster-cloud ci deploy
@@ -87,7 +87,7 @@ deploy-docker-branch:
   dependencies:
     - build-image
     - initialize
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.45
   script:
     - dagster-cloud ci set-build-output --image-tag=$IMAGE_TAG
     - dagster-cloud ci deploy
@@ -97,7 +97,7 @@ deploy-docker-branch:
 
 close-branch:
   stage: deploy
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.45
   when: manual
   only:
     - merge_requests
