@@ -43,7 +43,6 @@ runs:
 
     - name: Set deps-cache-to
       # Only write to the cache-tag for non PR commits so PR commits don't upgrade dependency versions
-      if: ${{ github.base_ref == '' }}
       run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
       shell: bash
 
