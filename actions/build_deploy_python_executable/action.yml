@@ -37,13 +37,11 @@ runs:
     - name: Set deps-cache-from
       # Don't use cached deps if instructed
       if: ${{ inputs.force_rebuild_deps != 'true' }}
-      # For PR commits, use the target branch name as the cache-tag, for other commits, use the branch name itself
-      run: echo "FLAG_DEPS_CACHE_FROM=--deps-cache-from=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
+      run: echo "FLAG_DEPS_CACHE_FROM=--deps-cache-from=${{ github.repository }}" >> $GITHUB_ENV
       shell: bash
 
     - name: Set deps-cache-to
-      # Only write to the cache-tag for non PR commits so PR commits don't upgrade dependency versions
-      run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}/${{ github.ref_name }}" >> $GITHUB_ENV
+      run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}" >> $GITHUB_ENV
       shell: bash
 
     - name: Set up Python 3.8
