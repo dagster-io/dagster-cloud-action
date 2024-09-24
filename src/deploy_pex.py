@@ -46,7 +46,6 @@ def main():
     if returncode:
         print(
             "::error Title=Deploy failed::Failed to deploy Python Executable. "
-            "Try disabling fast deploys by setting `ENABLE_FAST_DEPLOYS: 'false'` in your .github/workflows/*yml."
         )
         # TODO: fallback to docker deploy here
         sys.exit(1)
