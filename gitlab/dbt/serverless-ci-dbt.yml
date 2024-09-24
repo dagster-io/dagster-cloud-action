@@ -81,13 +81,10 @@ deploy:
     # install dbt package
     - pip install pip --upgrade
     - cd $DAGSTER_DBT_PROJECT_DIR/$DAGSTER_DBT_PROJECT_NAME
-    - pip install . MarkupSafe==2.0.1 'click>8.1.0' 'Jinja2>3.0.0'
-    - pip install pyOpenSSL --upgrade
-    - cd -
-    - which rsync || ( apt-get update -y && apt-get -y install rsync )
-    - rsync -avz --exclude $DAGSTER_DBT_PROJECT_NAME --exclude .git $DAGSTER_DBT_PROJECT_DIR/ $DAGSTER_DBT_PACKAGE_DATA_DIR
-    - dbt deps --project-dir $DAGSTER_DBT_PACKAGE_DATA_DIR --profiles-dir $DAGSTER_DBT_PACKAGE_DATA_DIR
-    - dbt parse --project-dir $DAGSTER_DBT_PACKAGE_DATA_DIR --profiles-dir $DAGSTER_DBT_PACKAGE_DATA_DIR
-    - rm $DAGSTER_DBT_PACKAGE_DATA_DIR/target/partial_parse.msgpack
+    - pip install . --upgrade --upgrade-strategy eager
+    - dagster-dbt project prepare-and-package --file $DAGSTER_DBT_PROJECT_NAME/project.py
+    # The cli command below can be used to manage syncing the prod manifest to branches if state_path is set on the DbtProject
+    # - dagster-cloud ci dagster-dbt project manage-state --file $DAGSTER_DBT_PROJECT_NAME/project.py
     # deploy
+    - cd -
     - /gitlab_action/deploy.py ./dagster_cloud.yaml
