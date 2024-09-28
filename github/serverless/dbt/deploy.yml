@@ -4,6 +4,7 @@ on:
     branches:
       - "main"
       - "master"
+  workflow_dispatch:
 
 concurrency:
   # Cancel in-progress deploys to same branch
