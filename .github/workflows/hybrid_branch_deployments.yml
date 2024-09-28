@@ -22,6 +22,9 @@ jobs:
   dagster_cloud_build_push:
     runs-on: ubuntu-latest
     needs: parse_workspace
+    permissions:
+      contents: read
+      pull-requests: read
     name: Dagster Hybrid Branch Deployments
     strategy:
       fail-fast: false
