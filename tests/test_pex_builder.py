@@ -2,12 +2,7 @@ import os
 import subprocess
 import tempfile
 from contextlib import contextmanager
-from pathlib import Path
 from typing import List
-from unittest import mock
-
-import pytest
-import requests
 
 
 @contextmanager
@@ -23,18 +18,16 @@ def run_dagster_cloud_serverless_cmd(dagster_cloud_pex_path, args: List[str]):
                 build_output_dir,
             ],
             capture_output=True,
+            check=False,
         )
         if proc.returncode:
             raise ValueError(
-                "Failed to run dagster-cloud.pex:"
-                + (proc.stdout + proc.stderr).decode("utf-8")
+                "Failed to run dagster-cloud.pex:" + (proc.stdout + proc.stderr).decode("utf-8")
             )
 
         all_files = os.listdir(build_output_dir)
         pex_files = {
-            filename
-            for filename in all_files
-            if filename.endswith(".pex") and filename != ".pex"
+            filename for filename in all_files if filename.endswith(".pex") and filename != ".pex"
         }
         yield (build_output_dir, list(pex_files), list(set(all_files) - pex_files))
 
@@ -48,6 +41,7 @@ def test_pex_build_only(repo_root, dagster_cloud_pex_path):
             str(dagster_project1),
             "--api-token=fake",
             "--url=fake",
+            "--python-version=3.11",
         ],
     ) as (
         build_output_dir,
@@ -56,9 +50,7 @@ def test_pex_build_only(repo_root, dagster_cloud_pex_path):
     ):
         # one source-HASH.pex and one deps-HASH.pex file are expected
         assert 2 == len(pex_files)
-        pex_file_by_alias = {
-            filename.split("-", 1)[0]: filename for filename in pex_files
-        }
+        pex_file_by_alias = {filename.split("-", 1)[0]: filename for filename in pex_files}
 
         assert {"source", "deps"} == set(pex_file_by_alias)
 

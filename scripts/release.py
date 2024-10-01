@@ -104,6 +104,16 @@ def update_dagster_cloud_pex(
         info("Using PyPI for dagster package")
         dagster_pkg = "dagster"
 
+    platform_args = []
+
+    # each of the default versions used by ubuntu 20.04 / 22.04 / 24.04 respectively
+    for py_version in ["38", "310", "312"]:
+        platform_args.extend(
+            [
+                f"--platform=manylinux2014_x86_64-cp-{py_version}-cp{py_version}",
+            ]
+        )
+
     info("Building generated/gha/dagster-cloud.pex")
     args = [
         "pex",
@@ -112,12 +122,14 @@ def update_dagster_cloud_pex(
         dagster_pkg,
         "PyGithub",
         "-o=dagster-cloud.pex",
-        "--platform=manylinux2014_x86_64-cp-38-cp38",
-        "--platform=macosx_12_0_x86_64-cp-38-cp38",
-        "--platform=macosx_12_0_arm64-cp-38-cp38",
+        *platform_args,
+        "--platform=macosx_12_0_x86_64-cp-311-cp311",
+        "--platform=macosx_12_0_arm64-cp-311-cp311",
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
+        # use a /bin/sh entrypoint that is better at choosing a python interpreter to use
+        "--sh-boot",
         "-v",
     ]
     print(f"Running {args}")
