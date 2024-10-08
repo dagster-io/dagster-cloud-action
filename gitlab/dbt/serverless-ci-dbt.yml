@@ -5,8 +5,8 @@ variables:
   DAGSTER_DBT_PROJECT_NAME: $DAGSTER_DBT_LOCATION_NAME
   DAGSTER_DBT_PROJECT_DIR: "${CI_PROJECT_DIR}"
   DAGSTER_DBT_PACKAGE_DATA_DIR: "${CI_PROJECT_DIR}/$DAGSTER_DBT_PROJECT_NAME/dbt-project"
-  # Python versions 3.8 to 3.11 are supported
-  PYTHON_VERSION: '3.8'
+  # Python versions 3.8 to 3.12 are supported
+  PYTHON_VERSION: '3.10'
 
 deploy-branch:
   stage: deploy
