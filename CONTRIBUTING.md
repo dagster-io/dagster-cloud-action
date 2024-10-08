@@ -12,12 +12,12 @@ If you have a PAT handy you can just do:
 % echo $YOUR_GITHUB_PAT | docker login ghcr.io -u $YOUR_GITHUB_USERNAME --password-stdin
 ```
 
-## Step 2. Determine the new point version and create a release branch, 
+## Step 2. Determine the new point version and create a release branch,
 
 ```
 % git checkout main
 % git fetch origin --tags --force
-% git tag 
+% git tag
 pex-v0.1
 pex-v0.1.14
 prha
@@ -44,7 +44,7 @@ The point version is the next unused `v0.1.*` version, eg `v0.1.22` above. Creat
 
 ## Step 3. Build and deploy a new docker-cloud-action image, a new dagster.cloud.pex and update code references to docker
 
-A script does this work. **Note**: a virtual environment using Python3.8 is required to run the script.
+A script does this work. **Note**: a virtual environment using Python3.11 is required to run the script.
 
 ```
 # Note no 'v' prefix
@@ -106,7 +106,7 @@ git push -f origin v0.1.22
 
 # Step 6. Promote
 Most users point at a dot version tag for the GitHub Action, e.g. `@v0.1` and `@pex-v0.1`.
-If you are releasing a fix or non-breaking feature, you want to move this tag so existing users get access to your changes. 
+If you are releasing a fix or non-breaking feature, you want to move this tag so existing users get access to your changes.
 
 > Due an unfortunate bug, the ci-summary step in many user's workflow is pinned to v0.1.27, so we need v0.1.27 to follow v0.1 as well.
 > See https://github.com/dagster-io/dagster-cloud-hybrid-quickstart/commit/2149359dd1076f3bcd6f652dc00cb74ac9c81636
