@@ -1,6 +1,6 @@
 # Builds ghcr.io/daster-io/dagster-manylinux-builder:*
 
-# This docker image contains the PEX builder (builder.pex) and is capable of 
+# This docker image contains the PEX builder (builder.pex) and is capable of
 # building source only dependencies (sdists) for Python that work with Dagster Cloud Serverless base
 # images.
 
@@ -12,8 +12,8 @@
 #
 # $ echo $GITHUB-PAT | docker login ghcr.io -u USERNAME --password-stdin
 #
-# $ docker build . -f src/Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:latest
-# $ docker push ghcr.io/dagster-io/dagster-manylinux-builder:latest
+# $ docker build . -f src/Dockerfile.dagster-manylinux-builder -t ghcr.io/dagster-io/dagster-manylinux-builder:YOUR_IMAGE_TAG_HERE
+# $ docker push ghcr.io/dagster-io/dagster-manylinux-builder:YOUR_IMAGE_TAG_HERE
 
 # See dagster-cloud (docker_runner.py) for code that uses this image.
 
@@ -23,13 +23,13 @@
 FROM --platform=linux/amd64 quay.io/pypa/manylinux_2_28_x86_64:latest
 
 # Add all the relevant Python binaries to the PATH
-ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp37-cp37m/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:$PATH"
+ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:/opt/python/cp311-cp311/bin:/opt/python/cp311-cp312/bin:$PATH"
 
 # To install unreleased versions, build the wheels and drop them in this directory
 COPY wheels /wheels
 
 # Install dagster-cloud
-RUN python3.8 -m pip install dagster-cloud --find-links file:///wheels/
+RUN python3.11 -m pip install dagster-cloud --find-links file:///wheels/
 
 COPY generated/gha/builder.pex /builder.pex
 
