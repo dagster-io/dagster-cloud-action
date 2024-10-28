@@ -60,12 +60,12 @@ jobs:
       # First ensure the correct Python version is installed
       - name: Set up Python ${{ env.PYTHON_VERSION }} for target
         id: setup-python-version
-        if: steps.pre-run.outputs.result == 'pex-deploy'
+        if: steps.prerun.outputs.result == 'pex-deploy'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install setuptools
-        if: steps.pre-run.outputs.result == 'pex-deploy'
+        if: steps.prerun.outputs.result == 'pex-deploy'
         run: ${{ steps.setup-python-version.outputs.python-path }} -m pip install setuptools
         shell: bash
 
