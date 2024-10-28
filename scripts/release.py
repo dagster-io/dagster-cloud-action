@@ -128,8 +128,7 @@ def update_dagster_cloud_pex(
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
-        # use a /bin/sh entrypoint that is better at choosing a python interpreter to use
-        "--sh-boot",
+        "--python-shebang=/usr/bin/env python",
         "-v",
     ]
     print(f"Running {args}")
