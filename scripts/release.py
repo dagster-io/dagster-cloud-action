@@ -81,7 +81,7 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
             print(output)
 
 
-@app.command(help="Build dagster-cloud.pex")
+@app.command(help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image")
 def build_dagster_cloud_pex(
     dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
@@ -147,6 +147,7 @@ def update_dagster_cloud_pex(
     dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
+    # Map /generated on the docker image to our local generated folder
     map_folders = {"/generated": os.path.join(os.path.dirname(__file__), "..", "generated")}
 
     mount_args = []
@@ -167,7 +168,6 @@ def update_dagster_cloud_pex(
 
     subprocess.run(cmd, check=True)
 
-    # Map generated to generated on docker image and build!
     cmd = [
         "docker",
         "run",

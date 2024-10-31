@@ -1,0 +1,6 @@
+# Used for testing the generated dagster-cloud pex
+FROM --platform=linux/amd64 python:3.10-slim
+
+COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
+
+ENTRYPOINT ["/dagster-cloud.pex"]
