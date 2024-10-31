@@ -1,0 +1,16 @@
+# Builds generated/gha/dagster-cloud.pex
+
+# Use an official manylinux builder (https://github.com/pypa/manylinux#docker-images)
+FROM --platform=linux/amd64 quay.io/pypa/manylinux_2_28_x86_64:latest
+
+# Add all the relevant Python binaries to the PATH
+ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:/opt/python/cp311-cp311/bin:/opt/python/cp311-cp312/bin:$PATH"
+
+# pins?
+RUN python3.11 -m pip install typer rich pex
+
+COPY release.py release.py
+
+RUN mkdir -p /generated
+
+CMD ["python3.11", "release.py", "build-dagster-cloud-pex"]
