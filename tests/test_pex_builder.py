@@ -1,53 +1,74 @@
 import os
 import subprocess
 import tempfile
-from contextlib import contextmanager
-from typing import List
+from typing import List, Mapping
+
+import pytest
 
 
-@contextmanager
-def run_dagster_cloud_serverless_cmd(dagster_cloud_pex_path, args: List[str]):
+def run_dagster_cloud_serverless_cmd(args: List[str], map_folders: Mapping[str, str]):
+    mount_args = []
+    for target_folder, source_folder in map_folders.items():
+        mount_args.extend(["--mount", f"type=bind,source={source_folder},target={target_folder}"])
+
+    cmd = [
+        "docker",
+        "run",
+        "--platform=linux/amd64",
+        *mount_args,
+        "-t",
+        "test-dagster-cloud-pex",
+        "-m",
+        "dagster_cloud_cli.entrypoint",
+        "serverless",
+        *args,
+    ]
+
+    subprocess.run(cmd, encoding="utf-8", capture_output=False, check=True)
+
+
+@pytest.fixture
+def built_test_dagster_cloud_pex_image(repo_root: str):
+    src_dir = os.path.join(os.path.dirname(__file__), "..", "src")
+
+    cmd = [
+        "docker",
+        "build",
+        "--progress=plain",
+        "-t",
+        "test-dagster-cloud-pex",
+        "--platform=linux/amd64",
+        "-f",
+        os.path.join(src_dir, "Dockerfile.test-dagster-cloud-pex"),
+        repo_root,
+    ]
+
+    subprocess.run(cmd, check=True)
+
+
+def test_pex_build_only(repo_root, built_test_dagster_cloud_pex_image):
+    dagster_project1 = repo_root / "tests/test-repos/dagster_project1"
+
     with tempfile.TemporaryDirectory() as build_output_dir:
-        proc = subprocess.run(
+        map_folders = {"/dagster_project1": dagster_project1, "/build_output_dir": build_output_dir}
+
+        run_dagster_cloud_serverless_cmd(
             [
-                dagster_cloud_pex_path,
-                "-m",
-                "dagster_cloud_cli.entrypoint",
-                "serverless",
-                *args,
-                build_output_dir,
+                "build-python-executable",
+                "/dagster_project1",
+                "--api-token=fake",
+                "--url=fake",
+                "--python-version=3.10",
+                "/build_output_dir",
             ],
-            capture_output=True,
-            check=False,
+            map_folders=map_folders,
         )
-        if proc.returncode:
-            raise ValueError(
-                "Failed to run dagster-cloud.pex:" + (proc.stdout + proc.stderr).decode("utf-8")
-            )
 
         all_files = os.listdir(build_output_dir)
         pex_files = {
             filename for filename in all_files if filename.endswith(".pex") and filename != ".pex"
         }
-        yield (build_output_dir, list(pex_files), list(set(all_files) - pex_files))
 
-
-def test_pex_build_only(repo_root, dagster_cloud_pex_path):
-    dagster_project1 = repo_root / "tests/test-repos/dagster_project1"
-    with run_dagster_cloud_serverless_cmd(
-        dagster_cloud_pex_path,
-        [
-            "build-python-executable",
-            str(dagster_project1),
-            "--api-token=fake",
-            "--url=fake",
-            "--python-version=3.11",
-        ],
-    ) as (
-        build_output_dir,
-        pex_files,
-        other_files,
-    ):
         # one source-HASH.pex and one deps-HASH.pex file are expected
         assert 2 == len(pex_files)
         pex_file_by_alias = {filename.split("-", 1)[0]: filename for filename in pex_files}
@@ -55,8 +76,16 @@ def test_pex_build_only(repo_root, dagster_cloud_pex_path):
         assert {"source", "deps"} == set(pex_file_by_alias)
 
 
-def test_dagster_cloud_runnable(dagster_cloud_pex_path):
-    output = subprocess.check_output(
-        [dagster_cloud_pex_path, "-c", "print('hello')"], encoding="utf-8"
-    )
-    assert "hello" in output
+def test_dagster_cloud_runnable(built_test_dagster_cloud_pex_image):
+    cmd = [
+        "docker",
+        "run",
+        "--platform=linux/amd64",
+        "-t",
+        "test-dagster-cloud-pex",
+        "-c",
+        "print('hello')",
+    ]
+    output = subprocess.run(cmd, encoding="utf-8", capture_output=True, check=True)
+
+    assert "hello" in output.stdout

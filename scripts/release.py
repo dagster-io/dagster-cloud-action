@@ -81,8 +81,8 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
             print(output)
 
 
-@app.command(help="Build dagster-cloud.pex")
-def update_dagster_cloud_pex(
+@app.command(help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image")
+def build_dagster_cloud_pex(
     dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
@@ -123,13 +123,13 @@ def update_dagster_cloud_pex(
         "PyGithub",
         "-o=dagster-cloud.pex",
         *platform_args,
-        "--platform=macosx_12_0_x86_64-cp-311-cp311",
-        "--platform=macosx_12_0_arm64-cp-311-cp311",
+        # For arm64 github runners
+        "--platform=manylinux_2_17_aarch64-cp-312-cp312",
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
         "--python-shebang=/usr/bin/env python",
-        "-v",
+        "-vvvvv",
     ]
     print(f"Running {args}")
     output = subprocess.check_output(
@@ -140,6 +140,43 @@ def update_dagster_cloud_pex(
     print(output)
     shutil.move("dagster-cloud.pex", "generated/gha/dagster-cloud.pex")
     info("Built generated/gha/dagster-cloud.pex")
+
+
+@app.command(help="Update dagster-cloud.pex")
+def update_dagster_cloud_pex(
+    dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
+    dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
+):
+    # Map /generated on the docker image to our local generated folder
+    map_folders = {"/generated": os.path.join(os.path.dirname(__file__), "..", "generated")}
+
+    mount_args = []
+    for target_folder, source_folder in map_folders.items():
+        mount_args.extend(["--mount", f"type=bind,source={source_folder},target={target_folder}"])
+
+    cmd = [
+        "docker",
+        "build",
+        "--progress=plain",
+        "-t",
+        "dagster-cloud-pex-builder",
+        "--platform=linux/amd64",
+        "-f",
+        os.path.join(os.path.dirname(__file__), "Dockerfile.dagster-cloud-pex-builder"),
+        os.path.dirname(__file__),
+    ]
+
+    subprocess.run(cmd, check=True)
+
+    cmd = [
+        "docker",
+        "run",
+        "--platform=linux/amd64",
+        *mount_args,
+        "-t",
+        "dagster-cloud-pex-builder",
+    ]
+    subprocess.run(cmd, check=True)
 
 
 @app.command()
