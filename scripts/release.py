@@ -128,7 +128,7 @@ def build_dagster_cloud_pex(
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
-        "--python-shebang=/usr/bin/env python",
+        "--sh-boot",
         "-vvvvv",
     ]
     print(f"Running {args}")
