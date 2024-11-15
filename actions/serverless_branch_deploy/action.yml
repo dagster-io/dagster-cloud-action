@@ -30,12 +30,12 @@ runs:
   steps:
     - name: Checkout target repo
       if:  inputs.checkout_repo == 'true'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.sha }}
 
     - name: Checkout action repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: dagster-io/dagster-cloud-action
         ref: ${{ env.DAGSTER_ACTION_REF }}
