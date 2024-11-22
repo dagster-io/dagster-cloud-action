@@ -148,7 +148,7 @@ def update_dagster_cloud_pex(
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
     # Map /generated on the docker image to our local generated folder
-    map_folders = {"/generated": os.path.join(os.path.dirname(__file__), "..", "generated")}
+    map_folders = {"/generated": Path(os.path.join(os.path.dirname(__file__), "..", "generated")).resolve()}
 
     mount_args = []
     for target_folder, source_folder in map_folders.items():
