@@ -107,7 +107,7 @@ def build_dagster_cloud_pex(
     platform_args = []
 
     # each of the default versions used by ubuntu 20.04 / 22.04 / 24.04 respectively
-    for py_version in ["38", "310", "312"]:
+    for py_version in ["310", "312"]:
         platform_args.extend(
             [
                 f"--platform=manylinux2014_x86_64-cp-{py_version}-cp{py_version}",
