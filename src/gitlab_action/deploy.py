@@ -12,6 +12,7 @@ def deploy(dagster_cloud_yaml_file, deployment=None):
     python_version = os.getenv("PYTHON_VERSION", "3.8")
 
     url = os.environ["DAGSTER_CLOUD_URL"]
+    python_version = os.getenv("DAGSTER_PYTHON_VERSION", "3.8")
     if not os.getenv("SERVERLESS_BASE_IMAGE_PREFIX"):
         base_image_prefix = "657821118200.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
         if ".dogfood." in url:
