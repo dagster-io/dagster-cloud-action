@@ -13,9 +13,13 @@ def deploy(dagster_cloud_yaml_file, deployment=None):
 
     url = os.environ["DAGSTER_CLOUD_URL"]
     if not os.getenv("SERVERLESS_BASE_IMAGE_PREFIX"):
-        base_image_prefix = "657821118200.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
+        base_image_prefix = (
+            "657821118200.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
+        )
         if ".dogfood." in url:
-            base_image_prefix = "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
+            base_image_prefix = (
+                "878483074102.dkr.ecr.us-west-2.amazonaws.com/dagster-cloud-serverless-base-"
+            )
         os.environ["SERVERLESS_BASE_IMAGE_PREFIX"] = base_image_prefix
 
     project = os.getenv("CI_PROJECT_NAME")
@@ -38,12 +42,19 @@ def deploy(dagster_cloud_yaml_file, deployment=None):
                 "deploy-python-executable",
                 f"--location-name={location.name}",
                 f"--location-file={location.location_file}",
-                f"--deps-cache-from={deps_cache}",
-                f"--deps-cache-to={deps_cache}",
                 f"--commit-hash={commit}",
                 f"--git-url={commit_url}",
                 f"--python-version={python_version}",
-            ]
+                f"--deps-cache-to={deps_cache}",
+            ] + (
+                (
+                    [
+                        f"--deps-cache-from={deps_cache}",
+                    ]
+                )
+                if not os.getenv("FORCE_REBUILD_DEPS")
+                else []
+            )
             if deployment:
                 command_args.append(f"--url={url}/{deployment}")
             if location.build_folder:
