@@ -64,7 +64,7 @@ runs:
     - name: Ensure requirements.txt is available
       shell: bash
       run: >
-        pip compile pyproject.toml --output-file requirement.txt
+        uv pip compile pyproject.toml --output-file requirements.txt
 
     - if: ${{ inputs.deploy == 'true' }}
       run: >
