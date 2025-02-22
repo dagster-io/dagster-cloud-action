@@ -13,6 +13,8 @@ if [ -z $INPUT_SOURCE_DIRECTORY ]; then
 fi
 
 git config --global --add safe.directory /github/workspace
+git config --global --add safe.directory $INPUT_SOURCE_DIRECTORY
+
 BRANCH_DEPLOYMENT_NAME=$(dagster-cloud ci branch-deployment $INPUT_SOURCE_DIRECTORY)
 
 echo "deployment=${BRANCH_DEPLOYMENT_NAME}" >> $GITHUB_OUTPUT
