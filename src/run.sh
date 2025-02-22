@@ -11,7 +11,8 @@ fi
 
 RUN_ID=$(
     dagster-cloud job launch \
-    --url "${DAGSTER_CLOUD_URL}/${INPUT_DEPLOYMENT}" \
+    --url "${DAGSTER_CLOUD_URL}" \
+    --deployment "${INPUT_DEPLOYMENT}" \
     --api-token "$DAGSTER_CLOUD_API_TOKEN" \
     --location "${INPUT_LOCATION_NAME}" \
     --repository "${INPUT_REPOSITORY_NAME}" \

@@ -1,5 +1,3 @@
-import json
-
 def test_run(tmp_path, exec_context, action_docker_image_id):
     output_file = tmp_path / "output.txt"
     output_file.touch()
@@ -22,8 +20,9 @@ def test_run(tmp_path, exec_context, action_docker_image_id):
     exec_context.stub_command(
         "dagster-cloud",
         {
-            "job launch --url http://dagster.cloud/test/prod "
-            "--api-token api-token  "
+            "job launch --url http://dagster.cloud/test "
+            "--deployment prod "
+            "--api-token api-token "
             "--location some-location "
             "--repository some-repository "
             "--job some-job "
