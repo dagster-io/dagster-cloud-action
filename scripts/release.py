@@ -94,15 +94,15 @@ def build_dagster_cloud_pex(
         dagster_cloud_cli_pkg = f"git+https://github.com/dagster-io/internal.git@{dagster_internal_branch}#egg=dagster-cloud-cli&subdirectory=dagster-cloud/python_modules/dagster-cloud-cli"
     else:
         info("Using PyPI for dagster-cloud, dagster-cloud-cli packages")
-        dagster_cloud_pkg = "dagster-cloud"
-        dagster_cloud_cli_pkg = "dagster-cloud-cli"
+        dagster_cloud_pkg = "dagster-cloud==1.8.13"
+        dagster_cloud_cli_pkg = "dagster-cloud-cli==1.8.13"
 
     if dagster_oss_branch:
         info(f"Using dagster@{dagster_internal_branch} for dagster package")
         dagster_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster&subdirectory=python_modules/dagster"
     else:
         info("Using PyPI for dagster package")
-        dagster_pkg = "dagster"
+        dagster_pkg = "dagster==1.8.13"
 
     platform_args = []
 
@@ -148,7 +148,7 @@ def update_dagster_cloud_pex(
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
     # Map /generated on the docker image to our local generated folder
-    map_folders = {"/generated": os.path.join(os.path.dirname(__file__), "..", "generated")}
+    map_folders = {"/generated": Path(os.path.join(os.path.dirname(__file__), "..", "generated")).resolve()}
 
     mount_args = []
     for target_folder, source_folder in map_folders.items():
