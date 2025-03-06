@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
 # Switches PEX deploy behavior based on github runner's ubuntu version
-# - ubuntu-20.04 can always build pexes that work on our target platform
-# - ubuntu-22.04 can only build pexes if there are no sdists (source only packages)
+# - ubuntu-22.04 can always build pexes that work on our target platform
+# - newer versions of ubuntu can only build pexes if there are no sdists (source only packages)
 
-# On ubuntu-20.04: forward args to `dagster-cloud --build-method=local`
-# On ubuntu-22.04: forward args to `dagster-cloud --build-method=docker`
-# - Sometimes 22.04 may try to build sdists but build the wrong version (since we are not yet
-#   using --complete-platform for pex). To avoid this situation, we always build dependencies in the
-#   right docker environment on 22.04. Note if dependencies are not being built, docker will not
-#   be used. The source.pex is always built using the local environment.
+# On ubuntu-22.04: forward args to `dagster-cloud --build-method=local`
+# On anything else: forward args to `dagster-cloud --build-method=docker` to ensure they are built in a compatible environment
 
 import os
 import re
@@ -39,7 +35,7 @@ def main():
 
     ubuntu_version = get_runner_ubuntu_version()
     print("Running on Ubuntu", ubuntu_version, flush=True)
-    if ubuntu_version == "20.04":
+    if ubuntu_version == "22.04":
         returncode, output = deploy_pex(args, deployment_name, build_method="local")
     else:
         returncode, output = deploy_pex(args, deployment_name, build_method="docker")
@@ -61,7 +57,7 @@ def get_runner_ubuntu_version():
     for line in release_info.splitlines(keepends=False):
         if line.startswith("DISTRIB_RELEASE="):
             return line.split("=", 1)[1]
-    return "22.04"  # fallback to safer behavior
+    return "24.04"  # fallback to safer behavior
 
 
 def get_locations(dagster_cloud_file) -> List[str]:
