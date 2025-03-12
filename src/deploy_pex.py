@@ -35,7 +35,7 @@ def main():
 
     ubuntu_version = get_runner_ubuntu_version()
     print("Running on Ubuntu", ubuntu_version, flush=True)
-    if ubuntu_version == "22.04":
+    if ubuntu_version == "22.04" or ubuntu_version == "20.04":
         returncode, output = deploy_pex(args, deployment_name, build_method="local")
     else:
         returncode, output = deploy_pex(args, deployment_name, build_method="docker")
