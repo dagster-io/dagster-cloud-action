@@ -1,0 +1,49 @@
+name: "Initialize Deploy Session"
+description: "Initialize a new deploy session to Dagster+"
+inputs:
+  project_dir:
+    required: true
+    description: "The root directory of the dg project or workspace."
+  deployment:
+    required: false
+    description: "The deployment name to deploy. For pull requests, this deployment will be used as the base deployment."
+    default: "prod"
+  location_names:
+    required: false
+    description: "JSON list containing names of locations to deploy. If unspecified, all locations are deployed."
+
+runs:
+  using: "composite"
+  steps:
+    - name: init-env-vars
+      run: >
+        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex" >> $GITHUB_ENV &&
+        echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
+      shell: bash
+
+    - name: set-location-names
+      if: ${{ inputs.location_names }}
+      run: echo ${{ format('LOCATION_NAMES_FLAG=--location-name={0}', join(fromJSON(inputs.location_names), ' --location-name=')) }} >> $GITHUB_ENV
+      shell: bash
+
+    # Initialize the deploy session
+    - id: start-deploy-session
+      run: >
+        $DAGSTER_CLOUD_PEX -m dagster_dg.cli.entrypoint plus deploy start
+        --path=${{ inputs.project_dir }}
+        --deployment=${{ inputs.deployment }}
+        --status-url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        --git-url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        --commit-hash=${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        --yes
+        $LOCATION_NAMES_FLAG
+      shell: bash
+
+    - id: ci-status
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci status
+      shell: bash
+
+    # Create a PR comment if necessary
+    - id: ci-notify
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci notify --project-dir=${{ inputs.project_dir }}
+      shell: bash
