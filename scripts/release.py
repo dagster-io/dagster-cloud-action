@@ -16,25 +16,11 @@ console = Console()
 
 app = typer.Typer()
 
-DAGSTER_INTERNAL_BRANCH_OPTION = typer.Option(
-    None,
-    envvar="DAGSTER_INTERNAL_BRANCH",
-    help="The internal git branch that is used to build dagster-cloud and other packages.",
-)
+
 DAGSTER_OSS_BRANCH_OPTION = typer.Option(
     None,
     envvar="DAGSTER_OSS_BRANCH",
     help="The OSS git branch that is used to build dagster and other packages.",
-)
-GITHUB_AUTH_USER_OPTION = typer.Option(
-    None,
-    envvar="GITHUB_USER",
-    help="The github user to use for authentication.",
-)
-GITHUB_AUTH_TOKEN_OPTION = typer.Option(
-    None,
-    envvar="GITHUB_TOKEN",
-    help="The github personal access token to use for authentication.",
 )
 
 
@@ -94,36 +80,24 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
             print(output)
 
 
-@app.command(
-    help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image"
-)
+@app.command(help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image")
 def build_dagster_cloud_pex(
-    dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
-    github_user: Optional[str] = GITHUB_AUTH_USER_OPTION,
-    github_token: Optional[str] = GITHUB_AUTH_TOKEN_OPTION,
 ):
-    github_auth = ""
-    if github_user and github_token:
-        github_auth = f"{github_user}:{github_token}@"
-
-    if dagster_internal_branch:
-        info(
-            f"Using internal@{dagster_internal_branch} for dagster-cloud, dagster-cloud-cli packages"
-        )
-        dagster_cloud_pkg = f"git+https://{github_auth}github.com/dagster-io/internal.git@{dagster_internal_branch}#egg=dagster-cloud&subdirectory=dagster-cloud/python_modules/dagster-cloud"
-        dagster_cloud_cli_pkg = f"git+https://{github_auth}github.com/dagster-io/internal.git@{dagster_internal_branch}#egg=dagster-cloud-cli&subdirectory=dagster-cloud/python_modules/dagster-cloud-cli"
-    else:
-        info("Using PyPI for dagster-cloud, dagster-cloud-cli packages")
-        dagster_cloud_pkg = "dagster-cloud"
-        dagster_cloud_cli_pkg = "dagster-cloud-cli"
-
     if dagster_oss_branch:
-        info(f"Using dagster@{dagster_internal_branch} for dagster package")
+        info(f"Using dagster@{dagster_oss_branch} for dagster packages")
         dagster_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster&subdirectory=python_modules/dagster"
+        dagster_cloud_cli_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-cloud-cli&subdirectory=python_modules/libraries/dagster-cloud-cli"
+        dagster_dg_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-dg&subdirectory=python_modules/libraries/dagster-dg"
+        dagster_pipes_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-pipes&subdirectory=python_modules/dagster-pipes"
+        dagster_shared_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-shared&subdirectory=python_modules/libraries/dagster-shared"
     else:
         info("Using PyPI for dagster package")
         dagster_pkg = "dagster"
+        dagster_cloud_cli_pkg = "dagster-cloud-cli"
+        dagster_dg_pkg = "dagster-dg"
+        dagster_pipes_pkg = "dagster-pipes"
+        dagster_shared_pkg = "dagster-shared"
 
     platform_args = []
 
@@ -138,10 +112,13 @@ def build_dagster_cloud_pex(
     info("Building generated/gha/dagster-cloud.pex")
     args = [
         "pex",
-        dagster_cloud_pkg,
         dagster_cloud_cli_pkg,
         dagster_pkg,
+        dagster_dg_pkg,
+        dagster_pipes_pkg,
+        dagster_shared_pkg,
         "PyGithub",
+        "pex>=2.1.132,<3",
         "-o=dagster-cloud.pex",
         *platform_args,
         # For arm64 github runners
@@ -165,34 +142,18 @@ def build_dagster_cloud_pex(
 
 @app.command(help="Update dagster-cloud.pex")
 def update_dagster_cloud_pex(
-    dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
     # Map /generated on the docker image to our local generated folder
-    map_folders = {
-        "/generated": os.path.join(os.path.dirname(__file__), "..", "generated")
-    }
+    map_folders = {"/generated": os.path.join(os.path.dirname(__file__), "..", "generated")}
 
     env_args = []
-    if dagster_internal_branch:
-        env_args.extend(["-e", f"DAGSTER_INTERNAL_BRANCH={dagster_internal_branch}"])
     if dagster_oss_branch:
         env_args.extend(["-e", f"DAGSTER_OSS_BRANCH={dagster_oss_branch}"])
-    if os.getenv("GITHUB_USER") and os.getenv("GITHUB_TOKEN"):
-        env_args.extend(
-            [
-                "-e",
-                f"GITHUB_USER={os.getenv('GITHUB_USER')}",
-                "-e",
-                f"GITHUB_TOKEN={os.getenv('GITHUB_TOKEN')}",
-            ]
-        )
 
     mount_args = []
     for target_folder, source_folder in map_folders.items():
-        mount_args.extend(
-            ["--mount", f"type=bind,source={source_folder},target={target_folder}"]
-        )
+        mount_args.extend(["--mount", f"type=bind,source={source_folder},target={target_folder}"])
 
     cmd = [
         "docker",
@@ -247,7 +208,6 @@ def create_rc(
     check_workdir: bool = True,
     execute_tests: bool = True,
     publish_docker_action: bool = True,
-    dagster_internal_branch: Optional[str] = DAGSTER_INTERNAL_BRANCH_OPTION,
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
 ):
     if check_workdir:
@@ -259,7 +219,7 @@ def create_rc(
         error(f"Invalid version tag {version_tag}")
         sys.exit(1)
 
-    update_dagster_cloud_pex(dagster_internal_branch, dagster_oss_branch)
+    update_dagster_cloud_pex(dagster_oss_branch)
     if execute_tests:
         run_tests()
     build_docker_action(version_tag, publish_docker_action)
@@ -268,9 +228,7 @@ def create_rc(
 
 
 def ensure_clean_workdir():
-    proc = subprocess.run(
-        ["git", "status", "--porcelain"], capture_output=True, check=False
-    )
+    proc = subprocess.run(["git", "status", "--porcelain"], capture_output=True, check=False)
     if proc.stdout or proc.stderr:
         error("ERROR: Git working directory not clean:")
         error((proc.stdout + proc.stderr).decode("utf-8"))
