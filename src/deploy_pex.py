@@ -39,14 +39,9 @@ def main():
 
     ubuntu_version = get_runner_ubuntu_version()
     print("Running on Ubuntu", ubuntu_version, flush=True)
-    if ubuntu_version == "20.04":
-        returncode, output = deploy_pex(args, deployment_name, build_method="local")
-    else:
-        returncode, output = deploy_pex(args, deployment_name, build_method="docker")
+    returncode, output = deploy_pex(args, deployment_name, build_method="local")
     if returncode:
-        print(
-            "::error Title=Deploy failed::Failed to deploy Python Executable. "
-        )
+        print("::error Title=Deploy failed::Failed to deploy Python Executable. ")
         # TODO: fallback to docker deploy here
         sys.exit(1)
 
@@ -103,7 +98,7 @@ def get_branch_deployment_name(project_dir):
         sys.exit(1)
     for line in output:
         # sometimes the cmd prints warnings in addition to the branch deployment name
-        if re.match('[0-9a-f]+', line):
+        if re.match("[0-9a-f]+", line):
             name = line.strip()
             break
     else:
@@ -175,7 +170,7 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
         return
 
     env = dict(os.environ)
-    github_run_url = f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}'
+    github_run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
     env.update(
         {
             "INPUT_PR": str(pr_id),
