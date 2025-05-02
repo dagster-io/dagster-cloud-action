@@ -35,7 +35,7 @@ outputs:
     description: "The ID of the launched run."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:0.1.43"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:dev"
   entrypoint: "/run.sh"
   args:
     - ${{ inputs.pr }}

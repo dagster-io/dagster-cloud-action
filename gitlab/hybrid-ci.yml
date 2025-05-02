@@ -1,4 +1,4 @@
-# See https://docs.dagster.io/dagster-cloud/getting-started 
+# See https://docs.dagster.io/dagster-cloud/getting-started
 variables:
   # The organization name in Dagster Cloud
   DAGSTER_CLOUD_ORGANIZATION: <organinization-name>
@@ -29,11 +29,11 @@ workflow:
 
 initialize:
   stage: setup
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:dev
   script:
     - export
     - dagster-cloud ci check --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
-    - > 
+    - >
       dagster-cloud ci init --deployment=prod --statedir=$DAGSTER_BUILD_STATEDIR
       --project-dir=$DAGSTER_PROJECT_DIR --dagster-cloud-yaml-path=$DAGSTER_CLOUD_YAML_PATH
       --git-url=$CI_PROJECT_URL/-/commit/$CI_COMMIT_SHA
@@ -75,7 +75,7 @@ deploy-docker:
   dependencies:
     - build-image
     - initialize
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:dev
   script:
     - dagster-cloud ci set-build-output --image-tag=$IMAGE_TAG
     - dagster-cloud ci deploy
@@ -87,7 +87,7 @@ deploy-docker-branch:
   dependencies:
     - build-image
     - initialize
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:dev
   script:
     - dagster-cloud ci set-build-output --image-tag=$IMAGE_TAG
     - dagster-cloud ci deploy
@@ -97,7 +97,7 @@ deploy-docker-branch:
 
 close-branch:
   stage: deploy
-  image: ghcr.io/dagster-io/dagster-cloud-action:0.1.43
+  image: ghcr.io/dagster-io/dagster-cloud-action:dev
   when: manual
   only:
     - merge_requests
