@@ -12,5 +12,5 @@ inputs:
     description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:dev"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:1.10.12"
   entrypoint: "/registry_info.sh"
