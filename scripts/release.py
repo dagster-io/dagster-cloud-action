@@ -106,15 +106,16 @@ def build_dagster_cloud_pex(
         dagster_pipes_pkg = "dagster-pipes"
         dagster_shared_pkg = "dagster-shared"
 
-    platform_args = []
+    complete_platform_args = []
 
-    # each of the default versions used by ubuntu 22.04 / 24.04 respectively
-    for py_version in ["310", "312"]:
-        platform_args.extend(
-            [
-                f"--platform=manylinux2014_x86_64-cp-{py_version}-cp{py_version}",
-            ]
-        )
+    for json_file in {
+        "x86_64_310.json",
+        "x86_64_312.json",
+        "aarch64_312.json",
+    }:
+        with open(os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)) as f:
+            complete_platform = f.read()
+            complete_platform_args.append(f"--complete-platform={complete_platform}")
 
     info("Building generated/gha/dagster-cloud.pex")
     args = [
@@ -127,9 +128,7 @@ def build_dagster_cloud_pex(
         "PyGithub",
         "pex>=2.1.132,<3",
         "-o=dagster-cloud.pex",
-        *platform_args,
-        # For arm64 github runners
-        "--platform=manylinux_2_17_aarch64-cp-312-cp312",
+        *complete_platform_args,
         "--pip-version=23.0",
         "--resolver-version=pip-2020-resolver",
         "--venv=prepend",
