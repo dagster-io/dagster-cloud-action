@@ -9,6 +9,9 @@ RUN python3.11 -m pip install typer rich pex
 
 COPY release.py release.py
 
+RUN mkdir -p complete_platforms
+COPY complete_platforms/* complete_platforms/
+
 RUN mkdir -p /generated
 
 CMD ["python3.11", "release.py", "build-dagster-cloud-pex"]
