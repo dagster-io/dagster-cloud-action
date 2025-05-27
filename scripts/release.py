@@ -109,9 +109,10 @@ def build_dagster_cloud_pex(
     complete_platform_args = []
 
     for json_file in {
-        "x86_64_310.json",
-        "x86_64_312.json",
-        "aarch64_312.json",
+        "x86_64_310.json",  # ubuntu-22.04 action runner
+        "x86_64_312.json",  # ubuntu-24.04 action runner
+        "aarch64_312.json",  # ubuntu-24.04-arm action runner
+        "manylinux_2_28_x86_64.json",  # used by the distributed Dockerfile
     }:
         with open(os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)) as f:
             complete_platform = f.read()

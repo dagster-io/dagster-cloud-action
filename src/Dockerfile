@@ -13,7 +13,7 @@ RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud-cli
 
 # Create virtual environment using PEX
 COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
-RUN PEX_TOOLS=1 /opt/python/cp311-cp311/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
+RUN PEX_TOOLS=1 /opt/python/cp312-cp312/bin/python /dagster-cloud.pex venv /venv-dagster-cloud
 
 # Add all the relevant Python binaries to the PATH
 ENV PATH="/venv-dagster-cloud/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:/opt/python/cp311-cp311/bin:/opt/python/cp312-cp312/bin:$PATH"
