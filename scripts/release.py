@@ -94,7 +94,8 @@ def build_dagster_cloud_pex(
         info(f"Using dagster@{dagster_oss_branch} for dagster packages")
         dagster_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster&subdirectory=python_modules/dagster"
         dagster_cloud_cli_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-cloud-cli&subdirectory=python_modules/libraries/dagster-cloud-cli"
-        dagster_dg_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-dg&subdirectory=python_modules/libraries/dagster-dg"
+        dagster_dg_cli_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-dg-cli&subdirectory=python_modules/libraries/dagster-dg-cli"
+        dagster_dg_core_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-dg-core&subdirectory=python_modules/libraries/dagster-dg-core"
         dagster_pipes_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-pipes&subdirectory=python_modules/dagster-pipes"
         dagster_shared_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-shared&subdirectory=python_modules/libraries/dagster-shared"
     else:
@@ -102,7 +103,8 @@ def build_dagster_cloud_pex(
         info("Using PyPI for dagster package")
         dagster_pkg = f"dagster{pin_str}"
         dagster_cloud_cli_pkg = "dagster-cloud-cli"
-        dagster_dg_pkg = "dagster-dg"
+        dagster_dg_cli_pkg = "dagster-dg-cli"
+        dagster_dg_core_pkg = "dagster-dg-core"
         dagster_pipes_pkg = "dagster-pipes"
         dagster_shared_pkg = "dagster-shared"
 
@@ -123,7 +125,8 @@ def build_dagster_cloud_pex(
         "pex",
         dagster_cloud_cli_pkg,
         dagster_pkg,
-        dagster_dg_pkg,
+        dagster_dg_cli_pkg,
+        dagster_dg_core_pkg,
         dagster_pipes_pkg,
         dagster_shared_pkg,
         "PyGithub",
