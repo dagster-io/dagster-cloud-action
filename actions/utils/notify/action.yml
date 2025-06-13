@@ -30,7 +30,7 @@ inputs:
 
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:dev"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:1.10.20"
   entrypoint: "/notify.sh"
   args:
     - ${{ inputs.pr }}
