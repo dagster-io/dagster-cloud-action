@@ -54,7 +54,7 @@ jobs:
 
   dagster_cloud_docker_deploy:
     name: Docker Deploy
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: needs.dagster_cloud_default_deploy.outputs.build_info
     needs: dagster_cloud_default_deploy
     strategy:
