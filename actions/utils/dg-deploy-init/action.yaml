@@ -29,7 +29,7 @@ runs:
     # Initialize the deploy session
     - id: start-deploy-session
       run: >
-        $DAGSTER_CLOUD_PEX -m dagster_dg.cli.entrypoint plus deploy start
+        $DAGSTER_CLOUD_PEX -m dagster_dg_cli.cli.entrypoint plus deploy start
         --path=${{ inputs.project_dir }}
         --deployment=${{ inputs.deployment }}
         --status-url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
