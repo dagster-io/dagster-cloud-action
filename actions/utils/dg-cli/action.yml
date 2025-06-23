@@ -9,5 +9,5 @@ runs:
   using: "composite"
   steps:
     - id: dg-cli
-      run: $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_dg.cli.entrypoint ${{ inputs.command }}
+      run: $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_dg_cli.cli.entrypoint ${{ inputs.command }}
       shell: bash
