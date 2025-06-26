@@ -15,5 +15,5 @@ outputs:
     description: "The Cloud deployment associated with this branch."
 runs:
   using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:dev"
+  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:1.11.0"
   entrypoint: "/get_branch_deployment.sh"
