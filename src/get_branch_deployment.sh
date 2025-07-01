@@ -14,10 +14,11 @@ fi
 
 git config --global --add safe.directory $(realpath $INPUT_SOURCE_DIRECTORY)
 
-if [ -z $INPUT_BASE_DEPLOYMENT_NAME ]; then
-    BRANCH_DEPLOYMENT_NAME=$(dagster-cloud ci branch-deployment $INPUT_SOURCE_DIRECTORY)
-else
-    BRANCH_DEPLOYMENT_NAME=$(dagster-cloud ci branch-deployment $INPUT_SOURCE_DIRECTORY --base-deployment-name $INPUT_BASE_DEPLOYMENT_NAME)
+EXTRA_PARAMS=()
+if [ -n $INPUT_BASE_DEPLOYMENT_NAME ]; then
+    EXTRA_PARAMS+=(--base-deployment-name $INPUT_BASE_DEPLOYMENT_NAME)
 fi
+echo "Using base deployment name: $INPUT_BASE_DEPLOYMENT_NAME"
+BRANCH_DEPLOYMENT_NAME=$(dagster-cloud ci branch-deployment $INPUT_SOURCE_DIRECTORY "${EXTRA_PARAMS[@]:-}")
 
 echo "deployment=${BRANCH_DEPLOYMENT_NAME}" >> $GITHUB_OUTPUT

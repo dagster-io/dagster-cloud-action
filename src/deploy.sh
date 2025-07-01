@@ -88,7 +88,7 @@ if [ -z $INPUT_DEPLOYMENT ]; then
         --commit-message "$MESSAGE" \
         --author-name "$NAME" \
         --author-email "$EMAIL" \
-        "${EXTRA_PARAMS[@]}")
+        "${EXTRA_PARAMS[@]:-}")
 
 else
     export DEPLOYMENT_NAME=$INPUT_DEPLOYMENT
