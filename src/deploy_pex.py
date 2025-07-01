@@ -16,7 +16,9 @@ from typing import List, Optional
 
 import yaml
 
-DAGSTER_CLOUD_PEX_PATH = Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
+DAGSTER_CLOUD_PEX_PATH = (
+    Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
+)
 UPDATE_COMMENT_SCRIPT_PATH = Path(__file__).parent / "create_or_update_comment.py"
 
 
@@ -27,7 +29,9 @@ def main():
         print("Running in a pull request - going to do a branch deployment", flush=True)
         dagster_cloud_yaml = args[0]
         project_dir = os.path.dirname(dagster_cloud_yaml)
-        deployment_name = get_branch_deployment_name(project_dir)
+        deployment_name = get_branch_deployment_name(
+            project_dir, os.getenv("INPUT_BASE_DEPLOYMENT_NAME")
+        )
     else:
         # INPUT_DEPLOYMENT is to the `deployment:` input value in action.yml
         deployment_name = os.getenv("INPUT_DEPLOYMENT", "prod")
@@ -40,9 +44,7 @@ def main():
     else:
         returncode, output = deploy_pex(args, deployment_name, build_method="docker")
     if returncode:
-        print(
-            "::error Title=Deploy failed::Failed to deploy Python Executable. "
-        )
+        print("::error Title=Deploy failed::Failed to deploy Python Executable. ")
         # TODO: fallback to docker deploy here
         sys.exit(1)
 
@@ -65,7 +67,9 @@ def get_locations(dagster_cloud_file) -> List[str]:
         workspace_contents = f.read()
     workspace_contents_yaml = yaml.safe_load(workspace_contents)
 
-    return [location["location_name"] for location in workspace_contents_yaml["locations"]]
+    return [
+        location["location_name"] for location in workspace_contents_yaml["locations"]
+    ]
 
 
 def run(args):
@@ -83,7 +87,7 @@ def run(args):
     return returncode, output
 
 
-def get_branch_deployment_name(project_dir):
+def get_branch_deployment_name(project_dir: str, base_deployment_name: Optional[str]):
     returncode, output = run(
         [
             str(DAGSTER_CLOUD_PEX_PATH),
@@ -92,6 +96,14 @@ def get_branch_deployment_name(project_dir):
             "ci",
             "branch-deployment",
             project_dir,
+            *(
+                [
+                    "--base-deployment-name",
+                    base_deployment_name,
+                ]
+                if base_deployment_name
+                else []
+            ),
         ]
     )
     if returncode:
@@ -99,7 +111,7 @@ def get_branch_deployment_name(project_dir):
         sys.exit(1)
     for line in output:
         # sometimes the cmd prints warnings in addition to the branch deployment name
-        if re.match('[0-9a-f]+', line):
+        if re.match("[0-9a-f]+", line):
             name = line.strip()
             break
     else:
@@ -114,9 +126,7 @@ def deploy_pex(args, branch_deployment_name: Optional[str], build_method: str):
     args.insert(0, os.path.dirname(dagster_cloud_yaml))
     args = args + [f"--build-method={build_method}"]
     commit_hash = os.getenv("GITHUB_SHA")
-    git_url = (
-        f"{os.getenv('GITHUB_SERVER_URL')}/{os.getenv('GITHUB_REPOSITORY')}/tree/{commit_hash}"
-    )
+    git_url = f"{os.getenv('GITHUB_SERVER_URL')}/{os.getenv('GITHUB_REPOSITORY')}/tree/{commit_hash}"
     deployment_name = branch_deployment_name if branch_deployment_name else "prod"
     deployment_flag = f"--url={os.getenv('DAGSTER_CLOUD_URL')}/{deployment_name}"
     locations = get_locations(dagster_cloud_yaml)
@@ -171,7 +181,7 @@ def update_pr_comment(deployment_name: str, location_name: str, action: str):
         return
 
     env = dict(os.environ)
-    github_run_url = f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}'
+    github_run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
     env.update(
         {
             "INPUT_PR": str(pr_id),

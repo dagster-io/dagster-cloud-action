@@ -11,6 +11,9 @@ inputs:
   deployment:
     required: false
     description: "The deployment to deploy to. If unset, automatically creates or updates the branch deployment associated with the branch."
+  base_deployment_name:
+    required: false
+    description: "The name of the base deployment to use for the branch deployment."
   pr:
     required: false
     description: "The PR identifier for this PR, if any, used for branch deployments."
