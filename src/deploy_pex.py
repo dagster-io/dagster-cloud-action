@@ -30,7 +30,7 @@ def main():
         dagster_cloud_yaml = args[0]
         project_dir = os.path.dirname(dagster_cloud_yaml)
         deployment_name = get_branch_deployment_name(
-            project_dir, os.getenv("INPUT_BASE_DEPLOYMENT_NAME")
+            project_dir, base_deployment_name=os.getenv("INPUT_DEPLOYMENT", "prod")
         )
     else:
         # INPUT_DEPLOYMENT is to the `deployment:` input value in action.yml

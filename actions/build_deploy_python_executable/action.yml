@@ -10,7 +10,7 @@ inputs:
     default: '3.8'
   deployment:
     required: false
-    description: "The deployment to push to, defaults to 'prod'. Ignored for pull requests where the branch deployment is used."
+    description: "The deployment to push to. For pull requests, this deployment will be used as the base deployment."
     default: "prod"
   deploy:
     description: 'Whether to upload the code files and update the code location'
@@ -62,7 +62,6 @@ runs:
       run: >
         cd $ACTION_REPO &&
         INPUT_DEPLOYMENT=${{ inputs.deployment }}
-        INPUT_BASE_DEPLOYMENT_NAME=${{ inputs.base_deployment_name }}
         /usr/bin/python src/deploy_pex.py
         ${{ inputs.dagster_cloud_file }}
         --python-version=${{ inputs.python_version }}
