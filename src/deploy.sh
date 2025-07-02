@@ -66,39 +66,30 @@ if [ -z $INPUT_DEPLOYMENT ]; then
     export EMAIL=$(git log -1 --format='%ae')
     export NAME=$(git log -1 --format='%an')
 
-    # Create or update branch deployment
-    if [ -z $AVATAR_URL ]; then
-        export DEPLOYMENT_NAME=$(dagster-cloud branch-deployment create-or-update \
-            --url "${DAGSTER_CLOUD_URL}" \
-            --api-token "$DAGSTER_CLOUD_API_TOKEN" \
-            --git-repo-name "$GIT_REPO" \
-            --branch-name "$BRANCH_NAME" \
-            --branch-url "$BRANCH_URL" \
-            --pull-request-url "$PR_URL" \
-            --pull-request-id "$PR_ID" \
-            --pull-request-status "$PR_STATUS" \
-            --commit-hash "$COMMIT_HASH" \
-            --timestamp "$TIMESTAMP" \
-            --commit-message "$MESSAGE" \
-            --author-name "$NAME" \
-            --author-email "$EMAIL")
-    else
-        export DEPLOYMENT_NAME=$(dagster-cloud branch-deployment create-or-update \
-            --url "${DAGSTER_CLOUD_URL}" \
-            --api-token "$DAGSTER_CLOUD_API_TOKEN" \
-            --git-repo-name "$GIT_REPO" \
-            --branch-name "$BRANCH_NAME" \
-            --branch-url "$BRANCH_URL" \
-            --pull-request-url "$PR_URL" \
-            --pull-request-id "$PR_ID" \
-            --pull-request-status "$PR_STATUS" \
-            --commit-hash "$COMMIT_HASH" \
-            --timestamp "$TIMESTAMP" \
-            --commit-message "$MESSAGE" \
-            --author-name "$NAME" \
-            --author-email "$EMAIL" \
-            --author-avatar-url "$AVATAR_URL")
+    EXTRA_PARAMS=()
+    if [[ $INPUT_BASE_DEPLOYMENT_NAME ]]; then
+        EXTRA_PARAMS+=(--base-deployment-name $INPUT_BASE_DEPLOYMENT_NAME)
     fi
+    if [[ $AVATAR_URL ]]; then
+        EXTRA_PARAMS+=(--author-avatar-url $AVATAR_URL)
+    fi
+
+    export DEPLOYMENT_NAME=$(dagster-cloud branch-deployment create-or-update \
+        --url "${DAGSTER_CLOUD_URL}" \
+        --api-token "$DAGSTER_CLOUD_API_TOKEN" \
+        --git-repo-name "$GIT_REPO" \
+        --branch-name "$BRANCH_NAME" \
+        --branch-url "$BRANCH_URL" \
+        --pull-request-url "$PR_URL" \
+        --pull-request-id "$PR_ID" \
+        --pull-request-status "$PR_STATUS" \
+        --commit-hash "$COMMIT_HASH" \
+        --timestamp "$TIMESTAMP" \
+        --commit-message "$MESSAGE" \
+        --author-name "$NAME" \
+        --author-email "$EMAIL" \
+        "${EXTRA_PARAMS[@]:-}")
+
 else
     export DEPLOYMENT_NAME=$INPUT_DEPLOYMENT
 fi
