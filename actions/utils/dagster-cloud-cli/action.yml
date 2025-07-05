@@ -5,9 +5,17 @@ inputs:
     required: true
     description: "The dagster-cloud cli command to run"
 
+outputs:
+  run_id:
+    description: "The run ID returned by the command"
+    value: ${{ steps.dagster-cloud-cli.outputs.run_id }}
+
 runs:
   using: "composite"
   steps:
     - id: dagster-cloud-cli
-      run: $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ${{ inputs.command }}
+      run: |
+        output=$($GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint ${{ inputs.command }})
+        echo "$output"
+        echo "run_id=$output" >> $GITHUB_OUTPUT
       shell: bash
