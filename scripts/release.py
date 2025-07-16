@@ -49,40 +49,54 @@ def error(msg):
 
 
 @app.command()
-def run_tests():
+def run_tests(version_tag: str):
     info("Running tests")
+    os.environ["TEST_DAGSTER_VERSION"] = version_tag
     subprocess.run(["pytest", "tests", "-s"], check=True)
 
 
 @app.command(help="Build dagster-cloud-action docker image from dagster-cloud.pex")
-def build_docker_action(version_tag: str, publish_docker_action: bool = True):
-    image_name = get_docker_action_image_name(version_tag)
+def build_docker_action(
+    version_tag: str, image_name: str, platform: str, publish_docker_action: bool = True
+):
     info(f"Building {image_name}")
+
+    target_arch = "aarch64" if platform == "linux/arm64" else "x86_64"
+
     with chdir("."):
-        output = subprocess.check_output(
+        subprocess.run(
             [
                 "docker",
                 "build",
                 ".",
                 "-f",
                 "src/Dockerfile",
+                "--platform",
+                platform,
                 "-t",
                 image_name,
+                "--build-arg",
+                f"TARGET_ARCH={target_arch}",
+                "--build-arg",
+                f"DAGSTER_VERSION={version_tag}",
+                "--progress=plain",
             ],
             encoding="utf-8",
+            check=True,
         )
-        print(output)
         if publish_docker_action:
             info(f"Publishing {image_name}")
-            output = subprocess.check_output(
+            subprocess.run(
                 [
                     "docker",
                     "push",
                     image_name,
+                    "--platform",
+                    platform,
                 ],
                 encoding="utf-8",
+                check=True,
             )
-            print(output)
 
 
 @app.command(help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image")
@@ -114,7 +128,6 @@ def build_dagster_cloud_pex(
         "x86_64_310.json",  # ubuntu-22.04 action runner
         "x86_64_312.json",  # ubuntu-24.04 action runner
         "aarch64_312.json",  # ubuntu-24.04-arm action runner
-        "manylinux_2_28_x86_64.json",  # used by the distributed Dockerfile
     }:
         with open(os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)) as f:
             complete_platform = f.read()
@@ -234,9 +247,20 @@ def create_rc(
 
     update_dagster_cloud_pex(dagster_oss_branch, dagster_oss_version)
     if execute_tests:
-        run_tests()
-    build_docker_action(version_tag, publish_docker_action)
+        run_tests(version_tag)
+    build_docker_action(
+        version_tag=version_tag,
+        image_name=get_docker_action_image_name(version_tag),
+        platform="linux/amd64",
+        publish_docker_action=publish_docker_action,
+    )
     update_docker_action_references(version_tag)
+    build_docker_action(
+        version_tag=version_tag,
+        image_name=get_docker_action_image_name(version_tag, platform_suffix="arm64"),
+        platform="linux/arm64",
+        publish_docker_action=publish_docker_action,
+    )
     info(f"Updated working directory for {version_tag}")
 
 
@@ -263,8 +287,8 @@ def get_branch_name():
     return proc.stdout.decode("utf-8").strip()
 
 
-def get_docker_action_image_name(version_tag: str) -> str:
-    return f"ghcr.io/dagster-io/dagster-cloud-action:{version_tag}"
+def get_docker_action_image_name(version_tag: str, platform_suffix: Optional[str] = None) -> str:
+    return f"ghcr.io/dagster-io/dagster-cloud-action:{f'{platform_suffix}-' if platform_suffix else ''}{version_tag}"
 
 
 if __name__ == "__main__":
