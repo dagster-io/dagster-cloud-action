@@ -18,3 +18,5 @@ jobs:
           pip install -r requirements.txt
       - name: PyTest
         run: pytest
+        env:
+          TEST_DAGSTER_VERSION: "1.11.2"

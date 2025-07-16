@@ -181,6 +181,10 @@ def action_docker_image_id(repo_root):
                 "--load",
                 "--iidfile",
                 iidfile,
+                "--build-arg",
+                "TARGET_ARCH=x86_64",
+                "--build-arg",
+                f"DAGSTER_VERSION={os.environ['TEST_DAGSTER_VERSION']}",
             ],
             cwd=repo_root,
             check=True,
@@ -254,11 +258,16 @@ def pex_registry_fixture():
         response.status_code = 200
         return response
 
-    with mock.patch(
-        "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_get",
-        s3_urls_for_get,
-    ) as _, mock.patch(
-        "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_put",
-        s3_urls_for_put,
-    ) as _, mock.patch("requests.get", requests_get) as _, mock.patch("requests.put", requests_put):
+    with (
+        mock.patch(
+            "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_get",
+            s3_urls_for_get,
+        ) as _,
+        mock.patch(
+            "dagster_cloud_cli.core.pex_builder.pex_registry.get_s3_urls_for_put",
+            s3_urls_for_put,
+        ) as _,
+        mock.patch("requests.get", requests_get) as _,
+        mock.patch("requests.put", requests_put),
+    ):
         yield s3_objects
