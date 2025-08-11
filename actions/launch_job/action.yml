@@ -23,6 +23,10 @@ inputs:
   job_name:
     required: true
     description: "The name of the job to launch."
+  wait:
+    required: false
+    default: "false"
+    description: "Whether to wait for the job to complete before exiting. When true, the action will wait for the run to finish and fail if the run fails."
 runs:
   using: "composite"
   steps:
@@ -53,5 +57,6 @@ runs:
         location_name: ${{ inputs.location_name }}
         repository_name: ${{ inputs.repository_name }}
         job_name: ${{ inputs.job_name }}
+        wait: ${{ inputs.wait }}
       env:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}

@@ -18,7 +18,8 @@ RUN_ID=$(
     --repository "${INPUT_REPOSITORY_NAME}" \
     --job "${INPUT_JOB_NAME}" \
     --tags "${INPUT_TAGS_JSON}" \
-    --config-json "${INPUT_CONFIG_JSON}"
+    --config-json "${INPUT_CONFIG_JSON}" \
+    $(if [ "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then echo "--wait"; fi)
 )
 
 if [ -z $RUN_ID ]; then
