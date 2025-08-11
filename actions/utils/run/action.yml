@@ -27,6 +27,10 @@ inputs:
     required: false
     description: "A JSON dict of config to apply to the run, input as a string."
     default: "{}"
+  wait:
+    required: false
+    default: "false"
+    description: "Whether to wait for the job to complete before exiting. When true, the action will wait for the run to finish and fail if the run fails."
   dagster_cloud_url:
     required: false
     description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
