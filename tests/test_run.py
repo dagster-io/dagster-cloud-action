@@ -35,7 +35,6 @@ def test_run_without_wait(tmp_path, exec_context, action_docker_image_id):
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
-    assert "DEBUG: Wait flag disabled" in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -84,55 +83,50 @@ Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully."""
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
-    assert "DEBUG: Wait flag enabled" in stdout
-    assert "DEBUG: Extracted run ID from status output: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
 
 def test_run_with_wait_various_values(tmp_path, exec_context, action_docker_image_id):
     """Test that various truthy values for wait parameter work."""
-    for wait_value in ["True", "TRUE", "1", "yes", "Yes", "YES", "on"]:
-        output_file = tmp_path / "output.txt"
-        output_file.touch()
+    output_file = tmp_path / "output.txt"
+    output_file.touch()
         
-        # Reset exec_context for each iteration
-        exec_context.reset()
-        exec_context.set_env(
-            {
-                "GITHUB_ACTIONS": "true",
-                "DAGSTER_CLOUD_URL": "http://dagster.cloud/test",
-                "INPUT_DEPLOYMENT": "prod",
-                "DAGSTER_CLOUD_API_TOKEN": "api-token",
-                "INPUT_LOCATION_NAME": "some-location",
-                "INPUT_REPOSITORY_NAME": "some-repository",
-                "INPUT_JOB_NAME": "some-job",
-                "INPUT_TAGS_JSON": "some-tags",
-                "INPUT_CONFIG_JSON": "some-config-json",
-                "INPUT_WAIT": wait_value,
-                "GITHUB_OUTPUT": output_file.name,
-            }
-        )
+    exec_context.set_env(
+        {
+            "GITHUB_ACTIONS": "true",
+            "DAGSTER_CLOUD_URL": "http://dagster.cloud/test",
+            "INPUT_DEPLOYMENT": "prod",
+            "DAGSTER_CLOUD_API_TOKEN": "api-token",
+            "INPUT_LOCATION_NAME": "some-location",
+            "INPUT_REPOSITORY_NAME": "some-repository",
+            "INPUT_JOB_NAME": "some-job",
+            "INPUT_TAGS_JSON": "some-tags",
+            "INPUT_CONFIG_JSON": "some-config-json",
+            "INPUT_WAIT": "TRUE",  # Test uppercase
+            "GITHUB_OUTPUT": output_file.name,
+        }
+    )
 
-        exec_context.stub_command(
-            "dagster-cloud",
-            {
-                "job launch --url http://dagster.cloud/test "
-                "--deployment prod "
-                "--api-token api-token "
-                "--location some-location "
-                "--repository some-repository "
-                "--job some-job "
-                "--tags some-tags "
-                "--config-json some-config-json "
-                "--wait": "Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully.",
-            },
-        )
-        exec_context.run_docker_command(action_docker_image_id, "/run.sh")
-        stdout = exec_context.get_stdout()
-        
-        assert "DEBUG: Wait flag enabled" in stdout, f"Failed for wait_value: {wait_value}"
-        break  # Only test one value since exec_context can only run once
+    exec_context.stub_command(
+        "dagster-cloud",
+        {
+            "job launch --url http://dagster.cloud/test "
+            "--deployment prod "
+            "--api-token api-token "
+            "--location some-location "
+            "--repository some-repository "
+            "--job some-job "
+            "--tags some-tags "
+            "--config-json some-config-json "
+            "--wait": "Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully.",
+        },
+    )
+    exec_context.run_docker_command(action_docker_image_id, "/run.sh")
+    stdout = exec_context.get_stdout()
+    
+    assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
+    assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
 
 def test_run_legacy_compatibility(tmp_path, exec_context, action_docker_image_id):
@@ -172,7 +166,6 @@ def test_run_legacy_compatibility(tmp_path, exec_context, action_docker_image_id
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
-    assert "DEBUG: Wait flag disabled" in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 

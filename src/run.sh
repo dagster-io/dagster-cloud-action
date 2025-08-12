@@ -9,22 +9,13 @@ if [ -z $DAGSTER_CLOUD_URL ]; then
     fi
 fi
 
-# Debug: Print the wait parameter value for troubleshooting
-echo "DEBUG: INPUT_WAIT value: '${INPUT_WAIT}'"
-
 # Check for wait flag - handle various true values
 wait_flag=""
 case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
     "true"|"1"|"yes"|"on")
         wait_flag="--wait"
-        echo "DEBUG: Wait flag enabled"
-        ;;
-    *)
-        echo "DEBUG: Wait flag disabled"
         ;;
 esac
-
-echo "DEBUG: About to run command with wait_flag: '${wait_flag}'"
 
 # Run the command and capture all output
 COMMAND_OUTPUT=$(
@@ -40,23 +31,16 @@ COMMAND_OUTPUT=$(
     ${wait_flag} 2>&1
 )
 
-echo "DEBUG: Command output:"
-echo "$COMMAND_OUTPUT"
-
 # Extract run ID from the output
 # Look for patterns like "Run <run-id> is in progress" or "Run <run-id> finished"
 RUN_ID=""
 if [[ "$COMMAND_OUTPUT" =~ Run\ ([a-f0-9-]+) ]]; then
     RUN_ID="${BASH_REMATCH[1]}"
-    echo "DEBUG: Extracted run ID from status output: ${RUN_ID}"
 else
     # Try to get the first line if it looks like a run ID (for non-wait mode)
     FIRST_LINE=$(echo "$COMMAND_OUTPUT" | head -n1 | tr -d '\n\r')
     if [[ "$FIRST_LINE" =~ ^[a-zA-Z0-9-]+$ ]]; then
         RUN_ID="$FIRST_LINE"
-        echo "DEBUG: Using first line as run ID: ${RUN_ID}"
-    else
-        echo "DEBUG: Could not extract run ID from output"
     fi
 fi
 
