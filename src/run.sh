@@ -27,18 +27,6 @@ esac
 
 echo "DEBUG: wait_flag result: '${wait_flag}'"
 
-# Check dagster-cloud CLI version and available flags
-echo "DEBUG: dagster-cloud version:"
-dagster-cloud --version || echo "Failed to get version"
-
-echo "DEBUG: dagster-cloud job launch help:"
-dagster-cloud job launch --help | grep -A 5 -B 5 wait || echo "No wait flag found in help"
-
-# Build the command for debugging
-DAGSTER_CMD="dagster-cloud job launch --url \"${DAGSTER_CLOUD_URL}\" --deployment \"${INPUT_DEPLOYMENT}\" --api-token \"$DAGSTER_CLOUD_API_TOKEN\" --location \"${INPUT_LOCATION_NAME}\" --repository \"${INPUT_REPOSITORY_NAME}\" --job \"${INPUT_JOB_NAME}\" --tags \"${INPUT_TAGS_JSON}\" --config-json \"${INPUT_CONFIG_JSON}\" ${wait_flag}"
-
-echo "DEBUG: About to run command: ${DAGSTER_CMD}"
-
 RUN_ID=$(
     dagster-cloud job launch \
     --url "${DAGSTER_CLOUD_URL}" \
