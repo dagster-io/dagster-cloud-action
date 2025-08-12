@@ -9,24 +9,6 @@ if [ -z $DAGSTER_CLOUD_URL ]; then
     fi
 fi
 
-# Debug: Print the wait parameter value for troubleshooting
-echo "DEBUG: INPUT_WAIT value: '${INPUT_WAIT}'"
-echo "DEBUG: INPUT_WAIT lowercase: '$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')'"
-
-# Check for wait flag - handle various true values
-wait_flag=""
-case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
-    "true"|"1"|"yes"|"on")
-        wait_flag="--wait"
-        echo "DEBUG: Wait flag enabled"
-        ;;
-    *)
-        echo "DEBUG: Wait flag disabled"
-        ;;
-esac
-
-echo "DEBUG: wait_flag result: '${wait_flag}'"
-
 RUN_ID=$(
     dagster-cloud job launch \
     --url "${DAGSTER_CLOUD_URL}" \
@@ -37,7 +19,7 @@ RUN_ID=$(
     --job "${INPUT_JOB_NAME}" \
     --tags "${INPUT_TAGS_JSON}" \
     --config-json "${INPUT_CONFIG_JSON}" \
-    ${wait_flag}
+    $(if [ "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" = "true" ]; then echo "--wait"; fi)
 )
 
 if [ -z $RUN_ID ]; then
