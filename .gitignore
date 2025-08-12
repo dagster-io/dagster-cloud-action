@@ -10,3 +10,4 @@ wheels/*whl
 
 # PyCharm IDE Config files
 .idea/
+.env
