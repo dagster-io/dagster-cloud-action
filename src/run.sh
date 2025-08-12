@@ -46,13 +46,13 @@ echo "$COMMAND_OUTPUT"
 # Extract run ID from the output
 # Look for patterns like "Run <run-id> is in progress" or "Run <run-id> finished"
 RUN_ID=""
-if [[ "$COMMAND_OUTPUT" =~ Run\ ([a-f0-9-]{36}) ]]; then
+if [[ "$COMMAND_OUTPUT" =~ Run\ ([a-f0-9-]+) ]]; then
     RUN_ID="${BASH_REMATCH[1]}"
     echo "DEBUG: Extracted run ID from status output: ${RUN_ID}"
 else
     # Try to get the first line if it looks like a run ID (for non-wait mode)
     FIRST_LINE=$(echo "$COMMAND_OUTPUT" | head -n1 | tr -d '\n\r')
-    if [[ "$FIRST_LINE" =~ ^[a-f0-9-]{36}$ ]]; then
+    if [[ "$FIRST_LINE" =~ ^[a-zA-Z0-9-]+$ ]]; then
         RUN_ID="$FIRST_LINE"
         echo "DEBUG: Using first line as run ID: ${RUN_ID}"
     else
