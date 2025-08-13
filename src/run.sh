@@ -29,9 +29,12 @@ case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
         ;;
 esac
 
-# Run the command and capture all output
-COMMAND_OUTPUT=$(
-    dagster-cloud job launch \
+# Run the command and capture all output while streaming to console
+echo "Launching dagster-cloud job..."
+TEMP_OUTPUT_FILE=$(mktemp)
+
+# Use tee to both display output and capture it
+dagster-cloud job launch \
     --url "${DAGSTER_CLOUD_URL}" \
     --deployment "${INPUT_DEPLOYMENT}" \
     --api-token "$DAGSTER_CLOUD_API_TOKEN" \
@@ -40,8 +43,22 @@ COMMAND_OUTPUT=$(
     --job "${INPUT_JOB_NAME}" \
     --tags "${INPUT_TAGS_JSON}" \
     --config-json "${INPUT_CONFIG_JSON}" \
-    ${wait_flag} ${interval_flag} 2>&1
-)
+    ${wait_flag} ${interval_flag} 2>&1 | tee "${TEMP_OUTPUT_FILE}"
+
+# Check the exit code of the dagster-cloud command (not tee)
+DAGSTER_EXIT_CODE=${PIPESTATUS[0]}
+
+# Read the captured output for run ID extraction
+COMMAND_OUTPUT=$(cat "${TEMP_OUTPUT_FILE}")
+
+# Clean up temp file
+rm -f "${TEMP_OUTPUT_FILE}"
+
+# Check if the command failed
+if [ $DAGSTER_EXIT_CODE -ne 0 ]; then
+    echo "ERROR: dagster-cloud job launch failed with exit code $DAGSTER_EXIT_CODE"
+    exit $DAGSTER_EXIT_CODE
+fi
 
 # Extract run ID from the output
 # Look for patterns like "Run <run-id> is in progress" or "Run <run-id> finished"

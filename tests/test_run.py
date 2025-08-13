@@ -35,6 +35,7 @@ def test_run_without_wait(tmp_path, exec_context, action_docker_image_id):
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
+    assert "Launching dagster-cloud job..." in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -83,6 +84,7 @@ Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully."""
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
+    assert "Launching dagster-cloud job..." in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -125,6 +127,7 @@ def test_run_with_wait_various_values(tmp_path, exec_context, action_docker_imag
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
+    assert "Launching dagster-cloud job..." in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -166,6 +169,7 @@ def test_run_legacy_compatibility(tmp_path, exec_context, action_docker_image_id
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
+    assert "Launching dagster-cloud job..." in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -215,6 +219,7 @@ Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully."""
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
+    assert "Launching dagster-cloud job..." in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -263,6 +268,7 @@ Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully."""
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
     stdout = exec_context.get_stdout()
     
+    assert "Launching dagster-cloud job..." in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -334,5 +340,7 @@ def test_run(tmp_path, exec_context, action_docker_image_id):
         },
     )
     exec_context.run_docker_command(action_docker_image_id, "/run.sh")
-    assert "Successfully launched run: some-run" in exec_context.get_stdout()
+    stdout = exec_context.get_stdout()
+    assert "Launching dagster-cloud job..." in stdout
+    assert "Successfully launched run: some-run" in stdout
     assert "run_id=some-run" in output_file.read_text()
