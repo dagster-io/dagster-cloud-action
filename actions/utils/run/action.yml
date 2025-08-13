@@ -31,6 +31,9 @@ inputs:
     required: false
     default: "false"
     description: "Whether to wait for the job to complete before exiting. When true, the action will wait for the run to finish and fail if the run fails."
+  interval:
+    required: false
+    description: "Interval in seconds between status checks when waiting for job completion. Can only be used when wait is true."
   dagster_cloud_url:
     required: false
     description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."

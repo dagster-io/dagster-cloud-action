@@ -11,9 +11,21 @@ fi
 
 # Check for wait flag - handle various true values
 wait_flag=""
+interval_flag=""
 case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
     "true"|"1"|"yes"|"on")
         wait_flag="--wait"
+        # Only add interval flag if wait is enabled and interval is provided
+        if [ -n "${INPUT_INTERVAL}" ]; then
+            interval_flag="--interval ${INPUT_INTERVAL}"
+        fi
+        ;;
+    *)
+        # Validate that interval is not used without wait
+        if [ -n "${INPUT_INTERVAL}" ]; then
+            echo "ERROR: interval parameter can only be used when wait is true"
+            exit 1
+        fi
         ;;
 esac
 
@@ -28,7 +40,7 @@ COMMAND_OUTPUT=$(
     --job "${INPUT_JOB_NAME}" \
     --tags "${INPUT_TAGS_JSON}" \
     --config-json "${INPUT_CONFIG_JSON}" \
-    ${wait_flag} 2>&1
+    ${wait_flag} ${interval_flag} 2>&1
 )
 
 # Extract run ID from the output
