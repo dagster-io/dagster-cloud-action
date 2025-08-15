@@ -36,6 +36,7 @@ def test_run_without_wait(tmp_path, exec_context, action_docker_image_id):
     stdout = exec_context.get_stdout()
     
     assert "Launching dagster-cloud job..." in stdout
+    assert "ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout  # Should appear in streamed output
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 

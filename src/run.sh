@@ -29,30 +29,39 @@ case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
         ;;
 esac
 
-# Run the command and capture all output while streaming to console
+# Run the command with real-time streaming and proper blocking
 echo "Launching dagster-cloud job..."
+
+# Create a temporary file for output capture  
 TEMP_OUTPUT_FILE=$(mktemp)
 
-# Use tee to both display output and capture it
-dagster-cloud job launch \
-    --url "${DAGSTER_CLOUD_URL}" \
-    --deployment "${INPUT_DEPLOYMENT}" \
-    --api-token "$DAGSTER_CLOUD_API_TOKEN" \
-    --location "${INPUT_LOCATION_NAME}" \
-    --repository "${INPUT_REPOSITORY_NAME}" \
-    --job "${INPUT_JOB_NAME}" \
-    --tags "${INPUT_TAGS_JSON}" \
-    --config-json "${INPUT_CONFIG_JSON}" \
-    ${wait_flag} ${interval_flag} 2>&1 | tee "${TEMP_OUTPUT_FILE}"
-
-# Check the exit code of the dagster-cloud command (not tee)
-DAGSTER_EXIT_CODE=${PIPESTATUS[0]}
+# Use a simple approach: run command while capturing output
+# The key insight: avoid pipes, use file redirection + background monitoring
+(
+    # Run the actual command, redirecting to temp file
+    dagster-cloud job launch \
+        --url "${DAGSTER_CLOUD_URL}" \
+        --deployment "${INPUT_DEPLOYMENT}" \
+        --api-token "$DAGSTER_CLOUD_API_TOKEN" \
+        --location "${INPUT_LOCATION_NAME}" \
+        --repository "${INPUT_REPOSITORY_NAME}" \
+        --job "${INPUT_JOB_NAME}" \
+        --tags "${INPUT_TAGS_JSON}" \
+        --config-json "${INPUT_CONFIG_JSON}" \
+        ${wait_flag} ${interval_flag} 2>&1 | while IFS= read -r line; do
+            echo "$line"  # Stream to console
+            echo "$line" >> "$TEMP_OUTPUT_FILE"  # Capture to file
+        done
+    # Pass through the exit code
+    exit ${PIPESTATUS[0]}
+)
+DAGSTER_EXIT_CODE=$?
 
 # Read the captured output for run ID extraction
-COMMAND_OUTPUT=$(cat "${TEMP_OUTPUT_FILE}")
+COMMAND_OUTPUT=$(cat "$TEMP_OUTPUT_FILE")
 
-# Clean up temp file
-rm -f "${TEMP_OUTPUT_FILE}"
+# Clean up temporary files
+rm -f "$TEMP_OUTPUT_FILE"
 
 # Check if the command failed
 if [ $DAGSTER_EXIT_CODE -ne 0 ]; then
