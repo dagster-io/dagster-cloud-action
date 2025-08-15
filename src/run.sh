@@ -66,13 +66,11 @@ echo "Running command: ${cmd_args[*]}"
 # Create a temporary file to capture output for run ID extraction
 TEMP_OUTPUT_FILE=$(mktemp)
 
-# Simplest approach that definitely works: run with tee for dual output
-# This preserves the blocking behavior while providing real-time output
-"${cmd_args[@]}" 2>&1 | tee "$TEMP_OUTPUT_FILE"
-
-# The tee command will complete when the dagster-cloud command completes
-# So we get the exit status of the dagster-cloud command
-DAGSTER_EXIT_CODE=${PIPESTATUS[0]}
+# Run command with real-time output and proper exit code handling
+exec 5> >(tee "$TEMP_OUTPUT_FILE")
+"${cmd_args[@]}" >&5 2>&5
+DAGSTER_EXIT_CODE=$?
+exec 5>&-
 
 # Read the captured output for run ID extraction  
 COMMAND_OUTPUT=$(cat "$TEMP_OUTPUT_FILE")
