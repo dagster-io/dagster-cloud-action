@@ -202,7 +202,7 @@ def update_docker_action_references(
     glob_patterns: List[str] = ["**/*yaml", "**/*yml"],
 ):
     image_name = get_docker_action_image_name(version_tag)
-    previous_image_name = get_docker_action_image_name("dev")
+    previous_image_name = get_docker_action_image_name("add-wait-param")
     info(f"Updating references from {previous_image_name} to {image_name}")
     with chdir("."):
         for pattern in glob_patterns:
@@ -229,7 +229,7 @@ def create_rc(
     branch = ensure_in_branch()
     info(f"Preparing a new RC in {branch}")
 
-    if version_tag != "dev" and not re.match(r"^[0-9.]+$", version_tag):
+    if version_tag != "add-wait-param" and not re.match(r"^[0-9.]+$", version_tag):
         error(f"Invalid version tag {version_tag}")
         sys.exit(1)
 
