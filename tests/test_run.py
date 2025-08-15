@@ -36,7 +36,7 @@ def test_run_without_wait(tmp_path, exec_context, action_docker_image_id):
     stdout = exec_context.get_stdout()
     
     assert "Launching dagster-cloud job..." in stdout
-    assert "ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout  # Should appear in streamed output
+    assert "Command flags: wait_flag='' interval_flag=''" in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -86,6 +86,7 @@ Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully."""
     stdout = exec_context.get_stdout()
     
     assert "Launching dagster-cloud job..." in stdout
+    assert "Command flags: wait_flag='--wait' interval_flag=''" in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
@@ -221,6 +222,7 @@ Run ee1ecc27-1dbe-435d-bd62-c2b1c491eef6 finished successfully."""
     stdout = exec_context.get_stdout()
     
     assert "Launching dagster-cloud job..." in stdout
+    assert "Command flags: wait_flag='--wait' interval_flag='--interval 10'" in stdout
     assert "Successfully launched run: ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in stdout
     assert "run_id=ee1ecc27-1dbe-435d-bd62-c2b1c491eef6" in output_file.read_text()
 
