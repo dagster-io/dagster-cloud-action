@@ -29,7 +29,6 @@ case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
         ;;
 esac
 
-# Run the command - simple blocking approach
 echo "Launching dagster-cloud job..."
 
 # Build the command args array to handle empty flags properly
