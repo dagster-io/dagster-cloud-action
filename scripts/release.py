@@ -229,7 +229,7 @@ def create_rc(
     branch = ensure_in_branch()
     info(f"Preparing a new RC in {branch}")
 
-    if version_tag != "add-wait-param" and not re.match(r"^[0-9.]+$", version_tag):
+    if version_tag != "dev" and not re.match(r"^[0-9.]+$", version_tag):
         error(f"Invalid version tag {version_tag}")
         sys.exit(1)
 
