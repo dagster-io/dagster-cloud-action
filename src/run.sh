@@ -29,14 +29,8 @@ case "$(echo "${INPUT_WAIT}" | tr '[:upper:]' '[:lower:]')" in
         ;;
 esac
 
-# Run the command - prioritize blocking behavior over real-time streaming
+# Run the command - simple blocking approach
 echo "Launching dagster-cloud job..."
-
-# Debug: Show the exact command being run
-echo "Command flags: wait_flag='${wait_flag}' interval_flag='${interval_flag}'"
-
-# Simple approach: run the command directly and let it block naturally
-# The --wait flag will cause this command to block until job completion
 
 # Build the command args array to handle empty flags properly
 cmd_args=(
@@ -61,22 +55,12 @@ if [ -n "${interval_flag}" ]; then
     cmd_args+=(${interval_flag})  # This will split --interval and the value
 fi
 
-echo "Running command: ${cmd_args[*]}"
-
-# Create a temporary file to capture output for run ID extraction
-TEMP_OUTPUT_FILE=$(mktemp)
-
-# Run command with real-time output and proper exit code handling
-exec 5> >(tee "$TEMP_OUTPUT_FILE")
-"${cmd_args[@]}" >&5 2>&5
+# Run the command directly - this will naturally block if --wait is used
+COMMAND_OUTPUT=$("${cmd_args[@]}" 2>&1)
 DAGSTER_EXIT_CODE=$?
-exec 5>&-
 
-# Read the captured output for run ID extraction  
-COMMAND_OUTPUT=$(cat "$TEMP_OUTPUT_FILE")
-
-# Clean up
-rm -f "$TEMP_OUTPUT_FILE"
+# Display the output after command completion
+echo "$COMMAND_OUTPUT"
 
 # Check if the command failed
 if [ $DAGSTER_EXIT_CODE -ne 0 ]; then
