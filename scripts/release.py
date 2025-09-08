@@ -123,6 +123,7 @@ def build_dagster_cloud_pex(
 
     info("Building generated/gha/dagster-cloud.pex")
     args = [
+        "pex",
         dagster_cloud_cli_pkg,
         dagster_pkg,
         dagster_dg_cli_pkg,
