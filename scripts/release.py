@@ -86,7 +86,9 @@ def build_docker_action(version_tag: str, publish_docker_action: bool = True):
             print(output)
 
 
-@app.command(help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image")
+@app.command(
+    help="Build dagster-cloud.pex - invoked by the dagster-cloud-pex-builder image"
+)
 def build_dagster_cloud_pex(
     dagster_oss_branch: Optional[str] = DAGSTER_OSS_BRANCH_OPTION,
     dagster_oss_version: Optional[str] = DAGSTER_OSS_VERSION_OPTION,
@@ -117,7 +119,9 @@ def build_dagster_cloud_pex(
         "aarch64_312.json",  # ubuntu-24.04-arm action runner
         "manylinux_2_28_x86_64.json",  # used by the distributed Dockerfile
     }:
-        with open(os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)) as f:
+        with open(
+            os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)
+        ) as f:
             complete_platform = f.read()
             complete_platform_args.append(f"--complete-platform={complete_platform}")
 
@@ -132,6 +136,7 @@ def build_dagster_cloud_pex(
         dagster_shared_pkg,
         "PyGithub",
         "pex>=2.1.132,<3",
+        "pip",
         "-o=dagster-cloud.pex",
         *complete_platform_args,
         "--pip-version=23.0",
@@ -157,7 +162,9 @@ def update_dagster_cloud_pex(
     dagster_oss_version: Optional[str] = DAGSTER_OSS_VERSION_OPTION,
 ):
     # Map /generated on the docker image to our local generated folder
-    map_folders = {"/generated": os.path.join(os.path.dirname(__file__), "..", "generated")}
+    map_folders = {
+        "/generated": os.path.join(os.path.dirname(__file__), "..", "generated")
+    }
 
     env_args = []
     if dagster_oss_branch:
@@ -168,7 +175,9 @@ def update_dagster_cloud_pex(
 
     mount_args = []
     for target_folder, source_folder in map_folders.items():
-        mount_args.extend(["--mount", f"type=bind,source={source_folder},target={target_folder}"])
+        mount_args.extend(
+            ["--mount", f"type=bind,source={source_folder},target={target_folder}"]
+        )
 
     cmd = [
         "docker",
@@ -242,7 +251,9 @@ def create_rc(
 
 
 def ensure_clean_workdir():
-    proc = subprocess.run(["git", "status", "--porcelain"], capture_output=True, check=False)
+    proc = subprocess.run(
+        ["git", "status", "--porcelain"], capture_output=True, check=False
+    )
     if proc.stdout or proc.stderr:
         error("ERROR: Git working directory not clean:")
         error((proc.stdout + proc.stderr).decode("utf-8"))
