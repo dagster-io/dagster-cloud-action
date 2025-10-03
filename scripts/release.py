@@ -217,6 +217,29 @@ def update_docker_action_references(
 
 
 @app.command()
+def update_action_version_references(
+    version_tag: str,
+    glob_patterns: List[str] = ["github/**/*.yml", "github/**/*.yaml", "gitlab/**/*.yml", "gitlab/**/*.yaml"],
+):
+    """Update dagster-cloud-action version references in workflow templates."""
+    info(f"Updating action version references to v{version_tag}")
+    with chdir("."):
+        for pattern in glob_patterns:
+            for path in glob.glob(pattern, recursive=True):
+                input_text = open(path, encoding="utf-8").read()
+                # Replace @v0.1 or any @vX.Y.Z pattern after dagster-cloud-action/
+                text = re.sub(
+                    r'(dagster-io/dagster-cloud-action/[^@\s]+)@v[0-9.]+',
+                    rf'\1@v{version_tag}',
+                    input_text
+                )
+                if text != input_text:
+                    print(path)
+                    with open(path, "w", encoding="utf-8") as f:
+                        f.write(text)
+
+
+@app.command()
 def create_rc(
     version_tag: str,
     check_workdir: bool = True,
@@ -239,6 +262,7 @@ def create_rc(
         run_tests()
     build_docker_action(version_tag, publish_docker_action)
     update_docker_action_references(version_tag)
+    update_action_version_references(version_tag)
     info(f"Updated working directory for {version_tag}")
 
 
