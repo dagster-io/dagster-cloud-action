@@ -6,10 +6,10 @@ RUN yum update -y & yum install -y git
 RUN /opt/python/cp311-cp311/bin/python -m pip install pex
 
 # RUN /opt/python/cp38-cp38/bin/python -m pip install dagster-cloud-cli
-RUN /opt/python/cp39-cp39/bin/python -m pip install dagster-cloud-cli
-RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud-cli
-RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud-cli
-RUN /opt/python/cp312-cp312/bin/python -m pip install dagster-cloud-cli
+# RUN /opt/python/cp39-cp39/bin/python -m pip install dagster-cloud-cli
+# RUN /opt/python/cp310-cp310/bin/python -m pip install dagster-cloud-cli
+# RUN /opt/python/cp311-cp311/bin/python -m pip install dagster-cloud-cli
+RUN /opt/python/cp312-cp312/bin/python -m pip install git+https://github.com/dagster-io/dagster.git@al/09-08-temp-pin#subdirectory=python_modules/libraries/dagster-cloud-cli
 
 # Create virtual environment using PEX
 COPY generated/gha/dagster-cloud.pex /dagster-cloud.pex
