@@ -10,7 +10,7 @@ inputs:
     default: '3.8'
   deployment:
     required: false
-    description: "The deployment to push to, defaults to 'prod'. Ignored for pull requests where the branch deployment is used."
+    description: "The deployment to push to. For pull requests, this deployment will be used as the base deployment."
     default: "prod"
   deploy:
     description: 'Whether to upload the code files and update the code location'

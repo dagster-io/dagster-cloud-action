@@ -10,6 +10,9 @@ inputs:
   source_directory:
     required: false
     description: "Path to the source directory"
+  base_deployment_name:
+    required: false
+    description: "The name of the base deployment to use for the branch deployment."
 outputs:
   deployment:
     description: "The Cloud deployment associated with this branch."
