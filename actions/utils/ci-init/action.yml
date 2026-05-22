@@ -21,7 +21,7 @@ runs:
   steps:
     - name: init-env-vars
       run: >
-        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud.pex" >> $GITHUB_ENV &&
+        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}.pex" >> $GITHUB_ENV &&
         echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
       shell: bash
 

@@ -72,7 +72,7 @@ runs:
     - if: ${{ inputs.deploy != 'true' }}
       run: >
         cd $ACTION_REPO &&
-        generated/gha/dagster-cloud.pex -m dagster_cloud_cli.entrypoint
+        generated/gha/dagster-cloud-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}.pex -m dagster_cloud_cli.entrypoint
         serverless build-python-executable
         $SOURCE_DIRECTORY ${{ inputs.build_output_dir }}
         --python-version=${{ inputs.python_version }}

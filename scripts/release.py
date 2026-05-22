@@ -109,47 +109,69 @@ def build_dagster_cloud_pex(
         dagster_pipes_pkg = "dagster-pipes"
         dagster_shared_pkg = "dagster-shared"
 
-    complete_platform_args = []
+    # Split the pex by runner architecture to stay well under GitHub's 100MB
+    # per-file limit. aarch64 wheels are native and don't overlap with x86,
+    # so removing them from the x86 PEX is the bulk of the win. The
+    # manylinux_2_28_x86_64 platform is bundled into the x86 variant since it
+    # overlaps heavily with the Ubuntu x86 runner wheels (~4MB extra).
+    variants = {
+        "dagster-cloud-x86_64.pex": [
+            "x86_64_310.json",  # ubuntu-22.04 action runner
+            "x86_64_312.json",  # ubuntu-24.04 action runner
+            "manylinux_2_28_x86_64.json",  # used by the distributed Dockerfile
+        ],
+        "dagster-cloud-aarch64.pex": [
+            "aarch64_312.json",  # ubuntu-24.04-arm action runner
+        ],
+    }
 
-    for json_file in {
-        "x86_64_310.json",  # ubuntu-22.04 action runner
-        "x86_64_312.json",  # ubuntu-24.04 action runner
-        "aarch64_312.json",  # ubuntu-24.04-arm action runner
-        "manylinux_2_28_x86_64.json",  # used by the distributed Dockerfile
-    }:
-        with open(os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)) as f:
-            complete_platform = f.read()
-            complete_platform_args.append(f"--complete-platform={complete_platform}")
+    for output_name, platform_files in variants.items():
+        complete_platform_args = []
+        for json_file in platform_files:
+            with open(
+                os.path.join(os.path.dirname(__file__), "complete_platforms", json_file)
+            ) as f:
+                complete_platform = f.read()
+                complete_platform_args.append(f"--complete-platform={complete_platform}")
 
-    info("Building generated/gha/dagster-cloud.pex")
-    args = [
-        "pex",
-        dagster_cloud_cli_pkg,
-        dagster_pkg,
-        dagster_dg_cli_pkg,
-        dagster_dg_core_pkg,
-        dagster_pipes_pkg,
-        dagster_shared_pkg,
-        "PyGithub",
-        "pex>=2.1.132,<3",
-        "pip",
-        "-o=dagster-cloud.pex",
-        *complete_platform_args,
-        "--pip-version=23.0",
-        "--resolver-version=pip-2020-resolver",
-        "--venv=prepend",
-        "--sh-boot",
-        "-vvvvv",
-    ]
-    print(f"Running {args}")
-    output = subprocess.check_output(
-        args,
-        shell=False,
-        encoding="utf-8",
-    )
-    print(output)
-    shutil.move("dagster-cloud.pex", "generated/gha/dagster-cloud.pex")
-    info("Built generated/gha/dagster-cloud.pex")
+        info(f"Building generated/gha/{output_name}")
+        args = [
+            "pex",
+            dagster_cloud_cli_pkg,
+            dagster_pkg,
+            dagster_dg_cli_pkg,
+            dagster_dg_core_pkg,
+            dagster_pipes_pkg,
+            dagster_shared_pkg,
+            "PyGithub",
+            "pex>=2.1.132,<3",
+            "pip",
+            f"-o={output_name}",
+            *complete_platform_args,
+            "--pip-version=23.0",
+            "--resolver-version=pip-2020-resolver",
+            "--venv=prepend",
+            "--sh-boot",
+            "-vvvvv",
+        ]
+        print(f"Running {args}")
+        output = subprocess.check_output(
+            args,
+            shell=False,
+            encoding="utf-8",
+        )
+        print(output)
+        shutil.move(output_name, f"generated/gha/{output_name}")
+        info(f"Built generated/gha/{output_name}")
+
+    # Back-compat: keep generated/gha/dagster-cloud.pex as a symlink to the
+    # x86_64 variant for one release, so any consumer reaching past the public
+    # action API (i.e. hardcoding the file path) keeps working on x86 runners.
+    legacy_path = "generated/gha/dagster-cloud.pex"
+    if os.path.lexists(legacy_path):
+        os.unlink(legacy_path)
+    os.symlink("dagster-cloud-x86_64.pex", legacy_path)
+    info(f"Linked {legacy_path} -> dagster-cloud-x86_64.pex")
 
 
 @app.command(help="Update dagster-cloud.pex")
