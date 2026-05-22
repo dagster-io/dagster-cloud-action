@@ -8,6 +8,7 @@
 # On anything else: forward args to `dagster-cloud --build-method=docker` to ensure they are built in a compatible environment
 
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -16,7 +17,10 @@ from typing import List, Optional
 
 import yaml
 
-DAGSTER_CLOUD_PEX_PATH = Path(__file__).parent.parent / "generated/gha/dagster-cloud.pex"
+_ARCH = "aarch64" if platform.machine() == "aarch64" else "x86_64"
+DAGSTER_CLOUD_PEX_PATH = (
+    Path(__file__).parent.parent / f"generated/gha/dagster-cloud-{_ARCH}.pex"
+)
 UPDATE_COMMENT_SCRIPT_PATH = Path(__file__).parent / "create_or_update_comment.py"
 
 
