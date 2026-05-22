@@ -1,11 +1,14 @@
 import datetime
-import github
-from github import Github
 import os
+import sys
+
+from github_session import GITHUB_API, github_session
 
 """
 Creates or updates a build status comment on a Pull Request, for branch deployments.
 """
+
+COMMENTS_PAGE_SIZE = 100
 
 SUCCESS_IMAGE_URL = (
     "https://raw.githubusercontent.com/dagster-io/dagster-cloud-action/main/assets/success.png"
@@ -17,9 +20,9 @@ FAILED_IMAGE_URL = (
     "https://raw.githubusercontent.com/dagster-io/dagster-cloud-action/main/assets/failed.png"
 )
 
+
 def main():
-    # Fetch various pieces of info from the environment
-    g = Github(os.getenv("GITHUB_TOKEN"))
+    token = os.getenv("GITHUB_TOKEN")
     pr_id = int(os.getenv("INPUT_PR"))
     repo_id = os.getenv("GITHUB_REPOSITORY")
     action = os.getenv("INPUT_ACTION")
@@ -30,23 +33,11 @@ def main():
 
     location_name = os.getenv("INPUT_LOCATION_NAME")
 
-    repo = g.get_repo(repo_id)
-    pr = repo.get_pull(pr_id)
-
-    comments = pr.get_issue_comments()
-    comment_to_update = None
-
-    # Check if a comment exists on the PR from the github actions user
-    # which is specific to this location name
-    # otherwise we create a new comment
-    for comment in comments:
-        if (
-            comment.user.login == "github-actions[bot]"
-            and "Dagster Cloud" in comment.body
-            and f"`{location_name}`" in comment.body
-        ):
-            comment_to_update = comment
-            break
+    # PATCH on a specific comment is effectively idempotent here (same body,
+    # same id), so opt it in to retries. POST is left out to avoid duplicate
+    # comment creation if GitHub processes the request but the response is lost.
+    session = github_session(token, retry_methods=("GET", "PATCH"))
+    comment_to_update_id = _find_existing_comment(session, repo_id, pr_id, location_name)
 
     deployment_url = f"{org_url}/{deployment_name}/home"
 
@@ -64,19 +55,56 @@ def main():
 
     time_str = datetime.datetime.now(datetime.timezone.utc).strftime("%b %d, %Y at %I:%M %p (%Z)")
 
-    message = f"""
+    body = f"""
 Your pull request is automatically being deployed to Dagster Cloud.
 
 | Location          | Status          | Link    | Updated         |
-| ----------------- | --------------- | ------- | --------------- | 
+| ----------------- | --------------- | ------- | --------------- |
 | `{location_name}` | {status_image}  | {message}  | {time_str}      |
     """
 
-    if comment_to_update:
-        comment_to_update.edit(message)
+    if comment_to_update_id is not None:
+        resp = session.patch(
+            f"{GITHUB_API}/repos/{repo_id}/issues/comments/{comment_to_update_id}",
+            json={"body": body},
+            timeout=60,
+        )
     else:
-        pr.create_issue_comment(message)
+        resp = session.post(
+            f"{GITHUB_API}/repos/{repo_id}/issues/{pr_id}/comments",
+            json={"body": body},
+            timeout=60,
+        )
+    resp.raise_for_status()
+
+
+def _find_existing_comment(session, repo_id, pr_id, location_name):
+    # Check if a comment exists on the PR from the github actions user
+    # which is specific to this location name
+    page = 1
+    while True:
+        resp = session.get(
+            f"{GITHUB_API}/repos/{repo_id}/issues/{pr_id}/comments",
+            params={"per_page": COMMENTS_PAGE_SIZE, "page": page},
+            timeout=60,
+        )
+        resp.raise_for_status()
+        comments = resp.json()
+        if not comments:
+            return None
+        for comment in comments:
+            user_login = (comment.get("user") or {}).get("login")
+            comment_body = comment.get("body") or ""
+            if (
+                user_login == "github-actions[bot]"
+                and "Dagster Cloud" in comment_body
+                and f"`{location_name}`" in comment_body
+            ):
+                return comment["id"]
+        if len(comments) < COMMENTS_PAGE_SIZE:
+            return None
+        page += 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

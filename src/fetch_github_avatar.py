@@ -1,5 +1,9 @@
-from github import Github
 import os
+import sys
+
+import requests
+
+from github_session import GITHUB_API, github_session
 
 """
 Fetches a user's avatar from the Github API based on email or username
@@ -7,16 +11,20 @@ Fetches a user's avatar from the Github API based on email or username
 
 
 def main():
-    # Fetch various pieces of info from the environment
-    g = Github(os.getenv("GITHUB_TOKEN"))
-
+    token = os.getenv("GITHUB_TOKEN")
     repo_id = os.getenv("GITHUB_REPOSITORY")
     commit_sha = os.getenv("GITHUB_SHA")
 
-    repo = g.get_repo(repo_id)
-    commit = repo.get_commit(commit_sha)
+    session = github_session(token)
+    try:
+        resp = session.get(f"{GITHUB_API}/repos/{repo_id}/commits/{commit_sha}", timeout=60)
+        resp.raise_for_status()
+    except requests.RequestException as err:
+        print(f"Failed to fetch commit {commit_sha}: {err}", file=sys.stderr)
+        sys.exit(1)
 
-    print(commit.author.avatar_url)
+    author = resp.json().get("author") or {}
+    print(author.get("avatar_url", ""))
 
 
 if __name__ == "__main__":

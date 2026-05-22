@@ -33,6 +33,7 @@ COPY src/expand_env_vars.py /expand_env_vars.py
 COPY src/create_or_update_comment.py /create_or_update_comment.py
 COPY src/expand_json_env.py /expand_json_env.py
 COPY src/fetch_github_avatar.py /fetch_github_avatar.py
+COPY src/github_session.py /github_session.py
 COPY src/parse_workspace.py parse_workspace.py
 
 
