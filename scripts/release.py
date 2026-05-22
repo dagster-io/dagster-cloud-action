@@ -143,7 +143,7 @@ def build_dagster_cloud_pex(
             dagster_dg_core_pkg,
             dagster_pipes_pkg,
             dagster_shared_pkg,
-            "PyGithub",
+            "requests",
             "pex>=2.1.132,<3",
             "pip",
             f"-o={output_name}",
