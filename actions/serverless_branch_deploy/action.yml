@@ -57,7 +57,12 @@ runs:
         DAGSTER_CLOUD_API_TOKEN: ${{ inputs.dagster_cloud_api_token }}
 
     - name: Login to ECR
-      run: echo "${{ env.AWS_ECR_PASSWORD }}" | docker login --username ${{ env.AWS_ECR_USERNAME }} --password-stdin ${{  env.REGISTRY_URL  }}
+      # Read credentials from bash env, not from `${{ env.VAR }}` template
+      # substitution. The latter pastes the literal value into the bash
+      # script before bash runs, which causes a `$` in the username (e.g.
+      # Harbor robot accounts: robot$<project>+push) to be eaten as a
+      # variable expansion.
+      run: echo "$AWS_ECR_PASSWORD" | docker login --username "$AWS_ECR_USERNAME" --password-stdin "$REGISTRY_URL"
       shell: bash
 
     - name: Notify build start
