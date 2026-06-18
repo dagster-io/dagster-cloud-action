@@ -11,6 +11,25 @@ inputs:
     required: false
     description: "Alternative to providing organization ID. The URL of your Dagster Cloud organization."
 runs:
-  using: "docker"
-  image: "docker://ghcr.io/dagster-io/dagster-cloud-action:1.12.17"
-  entrypoint: "/registry_info.sh"
+  # Composite (not docker) so the fixed registry_info.sh from this branch is
+  # used directly, not the version baked into the published image. The script
+  # avoids `source` and unquoted `echo` so a `$` in the username (Harbor robot
+  # accounts: robot$<project>+push) survives shell expansion.
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dagster-cloud CLI
+      shell: bash
+      run: python -m pip install --quiet dagster-cloud-cli
+
+    - name: Fetch registry info
+      shell: bash
+      env:
+        INPUT_ORGANIZATION_ID: ${{ inputs.organization_id }}
+        INPUT_DEPLOYMENT: ${{ inputs.deployment }}
+        INPUT_DAGSTER_CLOUD_URL: ${{ inputs.dagster_cloud_url }}
+      run: bash ${{ github.action_path }}/../../../src/registry_info.sh
