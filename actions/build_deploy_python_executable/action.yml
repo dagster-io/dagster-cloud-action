@@ -47,7 +47,7 @@ runs:
 
     - id: setup-python
       name: Set up Python ${{ inputs.python_version }} for target
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
       with:
         python-version: ${{ inputs.python_version }}
 
