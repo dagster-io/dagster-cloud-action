@@ -13,8 +13,11 @@ RUN if [ -f "setup.py" ]; then \
         pip install .; \
     fi
 
+# Serverless K8s runs as a non-root user: the directory itself must be owned by that user
+# (WORKDIR alone creates it root-owned), not just the files copied into it.
+RUN mkdir -p /opt/dagster/app && chown 65532:65532 /opt/dagster/app
 WORKDIR /opt/dagster/app
-COPY . /opt/dagster/app
+COPY --chown=65532:65532 . /opt/dagster/app
 
 # Install the rest of dependencies in case there is a requirements.txt
 RUN if [ -f "requirements.txt" ]; then \
