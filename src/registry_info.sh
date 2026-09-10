@@ -15,8 +15,23 @@ while (( !AWS_ECR_PASSWORD && count < 6 )); do
     REGISTRY_INFO=$(dagster-cloud serverless registry-info \
         --url "${DAGSTER_CLOUD_URL}/${INPUT_DEPLOYMENT}" \
         --api-token "$DAGSTER_CLOUD_API_TOKEN")
-    echo $REGISTRY_INFO > registry_info.env
-    source registry_info.env
+    # Parse KEY=VALUE pairs without `source` or unquoted `echo`, because
+    # either would re-expand any `$` in the value (e.g. Harbor robot
+    # usernames are `robot$<project>+push`) and mangle the credential.
+    AWS_ECR_USERNAME=""
+    AWS_ECR_PASSWORD=""
+    REGISTRY_URL=""
+    AWS_DEFAULT_REGION=""
+    CUSTOM_BASE_IMAGE_ALLOWED=""
+    while IFS='=' read -r _key _value; do
+        case "$_key" in
+            AWS_ECR_USERNAME) AWS_ECR_USERNAME="$_value" ;;
+            AWS_ECR_PASSWORD) AWS_ECR_PASSWORD="$_value" ;;
+            REGISTRY_URL) REGISTRY_URL="$_value" ;;
+            AWS_DEFAULT_REGION) AWS_DEFAULT_REGION="$_value" ;;
+            CUSTOM_BASE_IMAGE_ALLOWED) CUSTOM_BASE_IMAGE_ALLOWED="$_value" ;;
+        esac
+    done <<<"$REGISTRY_INFO"
     count=$(($count + 1))
     if [ ! -z "$AWS_ECR_PASSWORD" ]; then
         echo "Loaded registry information."
