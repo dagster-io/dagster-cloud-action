@@ -24,25 +24,25 @@ jobs:
     steps:
       - name: Prerun Checks
         id: prerun
-        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v0.1
+        uses: dagster-io/dagster-cloud-action/actions/utils/prerun@v1.13.22
 
       - name: Launch Docker Deploy
         if: steps.prerun.outputs.result == 'docker-deploy'
         id: parse-workspace
-        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v0.1
+        uses: dagster-io/dagster-cloud-action/actions/utils/parse_workspace@v1.13.22
         with:
           dagster_cloud_file: $DAGSTER_CLOUD_FILE
 
       - name: Checkout for Python Executable Deploy
         if: steps.prerun.outputs.result == 'pex-deploy'
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.head_ref }}
           path: project-repo
 
       - name: Python Executable Deploy
         if: steps.prerun.outputs.result == 'pex-deploy'
-        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v0.1
+        uses: dagster-io/dagster-cloud-action/actions/build_deploy_python_executable@v1.13.22
         with:
           dagster_cloud_file: "$GITHUB_WORKSPACE/project-repo/$DAGSTER_CLOUD_FILE"
           build_output_dir: "$GITHUB_WORKSPACE/build"
@@ -61,11 +61,11 @@ jobs:
         location: ${{ fromJSON(needs.dagster_cloud_default_deploy.outputs.build_info) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.head_ref }}
       - name: Build and deploy to Dagster Cloud serverless
-        uses: dagster-io/dagster-cloud-action/actions/serverless_branch_deploy@v0.1
+        uses: dagster-io/dagster-cloud-action/actions/serverless_branch_deploy@v1.13.22
         with:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
