@@ -99,6 +99,7 @@ def build_dagster_cloud_pex(
         dagster_dg_core_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-dg-core&subdirectory=python_modules/libraries/dagster-dg-core"
         dagster_pipes_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-pipes&subdirectory=python_modules/dagster-pipes"
         dagster_shared_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-shared&subdirectory=python_modules/libraries/dagster-shared"
+        dagster_rest_resources_pkg = f"git+https://github.com/dagster-io/dagster.git@{dagster_oss_branch}#egg=dagster-rest-resources&subdirectory=python_modules/libraries/dagster-rest-resources"
     else:
         pin_str = f"=={dagster_oss_version}" if dagster_oss_version else ""
         info("Using PyPI for dagster package")
@@ -108,6 +109,7 @@ def build_dagster_cloud_pex(
         dagster_dg_core_pkg = "dagster-dg-core"
         dagster_pipes_pkg = "dagster-pipes"
         dagster_shared_pkg = "dagster-shared"
+        dagster_rest_resources_pkg = "dagster-rest-resources"
 
     # Split the pex by runner architecture to stay well under GitHub's 100MB
     # per-file limit. aarch64 wheels are native and don't overlap with x86,
@@ -143,6 +145,7 @@ def build_dagster_cloud_pex(
             dagster_dg_core_pkg,
             dagster_pipes_pkg,
             dagster_shared_pkg,
+            dagster_rest_resources_pkg,
             "PyGithub",
             "pex>=2.1.132,<3",
             "pip",
