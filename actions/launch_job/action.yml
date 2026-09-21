@@ -34,12 +34,12 @@ runs:
   using: "composite"
   steps:
     - name: Checkout target repo
-      uses: actions/checkout@v6
+      uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       with:
         ref: ${{ github.sha }}
 
     - name: Checkout action repo
-      uses: actions/checkout@v6
+      uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       with:
         repository: dagster-io/dagster-cloud-action
         ref: ${{ env.DAGSTER_ACTION_REF }}
