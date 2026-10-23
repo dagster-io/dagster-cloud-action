@@ -25,6 +25,20 @@ FROM --platform=linux/amd64 quay.io/pypa/manylinux_2_28_x86_64:latest
 # Add all the relevant Python binaries to the PATH
 ENV PATH="/opt/python/cp38-cp38/bin:/opt/python/cp39-cp39/bin:/opt/python/cp310-cp310/bin:/opt/python/cp311-cp311/bin:/opt/python/cp311-cp312/bin:$PATH"
 
+# Distrust the roots behind the compromised eMudhra intermediates. AlmaLinux (the
+# manylinux base) has not shipped a ca-certificates fix, so use the RHEL-family
+# trust blocklist (named `blacklist/` on EL8). See src/distrusted-roots/README.md.
+COPY src/distrusted-roots/*.pem /etc/pki/ca-trust/source/blacklist/
+RUN update-ca-trust
+
+# pip verifies downloads against its own vendored certifi, so upgrade it before
+# any other pip install. 26.2.2 is the first release without the affected roots;
+# hash-pinned so the fetch does not rely on the old bundle. pip 26 needs Python
+# 3.10+, so the 3.9 interpreter keeps its original pip (Python 3.9 is end of life).
+RUN echo "pip==26.2.2 --hash=sha256:fd7f4dfa8190e014013b9f08f3e973f4e4c26ffd179a204895533a7254813a70 --hash=sha256:3a8e5c800492787f33a4114ef54444546c340df428974ebba17e0fd47e11af2f" > /tmp/pip-requirements.txt \
+    && for py in cp310-cp310 cp311-cp311 cp312-cp312; do /opt/python/$py/bin/python -m pip install --no-cache-dir --require-hashes -r /tmp/pip-requirements.txt; done \
+    && rm /tmp/pip-requirements.txt
+
 # To install unreleased versions, build the wheels and drop them in this directory
 COPY wheels /wheels
 
