@@ -16,25 +16,35 @@ runs:
   using: "composite"
   steps:
     - name: init-env-vars
+      env:
+        PEX_ARCH: ${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}
       run: >
-        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}.pex" >> $GITHUB_ENV &&
-        echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "DAGSTER_CLOUD_PEX=$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud-$PEX_ARCH.pex" >> "$GITHUB_ENV" &&
+        echo "DAGSTER_BUILD_STATEDIR=/tmp/statedir-$GITHUB_RUN_ID" >> "$GITHUB_ENV"
       shell: bash
 
     - name: set-location-names
       if: ${{ inputs.location_names }}
-      run: echo ${{ format('LOCATION_NAMES_FLAG=--location-name={0}', join(fromJSON(inputs.location_names), ' --location-name=')) }} >> $GITHUB_ENV
+      env:
+        LOCATION_NAMES_FLAG: ${{ format('--location-name={0}', join(fromJSON(inputs.location_names), ' --location-name=')) }}
+      run: echo "LOCATION_NAMES_FLAG=$LOCATION_NAMES_FLAG" >> "$GITHUB_ENV"
       shell: bash
 
-    # Initialize the deploy session
+    # Initialize the deploy session.  LOCATION_NAMES_FLAG stays unquoted so that
+    # it splits into one --location-name argument per location, or into none
+    # when it is unset.
     - id: start-deploy-session
+      env:
+        PROJECT_DIR: ${{ inputs.project_dir }}
+        DEPLOYMENT_NAME: ${{ inputs.deployment }}
+        COMMIT_HASH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       run: >
-        $DAGSTER_CLOUD_PEX -m dagster_dg_cli.cli.entrypoint plus deploy start
-        --target-path=${{ inputs.project_dir }}
-        --deployment=${{ inputs.deployment }}
-        --status-url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        --git-url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        --commit-hash=${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        "$DAGSTER_CLOUD_PEX" -m dagster_dg_cli.cli.entrypoint plus deploy start
+        --target-path="$PROJECT_DIR"
+        --deployment="$DEPLOYMENT_NAME"
+        --status-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+        --git-url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/tree/$COMMIT_HASH"
+        --commit-hash="$COMMIT_HASH"
         --yes
         $LOCATION_NAMES_FLAG
       shell: bash
@@ -45,5 +55,7 @@ runs:
 
     # Create a PR comment if necessary
     - id: ci-notify
-      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci notify --project-dir=${{ inputs.project_dir }}
+      env:
+        PROJECT_DIR: ${{ inputs.project_dir }}
+      run: $DAGSTER_CLOUD_PEX -m dagster_cloud_cli.entrypoint ci notify --project-dir="$PROJECT_DIR"
       shell: bash

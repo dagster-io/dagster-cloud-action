@@ -8,6 +8,15 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # The command input is a shell command line: workflows pass $VAR references
+    # and redirections such as `>> $GITHUB_STEP_SUMMARY` in it, so it goes
+    # through eval.  Reading it from the environment keeps the input out of the
+    # script text that GitHub generates for this step.
     - id: dagster-cloud-cli
-      run: $GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}.pex -m dagster_cloud_cli.entrypoint ${{ inputs.command }}
+      env:
+        PEX_ARCH: ${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}
+        DAGSTER_CLOUD_CLI_COMMAND: ${{ inputs.command }}
+      run: |
+        pex="$GITHUB_ACTION_PATH/../../../generated/gha/dagster-cloud-$PEX_ARCH.pex"
+        eval "\"\$pex\" -m dagster_cloud_cli.entrypoint $DAGSTER_CLOUD_CLI_COMMAND"
       shell: bash

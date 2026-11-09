@@ -37,11 +37,11 @@ runs:
     - name: Set deps-cache-from
       # Don't use cached deps if instructed
       if: ${{ inputs.force_rebuild_deps != 'true' }}
-      run: echo "FLAG_DEPS_CACHE_FROM=--deps-cache-from=${{ github.repository }}" >> $GITHUB_ENV
+      run: echo "FLAG_DEPS_CACHE_FROM=--deps-cache-from=$GITHUB_REPOSITORY" >> "$GITHUB_ENV"
       shell: bash
 
     - name: Set deps-cache-to
-      run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=${{ github.repository }}" >> $GITHUB_ENV
+      run: echo "FLAG_DEPS_CACHE_TO=--deps-cache-to=$GITHUB_REPOSITORY" >> "$GITHUB_ENV"
       shell: bash
 
 
@@ -51,29 +51,42 @@ runs:
       with:
         python-version: ${{ inputs.python_version }}
 
-    - run: ${{ steps.setup-python.outputs.python-path }} -m pip install setuptools
+    - env:
+        PYTHON_PATH: ${{ steps.setup-python.outputs.python-path }}
+      run: '"$PYTHON_PATH" -m pip install setuptools'
       shell: bash
 
-    - run: >
-        echo SOURCE_DIRECTORY=$(dirname ${{ inputs.dagster_cloud_file }}) >> $GITHUB_ENV
-      shell: bash
-
-    - if: ${{ inputs.deploy == 'true' }}
+    - env:
+        DAGSTER_CLOUD_FILE: ${{ inputs.dagster_cloud_file }}
       run: >
-        cd $ACTION_REPO &&
-        INPUT_DEPLOYMENT=${{ inputs.deployment }}
+        echo "SOURCE_DIRECTORY=$(dirname "$DAGSTER_CLOUD_FILE")" >> "$GITHUB_ENV"
+      shell: bash
+
+    # The FLAG_DEPS_CACHE_* variables stay unquoted so that an unset flag adds
+    # no argument at all.
+    - if: ${{ inputs.deploy == 'true' }}
+      env:
+        INPUT_DEPLOYMENT: ${{ inputs.deployment }}
+        DAGSTER_CLOUD_FILE: ${{ inputs.dagster_cloud_file }}
+        PYTHON_VERSION: ${{ inputs.python_version }}
+      run: >
+        cd "$ACTION_REPO" &&
         /usr/bin/python src/deploy_pex.py
-        ${{ inputs.dagster_cloud_file }}
-        --python-version=${{ inputs.python_version }}
+        "$DAGSTER_CLOUD_FILE"
+        --python-version="$PYTHON_VERSION"
         $FLAG_DEPS_CACHE_TO
         $FLAG_DEPS_CACHE_FROM
       shell: bash
 
     - if: ${{ inputs.deploy != 'true' }}
+      env:
+        PEX_ARCH: ${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}
+        BUILD_OUTPUT_DIR: ${{ inputs.build_output_dir }}
+        PYTHON_VERSION: ${{ inputs.python_version }}
       run: >
-        cd $ACTION_REPO &&
-        generated/gha/dagster-cloud-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}.pex -m dagster_cloud_cli.entrypoint
+        cd "$ACTION_REPO" &&
+        "generated/gha/dagster-cloud-$PEX_ARCH.pex" -m dagster_cloud_cli.entrypoint
         serverless build-python-executable
-        $SOURCE_DIRECTORY ${{ inputs.build_output_dir }}
-        --python-version=${{ inputs.python_version }}
+        "$SOURCE_DIRECTORY" "$BUILD_OUTPUT_DIR"
+        --python-version="$PYTHON_VERSION"
       shell: bash
