@@ -1,3 +1,5 @@
-dagster
-dagster-cloud
-requests
+# The newest releases that still support Python 3.8, which this project runs on:
+# its Dockerfile and the default serverless base image are both python:3.8-slim.
+dagster==1.8.13
+dagster-cloud==1.8.13
+requests==2.32.4
