@@ -39,8 +39,9 @@ jobs:
           dagster_cloud_api_token: ${{ secrets.DAGSTER_CLOUD_SERVERLESS_API_TOKEN }}
           location: ${{ toJson(matrix.location) }}
           env_vars: ${{ toJson(secrets) }}
-          # The sample project's requirements are locked for Python 3.14, and the
-          # action's default base image is python:3.8-slim.
+          # The copy_template step runs the published dagster-cloud-action:dev
+          # image, which still defaults to python:3.8-slim until it is rebuilt
+          # from this source. The sample project is locked for Python 3.14.
           base_image: "python:3.14-slim@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
