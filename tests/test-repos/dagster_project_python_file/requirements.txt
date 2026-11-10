@@ -1,2 +1,2 @@
-dagster
-dagster-cloud[serverless]
+dagster==1.13.29
+dagster-cloud[serverless]==1.13.29
