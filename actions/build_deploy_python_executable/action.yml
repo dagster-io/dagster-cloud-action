@@ -5,9 +5,9 @@ inputs:
     description: 'Path to dagster_cloud.yaml'
     required: true
   python_version:
-    description: 'Python version string, major.minor only, eg "3.8"'
+    description: 'Python version string, major.minor only, eg "3.14"'
     required: false
-    default: '3.8'
+    default: '3.14'
   deployment:
     required: false
     description: "The deployment to push to, defaults to 'prod'. Ignored for pull requests where the branch deployment is used."
