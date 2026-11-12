@@ -1,5 +1,5 @@
 # Used for testing the generated dagster-cloud pex
-FROM --platform=linux/amd64 python:3.10-slim
+FROM --platform=linux/amd64 python:3.12-slim
 
 COPY generated/gha/dagster-cloud-x86_64.pex /dagster-cloud.pex
 
