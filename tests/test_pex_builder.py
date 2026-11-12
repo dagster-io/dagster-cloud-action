@@ -58,7 +58,7 @@ def test_pex_build_only(repo_root, built_test_dagster_cloud_pex_image):
                 "/dagster_project1",
                 "--api-token=fake",
                 "--url=fake",
-                "--python-version=3.10",
+                "--python-version=3.12",
                 "/build_output_dir",
             ],
             map_folders=map_folders,

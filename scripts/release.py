@@ -118,7 +118,6 @@ def build_dagster_cloud_pex(
     # overlaps heavily with the Ubuntu x86 runner wheels (~4MB extra).
     variants = {
         "dagster-cloud-x86_64.pex": [
-            "x86_64_310.json",  # ubuntu-22.04 action runner
             "x86_64_312.json",  # ubuntu-24.04 action runner
             "manylinux_2_28_x86_64.json",  # used by the distributed Dockerfile
         ],
