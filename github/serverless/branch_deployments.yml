@@ -11,13 +11,13 @@ env:
   DAGSTER_CLOUD_URL: ${{ secrets.DAGSTER_CLOUD_URL }}
   DAGSTER_CLOUD_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_API_TOKEN }}
   ENABLE_FAST_DEPLOYS: 'true'
-  PYTHON_VERSION: '3.10'
+  PYTHON_VERSION: '3.12'
   DAGSTER_CLOUD_FILE: 'dagster_cloud.yaml'
 
 jobs:
   dagster_cloud_default_deploy:
     name: Dagster Serverless Deploy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       build_info: ${{ steps.parse-workspace.outputs.build_info }}
 
@@ -52,7 +52,7 @@ jobs:
 
   dagster_cloud_docker_deploy:
     name: Docker Deploy
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: needs.dagster_cloud_default_deploy.outputs.build_info
     needs: dagster_cloud_default_deploy
     strategy:
